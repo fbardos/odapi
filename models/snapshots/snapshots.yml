@@ -1,0 +1,36 @@
+x-default-group: &default-group snapshots
+
+x-tests-snap-table-gp: &tests-snap-table-gp
+  - dbt_utils.unique_combination_of_columns:
+      combination_of_columns: ['bfs_nr', 'indikator_id', 'indikator_jahr', 'dbt_valid_from']
+
+
+snapshots:
+
+  # ---------------------------------------------------------------------------
+  - name: snap_bfs_statatlas
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # TEST Surrogate key
+          combination_of_columns: ['map_id', 'geo_id', 'variable', 'period_ref', 'geom_code', 'mother_path', 'dbt_valid_from']
+      - dbt_utils.unique_combination_of_columns:  # TEST Strict PK
+          combination_of_columns: ['mother_path', 'map_id', 'geo_id', 'variable', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_ktzh_gp_bevoelkerung
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - <<: *tests-snap-table-gp
+
+  # ---------------------------------------------------------------------------
+  - name: snap_ktzh_gp_auslaenderanteil
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - <<: *tests-snap-table-gp
+

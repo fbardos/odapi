@@ -1,0 +1,48 @@
+# TODO: Add SMTP for airflow, airbyte (already stored in .env)
+
+# #######################################################################
+# Config snippets
+# #######################################################################
+
+x-restart-policy: &restart-policy unless-stopped
+
+x-logging: &default-logging
+  options:
+    max-size: '100m'
+    max-file: '3'
+
+x-dbt-common:
+  &dbt-common
+  image: fbardos/lab-dbt
+  build:
+    network: host
+    args:
+      TIMEZONE: "${DBT__TIMEZONE}"
+      PROFILE_TYPE: "${DBT__PROFILE_TYPE}"
+      PROFILE_HOST: "${DBT__PROFILE_HOST}"
+      PROFILE_USER: "${DBT__PROFILE_USER}"
+      PROFILE_PASSWORD: "${DBT__PROFILE_PASSWORD}"
+      PROFILE_PORT: "${DBT__PROFILE_PORT}"
+      PROFILE_DBNAME: "${DBT__PROFILE_DBNAME}"
+      PROFILE_SCHEMA: "${DBT__PROFILE_SCHEMA}"
+      PROFILE_THREADS: "${DBT__PROFILE_THREADS}"
+      PYTHON_VERSION: "${DBT__PYTHON_VERSION}"
+    dockerfile: Dockerfile
+  restart: *restart-policy
+  logging: *default-logging
+  healthcheck:
+    test: ["CMD", "dbt", "list"]
+    interval: 15s
+    retries: 5
+
+services:
+
+  # #######################################################################
+  # DBT
+  # #######################################################################
+  dbt:
+    <<: *dbt-common
+    ports:
+      - 8081:80
+    command: ["dbt", "docs", "serve", "--profiles-dir", "profiles", "--port", "80"]
+

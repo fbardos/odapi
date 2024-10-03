@@ -1,0 +1,11 @@
+telemetry:
+  enabled: false
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    tag_concurrency_limits:
+      - key: 'single_run_per_value'
+        value:
+          applyLimitPerUniqueValue: true
+        limit: 1

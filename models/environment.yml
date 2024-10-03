@@ -1,0 +1,8 @@
+name: dbt
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=PYTHON_VERSION
+  - dbt-core
+  - dbt-postgres

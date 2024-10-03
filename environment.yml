@@ -1,0 +1,54 @@
+# Version matching according to PEP-440
+# run: conda env create --file environment.yml
+name: odapi
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pytest
+  - numpy
+  - pandas
+  - plotly
+  - pymongo
+  - requests
+  - aiohttp
+  - neovim
+  - isort
+  - jupyterlab
+  - ipython
+  - ipdb
+  - python-dotenv
+  - geopandas
+  - geopy
+  - osmnx
+  - networkx
+  - pyproj==3.6.0  # there was a bug in 3.6.1
+  - geoalchemy2
+  - sqlalchemy==1.4.51
+  - sqlmodel
+  - pydantic<2  # Sqlmodel is currently not compatible with pydantic V2
+  - great-expectations
+  - airflow
+  - apache-airflow-providers-mongo
+  - apache-airflow-providers-postgres
+  - apache-airflow-providers-docker
+  - apache-airflow-providers-airbyte
+  - apache-airflow-providers-amazon
+  - jinja2=3.0.3
+  - aiohttp
+  - pip:
+    - redis
+    - docker
+    - dbt-core==1.8.2  # Dagster not compatible with dbt-core 1.8.4
+    - dbt-postgres
+    - dagster-dbt
+    - dagster-webserver
+    - gtfs-realtime-bindings
+    - protobuf3-to-dict
+    - "fastapi[standard]"
+    - fastapi-pagination
+    - pyarrow
+    - jq
+

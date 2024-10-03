@@ -1,0 +1,1835 @@
+x-default-group: &default-group intermediate
+
+x-tests-intm-table-gp: &tests-intm-table-gp
+  - dbt_utils.unique_combination_of_columns:
+      # Currently, geo_code should always be geom and there should only be one wissensstand
+      # Also, indicator should already be selected.
+      combination_of_columns: ['geo_value', 'period_ref']
+
+x-tests-intm-table-statatlas-pk: &tests-intm-table-statatlas-pk
+  - dbt_utils.unique_combination_of_columns:
+      # Currently, geo_code should always be geom and there should only be one wissensstand
+      # Also, indicator should already be selected.
+      combination_of_columns: ['geo_value', 'period_ref']
+
+x-tests-intm-table-statatlas-cols: &tests-intm-table-statatlas-cols
+  - dbt_expectations.expect_table_columns_to_match_ordered_list:
+      column_list:
+        - indicator_id
+        - geo_code
+        - geo_value
+        - knowledge_code
+        - knowledge_date
+        - period_type
+        - period_code
+        - period_ref_from
+        - period_ref
+        - indicator_value
+        - source
+
+x-tests-intm-table-statatlas-rows: &tests-intm-table-statatlas-rows
+  - dbt_expectations.expect_table_row_count_to_be_between:
+      min_value: 2000 # more than 2000 municipalities
+      group_by: ['period_ref']
+
+x-tests-intm-table-statatlas-rowsmin: &tests-intm-table-statatlas-rowsmin
+  - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+
+
+models:
+  # ---------------------------------------------------------------------------
+  - name: intm_ktzh_gp_bevoelkerung
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 1
+        period_type: duedate
+        period_code: year
+    tests:
+      - <<: *tests-intm-table-gp
+
+  # ---------------------------------------------------------------------------
+  - name: intm_ktzh_gp_auslaenderanteil
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 2
+        period_type: duedate
+        period_code: year
+    tests:
+      - <<: *tests-intm-table-gp
+
+
+  # Query to search for variable/path combinations:
+  #
+  # select
+  # variable
+  # 	, mother_1_id
+  # 	, mother_1_name
+  # 	, mother_2_id
+  # 	, mother_2_name
+  # 	, mother_3_id
+  # 	, mother_3_name
+  # 	, mother_4_id
+  # 	, mother_4_name
+  # 	, count(*) as cnt
+  # 	, count(distinct geo_id) dist_geo_id
+  # 	, min(period_ref)
+  # 	, max(period_ref)
+  # from snapshots.snap_bfs_statatlas
+  # where
+  # 	geom_code = 'polg'
+  # 	AND variable ~ '^Anzahl Einwohner/innen'
+  # group by 1, 2, 3, 4, 5, 6, 7, 8, 9
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_einwohner_staendig
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 3
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Einwohner/innen'
+        path_regex:
+          - '^_?\d+_5124_5122_5121_?$'  # Historische Statistik / 01 - Bevoelkerung / Bevoelkerungsdichte 1850-2000 - Gesamtflaeche
+          - '^_?\d+_72_71_70_?$'        # 01 - Bevoelkerung / Bevoelkerungsstand / Stand
+        distinct_rows: true
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_versiegelte_flaeche_anteil
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 4
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der versiegelten Flächen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_geburtenueberschuss
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 5
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Geburten.?berschuss$'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_wanderungssaldo_p1000
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 5
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Differenz von Zu\- und Wegzügen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_int_wanderungssaldo_p1000
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 7
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Differenz aus Ein\- und Auswanderungen pro 1[ ]?000'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_binnen_wanderungssaldo_p1000
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 8
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Differenz aus Zu\- und Wegz.?gen von.*andere[n]? Regionen der Schweiz'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bevoelkerungsdichte_gesamt
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 9
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Einwohner.*pro km.*Gesamt'
+        path_regex:
+          - '^_?\d+_75_3501_70_?$'  # 01 - Bevoelkerung / Bevoelkerungsdichte / Gesamtflaeche
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bevoelkerungsdichte_produktiv
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 10
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Einwohner.*pro km.*Produktivfl.+che'
+        path_regex:
+          - '^_?\d+_3002_3501_70_?$'  # 01 - Bevoelkerung / Bevoelkerungsdichte / Produktivflaeche
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_jugendquotient
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 11
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20 bis 64 Jahren'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_altersquotient
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 12
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '(Personen im Alter von 65 oder mehr Jahren|65-Jährige und Ältere) pro 100 Personen im Alter von 20-64 Jahren'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_greyingindex
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 13
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '(Personen im Alter von 80 oder mehr Jahren|80-Jährige und Ältere) pro.*65(-| bis )79'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_auslaenderanteil_staendig
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 14
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der ständigen ausländischen Bevölkerung.*gesamten ständigen Wohnbevölkerung'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_auslaenderanteil_deutsche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 15
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der (Wohnbev.+lkerung mit )?deutsche.+ Staatsangeh.*rig(en|keit) an der gesamten st.?ndigen'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_auslaenderanteil_franzoesisch
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 16
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der (Wohnbev.+lkerung mit )?franz.?sische.+ Staatsangeh.*rig(en|keit) an der gesamten st.?ndigen'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_auslaenderanteil_europaeisch
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 17
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der (Staatsangeh.+rigen|Wohnbevölkerung mit Staatsangehörigkeit) eines EU-Mitgliedsstaates.+ an der gesamten st.?ndigen'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_geburten
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 18
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Lebendgeburten pro 1.?000'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_heiraten
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 19
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Heiraten pro 1.?000'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_heiraten_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 58
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Heiraten'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_scheidungen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 20
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Scheidungen pro 1.?000'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_scheidungen_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 57
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Scheidungen$'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_todesfaelle
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 21
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Todesf.?lle pro 1.?000'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_todesfaelle_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 59
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Todesfälle$'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_einbuergerungen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 22
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Rohe Einb.?rgerungsziffer.?'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_haushalt_1pax
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 23
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der Einpersonenhaushalte am Total der Privathaushalte.*$'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_haushalt_2pax
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 24
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der Zweipersonenhaushalte am Total der Privataushalte.*$'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_haushalt_3pax
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 25
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der Dreipersonenhaushalte am Total der Privataushalte.*$'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_haushalt_4pax
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 26
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der Vierpersonenhaushalte am Total der Privathaushalte.*$'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_haushalt_5pluspax
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 27
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der Haushalte mit 5 oder mehr Personen am Total der Privathaushalte.*$'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_haushaltsgroesse
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 28
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Durchschnittliche Haushaltsgrösse.*$'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_siedlungsflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 29
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der Siedlungsflächen.? an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_gebaeudeareal_gesamt
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 30
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil des Gebäudeareals.? an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_industrieareal
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 31
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil des Industrie- und Gewerbeareals.? an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_verkehrsflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 32
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der Verkehrsflächen.? an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_landwirtschaftsflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 33
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der Landwirtschaftsflächen.? an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_waldflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 34
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der bestockten Flächen\* \(Wald und Gehölze\) an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_unproduktivflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 35
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der unproduktiven Flächen\* an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_kuenstlich_angelegt
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 36
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der künstlich angelegten Flächen\* an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_vegetationslose_flaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 37
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der vegetationslosen Flächen\* \(Fels, Geröll, Lockergestein\) an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_wasserflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 38
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der Wasser- und Feuchtflächen\* \(Wasser, Gletscher, Nassstandorte\) an der Gesamtfläche'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_arbeitsstaetten_sektor1
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 39
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Zahl der Arbeitsstätten im 1\. Wirtschaftssektor'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_arbeitsstaetten_sektor2
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 40
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Zahl der Arbeitsstätten im 2\. Wirtschaftssektor'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_arbeitsstaetten_sektor3
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 41
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Zahl der Arbeitsstätten im 3\. Wirtschaftssektor'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_beschaeftigte_sektor1
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 42
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Zahl der Beschäftigten im 1\. Wirtschaftssektor'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_beschaeftigte_sektor2
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 43
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Zahl der Beschäftigten im 2\. Wirtschaftssektor'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_beschaeftigte_sektor3
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 44
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Zahl der Beschäftigten im 3\. Wirtschaftssektor'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_neu_unternehmen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 45
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl der im Referenzjahr neu gegründeten Unternehmen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_neu_arbeitsplaetze
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 46
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl der im Referenzjahr in neuen Unternehmen entstandenen Arbeitsplätze'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bestand_unternehmen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 47
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl aktiver Unternehmen im Referenzjahr'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bestand_arbeitsplaetze
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 48
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl Beschäftigte in aktiven Unternehmen im Referenzjahr'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_schliessung_unternehmen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 49
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl geschlossener Unternehmen im Referenzjahr'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_schliessung_arbeitsplaetze
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 50
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl verlorene Stellen durch Unternehmensschliessungen im Referenzjahr'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bau_gebaeude
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 51
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Neu erstellte Gebäude mit Wohnungen pro 1.?000 Einwohner'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+        distinct_rows: true
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bau_gebaeude_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 60
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'neu erstellte Gebäude mit Wohnungen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bau_wohnung
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 52
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Neu erstellte Wohnungen pro 1.?000 Einwohner'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bau_wohnung_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 61
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'neu erstellte Wohnungen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_efh
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 53
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Einfamilienhäuser'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_zi34
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 54
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil 3-4 Zimmer-Wohnungen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_lwz
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 55
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil leer stehender Wohnungen am Gesamtwohnungsbestand'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_bewohner_efh
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 56
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Bewohner\/innen in Einfamilienhäusern'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_geb_energiequelle
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 63
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Dominierende Energiequelle'
+        path_regex:
+          - '^_?\d+_17196_17189_17188_169_?$'  # 09 - Bau / Energie / Gebaeude / Dominierende Energiequelle
+        value_col: desc_val
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_geb_heizoel
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 64
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Gebäude mit Heizöl'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_geb_gas
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 65
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Gebäude mit Gas'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_geb_waermepumpe
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 66
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Gebäude mit W.rmepumpe'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_whg_energiequelle
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 67
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Dominierende Energiequelle'
+        path_regex:
+          - '^_?\d+_17205_17198_17188_169_?$'  # 09 - Bau / Energie / Wohnungen / Dominierende Energiequelle
+        value_col: desc_val
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_whg_heizoel
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 68
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Wohnungen mit Heizöl'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_whg_gas
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 69
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Wohnungen mit Gas'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_whg_waermepumpe
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 70
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil Wohnungen mit W.rmepumpe'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_elektroautos_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 71
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl der rein elektrischen Personenwagen'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_elektroautos_anteil
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 72
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anteil der rein elektrischen Fahrzeuge am Personenwagenbestand'
+        # No path_regex needed, only one path (witout year) available
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_pendler_bilanz
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 73
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Bilanz der Zu- und Wegpendler'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_pendler_saldo
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 74
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Pendlersaldo'
+        # No path_regex needed, only one path (witout year) available
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_sozialhilfe_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 75
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Unterstützte Personen'
+        path_regex:
+          - '^_?\d+_112_7281_7263_?$'  # 13 - Soziale Sicherheit / Sozialleistungen / Sozialhilfebeziehende
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_sozialhilfe_quote
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 76
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Sozialhilfequote'
+        path_regex:
+          - '^_?\d+_112_7281_7263_?$'  # 13 - Soziale Sicherheit / Sozialleistungen / Sozialhilfebeziehende
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_museen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 77
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Anzahl Museen'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_biblio
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 78
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Bibliotheken$'
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_biblio_100k
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 79
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Bibliotheken pro'
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_kinos
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 80
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Kinos$'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_kinosaele
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 81
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Kinos.le$'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_kinosaele_3d
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 82
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Kinos.le$'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_kinokomplexe
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 83
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Kinokomplexe'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_multiplexkino
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 84
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Multiplexkino'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_kino_sitzplaetze
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 85
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anzahl Kino-Sitzplätze$'
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_arbeitsstaetten_kultur
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 86
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Arbeitsstätten der Kulturwirtschaft'
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_beschaeftigte_kultur
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 87
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Beschäftigte der Kulturwirtschaft'
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_tax_reineinkommen_steuerpflichtig
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 88
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Reineinkommen pro Steuerpflichtigem/-r, in Franken'
+        path_regex:
+          - '^_?\d+_9161_8282_8281_?$'  # 18 - Oeffentliche Finanzen / Steuern / Durch. Reineinkommen
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_tax_reineinkommen_einwohner
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 89
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Reineinkommen pro Einwohner'
+        path_regex:
+          - '^_?\d+_9161_8282_8281_?$'  # 18 - Oeffentliche Finanzen / Steuern / Durch. Reineinkommen
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_tax_steuerbar_steuerpflichtig
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 90
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Steuerbares Einkommen pro Steuerpflichtigem/-r'
+        path_regex:
+          - '^_?\d+_9164_8282_8281_?$'  # 18 - Oeffentliche Finanzen / Steuern / Durch. steuerbares Einkommen
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_tax_steuerbar_einwohner
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 91
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Steuerbares Einkommen pro Einwohner/-in'
+        path_regex:
+          - '^_?\d+_9164_8282_8281_?$'  # 18 - Oeffentliche Finanzen / Steuern / Durch. steuerbares Einkommen
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_tax_reineinkommen_total
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 92
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Reineinkommen, in Mio. Franken'
+        path_regex:
+          - '^_?\d+_9161_8282_8281_?$'  # 18 - Oeffentliche Finanzen / Steuern / Durch. Reineinkommen
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+        distinct_rows: true
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_tax_steuerbar_total
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      odapi:
+        indicator: 93
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: 'Steuerbares Einkommen, in Mio. Franken'
+        path_regex:
+          - '^_?\d+_9164_8282_8281_?$'  # 18 - Oeffentliche Finanzen / Steuern / Steuerbares Einkommen
+        distinct_rows: true
+        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+

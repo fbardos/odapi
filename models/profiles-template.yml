@@ -1,0 +1,12 @@
+homelab_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: TEMPLATE_TYPE
+      host: TEMPLATE_HOST
+      user: TEMPLATE_USER
+      password: TEMPLATE_PASSWORD
+      port: TEMPLATE_PORT
+      dbname: TEMPLATE_DBNAME
+      schema: TEMPLATE_SCHEMA
+      threads: TEMPLATE_THREADS

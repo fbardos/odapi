@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: src
+    database: data
+    schema: src
+    tables:
+      - name: bfs_statatlas
+      - name: ktzh_gp_bevoelkerung
+      - name: ktzh_gp_auslaenderanteil
+      - name: ktzh_gp_avg_haushaltsgroesse
+  - name: ktzh_gwr
+    database: data
+    schema: src
+    tables:
+      - name: ktzh_gwr_apartments
+      - name: ktzh_gwr_houses
+      - name: ktzh_gwr_entrance
+  - name: ktzh_metadata
+    database: data
+    schema: src
+    tables:
+      - name: ktzh_ogd_metadata
+      - name: ktzh_downloads_dataset
+
+groups:
+  - name: staging
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: snapshots
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: intermediate
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: marts
+    owner:
+      name: fbardos
+      github: fbardos
