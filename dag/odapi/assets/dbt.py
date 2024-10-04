@@ -21,7 +21,6 @@ dbt = DbtCliResource(project_dir=dbt_project)
 
 if os.getenv('DAGSTER_DBT_PARSE_PROJECT_ON_LOAD'):
     logger = get_dagster_logger()
-    print('PRINT: Parsing dbt project, because ENV DAGSTER_DBT_PARSE_PROJECT_ON_LOAD is set...')
     logger.info('Parsing dbt project, because ENV DAGSTER_DBT_PARSE_PROJECT_ON_LOAD is set...')
     dbt_manifest_path = (
         dbt.cli(
@@ -35,13 +34,10 @@ else:
     assert dbt_path is not None
     dbt_manifest_path = Path(dbt_path).joinpath("target", "manifest.json")
 
-print(f'PRINT: dbt_manifest_path: {dbt_manifest_path}')
-
 
 @dbt_assets(
     manifest=dbt_manifest_path,
 )
 def assets_homelab_dbt(context: AssetExecutionContext, dbt: DbtCliResource):
-    print('PRINT: Running dbt build...')
     yield from dbt.cli(["build"], context=context).stream()
 
