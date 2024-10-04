@@ -25,7 +25,7 @@ if os.getenv('DAGSTER_DBT_PARSE_PROJECT_ON_LOAD'):
     (
         dbt.cli(
             ["--quiet", "parse"],
-            target_path=Path("target")
+            target_path=dbt_project.manifest_path.parent,
         )
         .wait()
         .target_path.joinpath('manifest.json')
