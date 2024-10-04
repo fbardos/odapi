@@ -2,6 +2,9 @@
 .vim
 .env
 
+# ODAPI specifig
+**/.deploy/
+
 # DBT specific
 models/logs/
 models/target/
