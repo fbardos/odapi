@@ -32,7 +32,7 @@ if os.getenv('DAGSTER_DBT_PARSE_PROJECT_ON_LOAD'):
     )
 
 
-@dbt_assets(manifest=dbt_project.manifest_path)
+@dbt_assets(manifest=Path('target', 'manifest.json'))
 def assets_homelab_dbt(context: AssetExecutionContext, dbt: DbtCliResource):
     yield from dbt.cli(["build"], context=context).stream()
 
