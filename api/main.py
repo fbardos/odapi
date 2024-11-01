@@ -23,6 +23,7 @@ from fastapi_pagination import add_pagination
 
 app = FastAPI(
     title='ODAPI - Open Data API for Switzerland',
+    docs_url='/',
     summary='API for accessing different indicators from different geographic regions in Switzerland.',
     description=textwrap.dedent("""
         ## IMPORTANT
