@@ -39,7 +39,7 @@ services:
     ports:
       # Port must be external for host, because Airbyte spawns docker containers
       # when doing an EL-Task. These containers are not within the network odapi_public.
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:4003:5432"
     networks:
       - odapi_private
       - odapi_public
@@ -61,8 +61,8 @@ services:
       MINIO_ROOT_USER: ${MINIO__ROOT__USER}
       MINIO_ROOT_PASSWORD: ${MINIO__ROOT__PASSWORD}
     ports:
-      - 40080:9000
-      - 9090:9090
+      - 4001:9000
+      - 4002:9090
     networks:
       - odapi_private
       - odapi_public
@@ -80,7 +80,7 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     ports:
-      - "127.0.0.1:41414:6379"
+      - "127.0.0.1:4004:6379"
     networks:
       - odapi_private
       - odapi_public
@@ -94,7 +94,7 @@ services:
     image: dpage/pgadmin4
     restart: *restart-policy
     ports:
-      - "8888:80"
+      - "4005:80"
     profiles:
       - dev
       - prod
@@ -118,15 +118,18 @@ services:
       secrets:
         - git_token
     restart: *restart-policy
+    init: true
     profiles:
       - prod
     environment:
       - DAGSTER__PSQL_META__HOST=${DAGSTER__PSQL_META__HOST}
       - DAGSTER__PSQL_META__DB=${DAGSTER__PSQL_META__DB}
       - DAGSTER__PSQL_META__USER=${DAGSTER__PSQL_META__USER}
-      - DAGSTER__PSQL_META__PASSWORD=${DAGSTER__PSQL_META__PASSWORD}
+      - DAGSTER__PSQL_META__PASS=${DAGSTER__PSQL_META__PASS}
+    expose:
+      - "3000"
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:4006:3000"
     volumes:
       - /tmp/io_manager_storage:/tmp/io_manager_storage
     networks:
@@ -142,12 +145,13 @@ services:
       secrets:
         - git_token
     restart: *restart-policy
+    init: true
     entrypoint:
       - conda
       - run
       - --no-capture-output
-      - n
-      - wintidbt
+      - -n
+      - odapi
       - dagster-daemon
       - run
     profiles:
@@ -156,9 +160,7 @@ services:
       - DAGSTER__PSQL_META__HOST=${DAGSTER__PSQL_META__HOST}
       - DAGSTER__PSQL_META__DB=${DAGSTER__PSQL_META__DB}
       - DAGSTER__PSQL_META__USER=${DAGSTER__PSQL_META__USER}
-      - DAGSTER__PSQL_META__PASSWORD=${DAGSTER__PSQL_META__PASSWORD}
-    ports:
-      - "127.0.0.1:3000:3000"
+      - DAGSTER__PSQL_META__PASS=${DAGSTER__PSQL_META__PASS}
     volumes:
       - /tmp/io_manager_storage:/tmp/io_manager_storage
     networks:
@@ -186,12 +188,16 @@ services:
     depends_on:
       - data-postgis
 
-
 # #######################################################################
 # VOLUMES
 # #######################################################################
 volumes:
   data-minio:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/storagebox/docker/volumes/odapi-data-minio/_data
   data-postgis:
   utils-pgadmin:
 

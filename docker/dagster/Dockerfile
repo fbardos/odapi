@@ -47,6 +47,9 @@ RUN --mount=type=secret,id=git_token,target=/run/secrets/git_token \
 # first level keys and will them fill during prepare-and-package.
 COPY ./docker/.deploy/manifest.json /opt/dbt/target/
 
+# Overwrite dagster.yaml again, will otherise not use psql/minio
+COPY ./docker/dagster/dagster.yaml /opt/dagster/app/
+
 # Change shell
 SHELL ["conda", "run", "-n", "odapi", "/bin/bash", "-c"]
 RUN pip install --no-dependencies /opt/dagster/app

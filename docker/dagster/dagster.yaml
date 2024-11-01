@@ -25,49 +25,53 @@ compute_logs:
   module: dagster_aws.s3.compute_log_manager
   class: S3ComputeLogManager
   config:
-    bucket:
+    endpoint_url:
       env: MINIO__ENDPOINT_URL
-    prefix:
+    bucket:
       env: MINIO__COMPUTELOG_BUCKET
+    prefix: log
 
 run_storage:
   module: dagster_postgres.run_storage
   class: PostgresRunStorage
   config:
-    username:
-      env: DAGSTER__PSQL_META__USER
-    password:
-      env: DAGSTER__PSQL_META__PASS
-    hostname:
-      env: DAGSTER__PSQL_META__HOST
-    db_name:
-      env: DAGSTER__PSQL_META__DB
-    port: 5432
+    postgres_db:
+      username:
+        env: DAGSTER__PSQL_META__USER
+      password:
+        env: DAGSTER__PSQL_META__PASS
+      hostname:
+        env: DAGSTER__PSQL_META__HOST
+      db_name:
+        env: DAGSTER__PSQL_META__DB
+      port: 5432
 
 schedule_storage:
   module: dagster_postgres.schedule_storage
   class: PostgresScheduleStorage
   config:
-    username:
-      env: DAGSTER__PSQL_META__USER
-    password:
-      env: DAGSTER__PSQL_META__PASS
-    hostname:
-      env: DAGSTER__PSQL_META__HOST
-    db_name:
-      env: DAGSTER__PSQL_META__DB
-    port: 5432
+    postgres_db:
+      username:
+        env: DAGSTER__PSQL_META__USER
+      password:
+        env: DAGSTER__PSQL_META__PASS
+      hostname:
+        env: DAGSTER__PSQL_META__HOST
+      db_name:
+        env: DAGSTER__PSQL_META__DB
+      port: 5432
 
 event_log_storage:
   module: dagster_postgres.event_log
   class: PostgresEventLogStorage
   config:
-    username:
-      env: DAGSTER__PSQL_META__USER
-    password:
-      env: DAGSTER__PSQL_META__PASS
-    hostname:
-      env: DAGSTER__PSQL_META__HOST
-    db_name:
-      env: DAGSTER__PSQL_META__DB
-    port: 5432
+    postgres_db:
+      username:
+        env: DAGSTER__PSQL_META__USER
+      password:
+        env: DAGSTER__PSQL_META__PASS
+      hostname:
+        env: DAGSTER__PSQL_META__HOST
+      db_name:
+        env: DAGSTER__PSQL_META__DB
+      port: 5432

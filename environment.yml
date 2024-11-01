@@ -43,8 +43,11 @@ dependencies:
     - docker
     - dbt-core==1.8.2  # Dagster not compatible with dbt-core 1.8.4
     - dbt-postgres
-    - dagster-dbt==0.24.5
+    - dagster==1.8.5
     - dagster-webserver==1.8.5
+    - dagster-dbt==0.24.5
+    - dagster-postgres==0.24.5
+    - dagster-aws==0.24.5
     - gtfs-realtime-bindings
     - protobuf3-to-dict
     - "fastapi[standard]"
