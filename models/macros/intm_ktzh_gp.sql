@@ -49,7 +49,8 @@
             , '{{ period_code }}' as period_code
             , NULL::DATE as period_ref_from
             , to_date(concat(src.indikator_jahr, '-12-31'), 'yyyy-mm-dd') as period_ref
-            , src.indikator_value as indicator_value
+            , src.indikator_value as indicator_value_numeric
+            , NULL::TEXT as indicator_value_text
             , 'Gemeindeportrait des Kantons Zürich' as source
         from src
     )

@@ -1,6 +1,6 @@
 -- Convention: one mart per source?
 {% macro intm_bfs_statatlas() %}
-    /* 
+    /*
 
     Generates INTM table for Gemeindeportrait.
     
@@ -36,6 +36,7 @@
         {% set period_ref_transformation = config.require('intm_statatlas').get('period_ref_transformation', none) %}
         {% set distinct_rows = config.require('intm_statatlas').get('distinct_rows', none) %}
         {% set value_col = config.require('intm_statatlas').get('value_col', 'value') %}
+        {% set value_col_is_text = config.require('intm_statatlas').get('value_col_is_text', false) %}
     {% endif %}
 
 with src as (
@@ -83,7 +84,13 @@ with src as (
         {% else %}
             , period_ref::DATE as period_ref
         {% endif %}
-        , {{ value_col }} as indicator_value
+        {% if value_col_is_text %}
+            , NULL::NUMERIC as indicator_value_numeric
+            , {{ value_col }}::TEXT as indicator_value_text
+        {% else %}
+            , {{ value_col }}::NUMERIC as indicator_value_numeric
+            , NULL::TEXT as indicator_value_text
+        {% endif %}
         , source
     from filter
 )
