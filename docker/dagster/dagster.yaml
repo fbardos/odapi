@@ -1,0 +1,73 @@
+telemetry:
+  enabled: false
+
+scheduler:
+  module: dagster.core.scheduler
+  class: DagsterDaemonScheduler
+
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    tag_concurrency_limits:
+      - key: 'single_run_per_value'
+        value:
+          applyLimitPerUniqueValue: true
+        limit: 1
+
+local_artifact_storage:
+  module: dagster.core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: "/opt/dagster/local/"
+
+compute_logs:
+  module: dagster_aws.s3.compute_log_manager
+  class: S3ComputeLogManager
+  config:
+    bucket:
+      env: MINIO__ENDPOINT_URL
+    prefix:
+      env: MINIO__COMPUTELOG_BUCKET
+
+run_storage:
+  module: dagster_postgres.run_storage
+  class: PostgresRunStorage
+  config:
+    username:
+      env: DAGSTER__PSQL_META__USER
+    password:
+      env: DAGSTER__PSQL_META__PASS
+    hostname:
+      env: DAGSTER__PSQL_META__HOST
+    db_name:
+      env: DAGSTER__PSQL_META__DB
+    port: 5432
+
+schedule_storage:
+  module: dagster_postgres.schedule_storage
+  class: PostgresScheduleStorage
+  config:
+    username:
+      env: DAGSTER__PSQL_META__USER
+    password:
+      env: DAGSTER__PSQL_META__PASS
+    hostname:
+      env: DAGSTER__PSQL_META__HOST
+    db_name:
+      env: DAGSTER__PSQL_META__DB
+    port: 5432
+
+event_log_storage:
+  module: dagster_postgres.event_log
+  class: PostgresEventLogStorage
+  config:
+    username:
+      env: DAGSTER__PSQL_META__USER
+    password:
+      env: DAGSTER__PSQL_META__PASS
+    hostname:
+      env: DAGSTER__PSQL_META__HOST
+    db_name:
+      env: DAGSTER__PSQL_META__DB
+    port: 5432

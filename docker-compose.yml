@@ -1,0 +1,210 @@
+# #######################################################################
+# Config snippets
+# #######################################################################
+x-restart-policy: &restart-policy unless-stopped
+
+x-logging: &default-logging
+  options:
+    max-size: '100m'
+    max-file: '3'
+
+x-logging-extended: &extended-logging
+  options:
+    max-size: '1000m'
+    max-file: '3'
+
+
+services:
+
+  # #######################################################################
+  # Data services
+  # #######################################################################
+  data-postgis:
+    build:
+      context: docker/postgis/
+      args:
+          PG_MAJOR: "${STORAGE__PSQL__MAJOR}"
+          POSTGIS_MAJOR: "${STORAGE__POSTGIS__MAJOR}"
+    restart: *restart-policy
+    profiles:
+      - dev
+      - prod
+    environment:
+      POSTGRES_USER: ${STORAGE__PSQL__USER}
+      POSTGRES_PASSWORD: ${STORAGE__PSQL__PASSWORD}
+      POSTGRES_DB: ${STORAGE__PSQL__DB}
+    volumes:
+      - data-postgis:/var/lib/postgresql/data
+    logging: *extended-logging
+    ports:
+      # Port must be external for host, because Airbyte spawns docker containers
+      # when doing an EL-Task. These containers are not within the network odapi_public.
+      - "127.0.0.1:5432:5432"
+    networks:
+      - odapi_private
+      - odapi_public
+    healthcheck:
+      test: pg_isready -U ${STORAGE__PSQL__USER} || exit 1
+      interval: 5s
+      retries: 5
+
+
+  data-minio:
+    image: minio/minio
+    restart: *restart-policy
+    volumes:
+      - data-minio:/data
+    profiles:
+      - dev
+      - prod
+    environment:
+      MINIO_ROOT_USER: ${MINIO__ROOT__USER}
+      MINIO_ROOT_PASSWORD: ${MINIO__ROOT__PASSWORD}
+    ports:
+      - 40080:9000
+      - 9090:9090
+    networks:
+      - odapi_private
+      - odapi_public
+    logging: *extended-logging
+    command: server /data --console-address ":9090"
+
+
+  data-redis:
+    image: redis
+    restart: *restart-policy
+    logging: *extended-logging
+    profiles:
+      - dev
+      - prod
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "127.0.0.1:41414:6379"
+    networks:
+      - odapi_private
+      - odapi_public
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+
+  # #######################################################################
+  # UTILS
+  # #######################################################################
+  utils-pgadmin:
+    image: dpage/pgadmin4
+    restart: *restart-policy
+    ports:
+      - "8888:80"
+    profiles:
+      - dev
+      - prod
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN__DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN__DEFAULT_PASSWORD}
+    volumes:
+      - utils-pgadmin:/var/lib/pgadmin
+    networks:
+      - odapi_public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # #######################################################################
+  # DAGSTER
+  # #######################################################################
+  dagster-webserver:
+    build:
+      context: .
+      dockerfile: docker/dagster/Dockerfile
+      secrets:
+        - git_token
+    restart: *restart-policy
+    profiles:
+      - prod
+    environment:
+      - DAGSTER__PSQL_META__HOST=${DAGSTER__PSQL_META__HOST}
+      - DAGSTER__PSQL_META__DB=${DAGSTER__PSQL_META__DB}
+      - DAGSTER__PSQL_META__USER=${DAGSTER__PSQL_META__USER}
+      - DAGSTER__PSQL_META__PASSWORD=${DAGSTER__PSQL_META__PASSWORD}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      odapi_public:
+      odapi_private:
+    depends_on:
+      - data-postgis
+
+  dagster-daemon:
+    build:
+      context: .
+      dockerfile: docker/dagster/Dockerfile
+      secrets:
+        - git_token
+    restart: *restart-policy
+    entrypoint:
+      - conda
+      - run
+      - --no-capture-output
+      - n
+      - wintidbt
+      - dagster-daemon
+      - run
+    profiles:
+      - prod
+    environment:
+      - DAGSTER__PSQL_META__HOST=${DAGSTER__PSQL_META__HOST}
+      - DAGSTER__PSQL_META__DB=${DAGSTER__PSQL_META__DB}
+      - DAGSTER__PSQL_META__USER=${DAGSTER__PSQL_META__USER}
+      - DAGSTER__PSQL_META__PASSWORD=${DAGSTER__PSQL_META__PASSWORD}
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      odapi_public:
+      odapi_private:
+    depends_on:
+      - data-postgis
+  
+  # #######################################################################
+  # API
+  # #######################################################################
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    restart: *restart-policy
+    profiles:
+      - dev
+      - prod
+    ports:
+      - "8881:80"
+    networks:
+      odapi_public:
+      odapi_private:
+    depends_on:
+      - data-postgis
+
+
+# #######################################################################
+# VOLUMES
+# #######################################################################
+volumes:
+  data-minio:
+  data-postgis:
+  utils-pgadmin:
+
+# #######################################################################
+# Networks
+# #######################################################################
+networks:
+  odapi_public:
+  odapi_private:
+
+# #######################################################################
+# Secrets
+# #######################################################################
+secrets:
+  git_token:
+    file: ./docker/.deploy/git_token.txt
