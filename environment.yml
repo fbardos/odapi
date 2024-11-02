@@ -54,4 +54,5 @@ dependencies:
     - fastapi-pagination
     - pyarrow
     - jq
+    - OWSLib
 

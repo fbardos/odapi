@@ -8,6 +8,7 @@ from database import get_db
 from database import get_session
 from database import table__mart_ogd_api
 from database import table__seed_indicators
+from database import table__dim_gemeinde
 from sqlalchemy.engine import Engine
 from sqlalchemy import select
 from sqlalchemy import Table
@@ -36,9 +37,9 @@ app = FastAPI(
         Next:
 
         * `DONE` Add indicators from BFS STATATLAS
-        * `TODO` Provide historized municipal reference
+        * `DONE` Provide historized municipal reference
         * `TODO` Add other geographic levels like cantons and districts
-        * `TODO`: Make API async.
+        * `TODO` Make API async.
 
         Later:
 
@@ -78,66 +79,75 @@ def get_all_available_indicators(db: Engine = Depends(get_db)):
 )
 def get_indicator(
         request: Request,
-        indicator_id: int = Query(None, description='Select an indicator. If you want to check all possible indicators run path /indicator'),
+        indicator_id: int = Query(..., description='Select an indicator. If you want to check all possible indicators run path /indicator'),
         skip: int = Query(0, description='Pagination: Skip the first n rows.'),
-        limit: int = Query(1_000, description='Pagination: Limit the size of one page.'),
+        limit: int = Query(100, description='Pagination: Limit the size of one page.'),
         disable_pagination: bool = Query(False, description='You can completely disable pagination by setting param `disable_pagination==true`. Please use responsibly.'),
-        joins: bool = Query(True, description='Join other tables like municipality or indicator information.'),
+        join_indicator: bool = Query(True, description='Joins information about the indicator.'),
+        join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
+        join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
         db: Session = Depends(get_session)
     ):
 
     table = table__mart_ogd_api
     table_indicator = table__seed_indicators
-    base_query = (
-        db
-        .query(table)
+    table_gemeinde = table__dim_gemeinde
+
+    query = (
+        select(
+            table.c.indicator_id,
+            table.c.geo_code,
+            table.c.geo_value,
+            table.c.knowledge_code,
+            table.c.knowledge_date,
+            table.c.period_type,
+            table.c.period_code,
+            table.c.period_ref_from,
+            table.c.period_ref,
+            table.c.indicator_value_numeric,
+            table.c.indicator_value_text,
+            table.c.source,
+        )
         .where(table.c.indicator_id == indicator_id)
     )
-    if disable_pagination:
-        rows = base_query.all()
-    else:
-        rows = (
-            base_query
-            .offset(skip)
-            .limit(limit)
-            .all()
+    if join_indicator:
+        query = (
+            query
+            .join(table_indicator, table.c.indicator_id == table_indicator.c.indicator_id).add_columns(
+                table_indicator.c.indicator_name,
+                table_indicator.c.topic_1,
+                table_indicator.c.topic_2,
+                table_indicator.c.topic_3,
+                table_indicator.c.topic_4,
+                table_indicator.c.indicator_unit,
+                table_indicator.c.indicator_description,
+            )
         )
-
-    indicator = (
-        db
-        .query(table_indicator)
-        .where(table_indicator.c.indicator_id == indicator_id)
-        .first()
-    )
-
+    if join_geo or join_geo_wkt:
+        query = query.join(table_gemeinde, table.c.geo_value == table_gemeinde.c.gemeinde_bfs_id)
+        if join_geo:
+            query = query.add_columns(table_gemeinde.c.gemeinde_name.label('geo_name'))
+        if join_geo_wkt:
+            query = query.add_columns(table_gemeinde.c.geometry_wkt.label('geo_wkt'))
+    if not disable_pagination:
+        query = query.offset(skip).limit(limit)
+    rows = db.execute(query).all()
     total = (
         db
         .query(table)
         .where(table.c.indicator_id == indicator_id)
         .count()
     )
-
-    return_data = [dict(row) for row in rows]
-
-    if joins:
-
-        # Add inidcator information to each row:
-        for row in return_data:
-            row['indicator'] = dict(indicator)
-
-    # if output_format == 'json':
     if request.url.path == '/indicator':
         return {
             'total': total,
             'skip': skip,
             'limit': limit,
-            'data': return_data
+            'data': rows,
         }
     elif request.url.path == '/indicator/csv':
-    # elif output_format == 'csv':
-        # df = pd.DataFrame(rows)
         df = pd.DataFrame.from_dict(
-            data=return_data,
+            data=[dict(row) for row in rows],
             orient='columns',
         )
         buffer = io.StringIO()
@@ -162,29 +172,38 @@ def list_all_indicators_for_one_geometry(
         request: Request,
         geo_code: Literal['polg'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`.'),
         geo_value: int = Query(None, description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
-        joins: bool = Query(True, description='Join other tables like municipality or indicator information.'),
-        period_ref: Optional[str] = Query(..., description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
+        join_indicator: bool = Query(True, description='Joins information about the indicator.'),
+        join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
+        join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
+        period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
         db: Session = Depends(get_session)
     ):
 
     table = table__mart_ogd_api
     table_indicator = table__seed_indicators
-    if joins:
+    table_gemeinde = table__dim_gemeinde
+    query = (
+        select(
+            table.c.indicator_id,
+            table.c.geo_code,
+            table.c.geo_value,
+            table.c.knowledge_code,
+            table.c.knowledge_date,
+            table.c.period_type,
+            table.c.period_code,
+            table.c.period_ref_from,
+            table.c.period_ref,
+            table.c.indicator_value_numeric,
+            table.c.indicator_value_text,
+            table.c.source,
+        )
+        .where(table.c.geo_code == geo_code)
+        .where(table.c.geo_value == geo_value)
+    )
+    if join_indicator:
         query = (
-            db
-            .query(
-                table.c.indicator_id,
-                table.c.geo_code,
-                table.c.geo_value,
-                table.c.knowledge_code,
-                table.c.knowledge_date,
-                table.c.period_type,
-                table.c.period_code,
-                table.c.period_ref_from,
-                table.c.period_ref,
-                table.c.indicator_value_numeric,
-                table.c.indicator_value_text,
-                table.c.source,
+            query
+            .join(table_indicator, table.c.indicator_id == table_indicator.c.indicator_id).add_columns(
                 table_indicator.c.indicator_name,
                 table_indicator.c.topic_1,
                 table_indicator.c.topic_2,
@@ -193,33 +212,23 @@ def list_all_indicators_for_one_geometry(
                 table_indicator.c.indicator_unit,
                 table_indicator.c.indicator_description,
             )
-            .where(table.c.geo_code == geo_code)
-            .where(table.c.geo_value == geo_value)
-            .join(table_indicator, table.c.indicator_id == table_indicator.c.indicator_id)
         )
-        if period_ref:
-            query = query.where(table.c.period_ref == period_ref)
-    else:
-        query = (
-            db
-            .query(table)
-            .where(table.c.geo_code == geo_code)
-            .where(table.c.geo_value == geo_value)
-        )
-        if period_ref:
-            query = query.where(table.c.period_ref == period_ref)
-
-    rows = query.all()
-
-    return_data = [dict(row) for row in rows]
-    print(f'RETURN_DATA: {return_data}')
+    if join_geo or join_geo_wkt:
+        query = query.join(table_gemeinde, table.c.geo_value == table_gemeinde.c.gemeinde_bfs_id)
+        if join_geo:
+            query = query.add_columns(table_gemeinde.c.gemeinde_name.label('geo_name'))
+        if join_geo_wkt:
+            query = query.add_columns(table_gemeinde.c.geometry_wkt.label('geo_wkt'))
+    if period_ref:
+        query = query.where(table.c.period_ref == period_ref)
+    rows = db.execute(query).all()
     if request.url.path == '/portrait':
         return {
-            'data': return_data
+            'data': rows
         }
     elif request.url.path == '/portrait/csv':
         df = pd.DataFrame.from_dict(
-            data=return_data,
+            data=[dict(row) for row in rows],
             orient='columns',
         )
         buffer = io.StringIO()

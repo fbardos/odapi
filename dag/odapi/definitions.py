@@ -12,9 +12,13 @@ from odapi.resources.minio.minio import Minio
 from odapi.resources.crypto.fernet import FernetCipher
 from odapi.resources.url.csv import KtzhGemeportraitUrlResource
 from odapi.resources.extract.extract_handler import ExtractHandler
+from odapi.resources.url.geojson import SwissboundariesTill2015
+from odapi.resources.url.gpkg import Swissboundaries
+
 
 import odapi.assets.ktzh.gemportrait as assets_ktzh_gp
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
+import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 
 
 ################################################################################
@@ -54,16 +58,19 @@ defs = Definitions(
             ),
             resource_fernet=FernetCipher(fernet_key=EnvVar('FERNET_KEY')),
         ),
+        'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
+        'geo_swissboundaries_gemeinde': Swissboundaries(),
     },
     jobs=[
         *assets_ktzh_gp.jobs_gp,
         assets_bfs_statatlas.job_statatlas,
+        assets_swissboundaries.job_bfs_swissboundaries,
     ],
     sensors=[
         *assets_ktzh_gp.sensors_gp,
     ],
     schedules=[
         assets_bfs_statatlas.schedule_statatlas,
-
+        assets_swissboundaries.schedule_bfs_swissboundaries,
     ],
 )

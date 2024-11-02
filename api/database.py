@@ -31,4 +31,5 @@ def get_session():
 
 
 table__mart_ogd_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=engine)
+table__dim_gemeinde = Table('dim_gemeinde_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=engine)
 table__seed_indicators = Table('seed_indicator', MetaData(bind=None, schema='dbt'), autoload=True, autoload_with=engine)

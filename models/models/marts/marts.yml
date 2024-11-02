@@ -9,3 +9,11 @@ models:
     config:
       group: *default-group
 
+  # ---------------------------------------------------------------------------
+  - name: dim_gemeinde_latest
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [gemeinde_bfs_id]
+          unique: true
