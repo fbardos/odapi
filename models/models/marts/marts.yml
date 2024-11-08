@@ -17,3 +17,21 @@ models:
       indexes:
         - columns: [gemeinde_bfs_id]
           unique: true
+
+  # ---------------------------------------------------------------------------
+  - name: dim_bezirk_latest
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [bezirk_bfs_id]
+          unique: true
+
+  # ---------------------------------------------------------------------------
+  - name: dim_kanton_latest
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [kanton_bfs_id]
+          unique: true

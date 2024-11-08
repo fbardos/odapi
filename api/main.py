@@ -110,6 +110,12 @@ async def get_indicator(
         tbl_gemeinde = await conn.run_sync(
             lambda conn: Table('dim_gemeinde_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
         )
+        tbl_bezirk = await conn.run_sync(
+            lambda conn: Table('dim_bezirk_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
+        )
+        tbl_kanton = await conn.run_sync(
+            lambda conn: Table('dim_kanton_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
+        )
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -141,9 +147,20 @@ async def get_indicator(
             )
         )
     if join_geo or join_geo_wkt:
-        query = query.join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+        query = (
+            query
+            .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+            .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
+            .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+        )
         if join_geo:
-            query = query.add_columns(tbl_gemeinde.c.gemeinde_name.label('geo_name'))
+            query = query.add_columns(
+                tbl_gemeinde.c.gemeinde_name.label('geo_name'),
+                tbl_bezirk.c.bezirk_bfs_id,
+                tbl_bezirk.c.bezirk_name,
+                tbl_kanton.c.kanton_bfs_id,
+                tbl_kanton.c.kanton_name,
+            )
         if join_geo_wkt:
             query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
     if not disable_pagination:
@@ -208,6 +225,12 @@ async def list_all_indicators_for_one_geometry(
         tbl_gemeinde = await conn.run_sync(
             lambda conn: Table('dim_gemeinde_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
         )
+        tbl_bezirk = await conn.run_sync(
+            lambda conn: Table('dim_bezirk_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
+        )
+        tbl_kanton = await conn.run_sync(
+            lambda conn: Table('dim_kanton_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
+        )
 
     query = (
         select(
@@ -241,9 +264,20 @@ async def list_all_indicators_for_one_geometry(
             )
         )
     if join_geo or join_geo_wkt:
-        query = query.join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+        query = (
+            query
+            .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+            .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
+            .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+        )
         if join_geo:
-            query = query.add_columns(tbl_gemeinde.c.gemeinde_name.label('geo_name'))
+            query = query.add_columns(
+                tbl_gemeinde.c.gemeinde_name.label('geo_name'),
+                tbl_bezirk.c.bezirk_bfs_id,
+                tbl_bezirk.c.bezirk_name,
+                tbl_kanton.c.kanton_bfs_id,
+                tbl_kanton.c.kanton_name,
+            )
         if join_geo_wkt:
             query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
     if period_ref:

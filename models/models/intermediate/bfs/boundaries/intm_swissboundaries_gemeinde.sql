@@ -28,7 +28,7 @@ with time_window_yearly as (
         , bezirksnummer as bezirk_bfs_id
         , kantonsnummer as kanton_bfs_id
         , ST_SetSRID(ST_Force2D(geometry), 2056) as geometry
-    from {{ ref('stgn_swissboundaries') }}
+    from {{ ref('stgn_swissboundaries_gemeinde') }}
 )
 , union_tbl as (
     select *
