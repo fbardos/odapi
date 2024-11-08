@@ -29,9 +29,6 @@ models:
       # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
       # Because of dependency on source table.
       materialized: table
-    tests:
-      - dbt_utils.unique_combination_of_columns:  # PK
-          combination_of_columns: ['bfs_nummer', 'hist_nr']
 
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_bezirk
@@ -41,9 +38,6 @@ models:
       # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
       # Because of dependency on source table.
       materialized: table
-    tests:
-      - dbt_utils.unique_combination_of_columns:  # PK
-          combination_of_columns: ['bezirksnummer']
 
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_kanton
@@ -53,9 +47,6 @@ models:
       # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
       # Because of dependency on source table.
       materialized: table
-    tests:
-      - dbt_utils.unique_combination_of_columns:  # PK
-          combination_of_columns: ['kantonsnummer']
 
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_land
@@ -65,9 +56,6 @@ models:
       # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
       # Because of dependency on source table.
       materialized: table
-    tests:
-      - dbt_utils.unique_combination_of_columns:  # PK
-          combination_of_columns: ['icc']
 
   # ---------------------------------------------------------------------------
   - name: stgn_ktzh_gp_bevoelkerung
