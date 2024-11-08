@@ -11,6 +11,7 @@ from sqlalchemy import Table
 from typing import Optional
 import pandas as pd
 from typing import Literal
+import datetime as dt
 import textwrap
 import os
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -281,7 +282,7 @@ async def list_all_indicators_for_one_geometry(
         if join_geo_wkt:
             query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
     if period_ref:
-        query = query.where(tbl_api.c.period_ref == period_ref)
+        query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
     async with db.connect() as conn:
         res = await conn.execute(query)
     if request.url.path == '/portrait':
