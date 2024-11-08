@@ -38,6 +38,7 @@ dependencies:
   - apache-airflow-providers-amazon
   - jinja2=3.0.3
   - aiohttp
+  - asyncpg
   - pip:
     - redis
     - docker

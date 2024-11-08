@@ -20,7 +20,8 @@ RUN pip install --no-cache-dir \
     "fastapi[standard]" \
     fastapi-pagination \
     uvicorn \
-    "sqlalchemy==1.4" \
+    "sqlalchemy[asyncio]==1.4" \
+    asyncpg \
     python-dotenv \
     psycopg2
 
