@@ -1,29 +1,27 @@
 with src as (
     select *
-    from {{ ref('intm_swissboundaries_gemeinde') }}
+    from {{ ref('intm_swissboundaries_kanton') }}
 )
 -- When a Gemeinde stops to exist, no additional rows
 -- are generated from a given snapshot_date onwards.
-, max_snapshot_per_gemeinde as (
+, max_snapshot_per_kanton as (
     select distinct
-        gemeinde_bfs_id
+        kanton_bfs_id
         , max(snapshot_date) as max_snapshot_date
     from src
-    group by gemeinde_bfs_id
+    group by kanton_bfs_id
 )
 , add_row_for_latest as (
     select distinct
         'latest' as snapshot_code
         , bound.snapshot_date as snapshot_date
-        , bound.gemeinde_bfs_id
-        , bound.gemeinde_hist_bfs_id
-        , bound.gemeinde_name
-        , bound.bezirk_bfs_id
         , bound.kanton_bfs_id
+        , bound.kanton_name
+        , bound.icc
         , bound.geometry
     from src bound
-        join max_snapshot_per_gemeinde maxd on
-            bound.gemeinde_bfs_id = maxd.gemeinde_bfs_id
+        join max_snapshot_per_kanton maxd on
+            bound.kanton_bfs_id = maxd.kanton_bfs_id
             and bound.snapshot_date = maxd.max_snapshot_date
 
 )
@@ -31,11 +29,9 @@ with src as (
     select
         to_char(bound.snapshot_date, 'YYYY-MM-DD') as snapshot_code
         , bound.snapshot_date
-        , bound.gemeinde_bfs_id
-        , bound.gemeinde_hist_bfs_id
-        , bound.gemeinde_name
-        , bound.bezirk_bfs_id
         , bound.kanton_bfs_id
+        , bound.kanton_name
+        , bound.icc
         , bound.geometry
     from src bound
     UNION ALL

@@ -34,3 +34,9 @@ class Swissboundaries(GpkgResource):
     
     def load_bezirk(self, year: int) -> gpd.GeoDataFrame:
         return self.load(layer=self._LAYERS['bezirk'], custom_url=self.build_url(year))
+    
+    def load_kanton(self, year: int) -> gpd.GeoDataFrame:
+        return self.load(layer=self._LAYERS['kanton'], custom_url=self.build_url(year))
+    
+    def load_land(self, year: int) -> gpd.GeoDataFrame:
+        return self.load(layer=self._LAYERS['land'], custom_url=self.build_url(year))

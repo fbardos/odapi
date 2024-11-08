@@ -59,7 +59,7 @@ defs = Definitions(
             resource_fernet=FernetCipher(fernet_key=EnvVar('FERNET_KEY')),
         ),
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
-        'geo_swissboundaries_gemeinde': Swissboundaries(),
+        'geo_swissboundaries': Swissboundaries(),
     },
     jobs=[
         *assets_ktzh_gp.jobs_gp,

@@ -7,7 +7,10 @@ sources:
     tables:
       - name: bfs_statatlas
       - name: bfs_swissboundaries_2015
-      - name: bfs_swissboundaries
+      - name: bfs_swissboundaries_gemeinde
+      - name: bfs_swissboundaries_bezirk
+      - name: bfs_swissboundaries_kanton
+      - name: bfs_swissboundaries_land
       - name: ktzh_gp_bevoelkerung
       - name: ktzh_gp_auslaenderanteil
       - name: ktzh_gp_avg_haushaltsgroesse
