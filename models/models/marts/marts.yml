@@ -8,6 +8,8 @@ models:
   # ---------------------------------------------------------------------------
     config:
       group: *default-group
+      grants:
+        select: ['odapi_public']
 
   # ---------------------------------------------------------------------------
   - name: dim_gemeinde_latest
@@ -17,6 +19,8 @@ models:
       indexes:
         - columns: [gemeinde_bfs_id]
           unique: true
+      grants:
+        select: ['odapi_public']
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk_latest
@@ -26,6 +30,8 @@ models:
       indexes:
         - columns: [bezirk_bfs_id]
           unique: true
+      grants:
+        select: ['odapi_public']
 
   # ---------------------------------------------------------------------------
   - name: dim_kanton_latest
@@ -35,3 +41,5 @@ models:
       indexes:
         - columns: [kanton_bfs_id]
           unique: true
+      grants:
+        select: ['odapi_public']
