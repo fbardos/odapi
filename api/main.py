@@ -19,6 +19,7 @@ from sqlalchemy import MetaData
 from dotenv import load_dotenv
 from sqlalchemy import Table
 from sqlalchemy import func
+from enum import Enum
 
 from fastapi.responses import FileResponse
 from fastapi_pagination import add_pagination
@@ -83,7 +84,7 @@ async def get_all_available_indicators(db: AsyncEngine = Depends(get_engine)):
     '/indicator/csv',
     tags=['Indicators'],
     description='Returns a CSV instaed of JSON. Can be easily parsed by frameworks like pandas or dplyr.',
-    response_class=FileResponse('data.csv', media_type='text/csv'),
+    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
 )
 @app.get(
     '/indicator',
@@ -191,7 +192,7 @@ async def get_indicator(
         buffer = io.StringIO()
         df.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=data.csv'
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
         return response
 
 
@@ -199,7 +200,7 @@ async def get_indicator(
     '/portrait/csv',
     tags=['Indicators'],
     description='Returns a CSV instaed of JSON. Can be easily parsed by frameworks like pandas or dplyr.',
-    response_class=FileResponse('data.csv', media_type='text/csv'),
+    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
 )
 @app.get(
     '/portrait',
@@ -297,6 +298,71 @@ async def list_all_indicators_for_one_geometry(
         buffer = io.StringIO()
         df.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=data.csv'
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
+        return response
+
+
+@app.get(
+    '/municipalities/csv',
+    tags=['Dimensions'],
+    description=textwrap.dedent("""
+        Returns municipalities of Switzerland for a given year (since 1850). Returns a CSV.
+
+        Sources:
+        * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
+        * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
+    """),
+    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
+)
+@app.get(
+    '/municipalities',
+    tags=['Dimensions'],
+    description=textwrap.dedent("""
+        Returns municipalities of Switzerland for a given year (since 1850). Returns a JSON.
+
+        Sources:
+        * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
+        * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
+    """),
+)
+async def list_municipalities_by_year(
+    request: Request,
+    year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
+    db: AsyncEngine = Depends(get_engine),
+):
+    async with db.begin() as conn:
+        tbl_gemeinde = await conn.run_sync(
+            lambda conn: Table('dim_gemeinde', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
+        )
+
+    query = (
+        select(
+            tbl_gemeinde.c.snapshot_date,
+            tbl_gemeinde.c.gemeinde_bfs_id,
+            tbl_gemeinde.c.gemeinde_hist_bfs_id,
+            tbl_gemeinde.c.gemeinde_name,
+            tbl_gemeinde.c.bezirk_bfs_id,
+            tbl_gemeinde.c.kanton_bfs_id,
+        )
+        .where(tbl_gemeinde.c.snapshot_year == year)
+    )
+    if join_geo_wkt:
+        query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
+    async with db.connect() as conn:
+        res = await conn.execute(query)
+    if request.url.path == '/municipalities':
+        return {
+            'data': res.all(),
+        }
+    elif request.url.path == '/municipalities/csv':
+        df = pd.DataFrame.from_dict(
+            data=[dict(row) for row in res.all()],
+            orient='columns',
+        )
+        buffer = io.StringIO()
+        df.to_csv(buffer, index=False)
+        response = Response(content=buffer.getvalue(), media_type='text/csv')
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
         return response
 
