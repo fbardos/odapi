@@ -94,6 +94,7 @@ async def get_all_available_indicators(db: AsyncEngine = Depends(get_engine)):
 async def get_indicator(
         request: Request,
         indicator_id: int = Query(..., description='Select an indicator. If you want to check all possible indicators run path /indicator'),
+        geo_code: Literal['polg', 'bezk', 'kant'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`. Other values are `bezk` for `district` and `kant` for `canton`.'),
         skip: int = Query(0, description='Pagination: Skip the first n rows.'),
         limit: int = Query(100, description='Pagination: Limit the size of one page.'),
         disable_pagination: bool = Query(False, description='You can completely disable pagination by setting param `disable_pagination==true`. Please use responsibly.'),
@@ -134,6 +135,7 @@ async def get_indicator(
             tbl_api.c.source,
         )
         .where(tbl_api.c.indicator_id == indicator_id)
+        .where(tbl_api.c.geo_code == geo_code)
     )
     if join_indicator:
         query = (
@@ -149,22 +151,53 @@ async def get_indicator(
             )
         )
     if join_geo or join_geo_wkt:
-        query = (
-            query
-            .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
-            .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
-            .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
-        )
+        match geo_code:
+            case 'polg':
+                query = (
+                    query
+                    .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+                    .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
+                    .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+                )
+            case 'bezk':
+                query = (
+                    query
+                    .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
+                    .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+                )
+            case 'kant':
+                query = (
+                    query
+                    .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
+                )
         if join_geo:
-            query = query.add_columns(
-                tbl_gemeinde.c.gemeinde_name.label('geo_name'),
-                tbl_bezirk.c.bezirk_bfs_id,
-                tbl_bezirk.c.bezirk_name,
-                tbl_kanton.c.kanton_bfs_id,
-                tbl_kanton.c.kanton_name,
-            )
+            match geo_code:
+                case 'polg':
+                    query = query.add_columns(
+                        tbl_gemeinde.c.gemeinde_name.label('geo_name'),
+                        tbl_bezirk.c.bezirk_bfs_id,
+                        tbl_bezirk.c.bezirk_name,
+                        tbl_kanton.c.kanton_bfs_id,
+                        tbl_kanton.c.kanton_name,
+                    )
+                case 'bezk':
+                    query = query.add_columns(
+                        tbl_bezirk.c.bezirk_name.label('geo_name'),
+                        tbl_kanton.c.kanton_bfs_id,
+                        tbl_kanton.c.kanton_name,
+                    )
+                case 'kant':
+                    query = query.add_columns(
+                        tbl_kanton.c.kanton_name.label('geo_name'),
+                    )
         if join_geo_wkt:
-            query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
+            match geo_code:
+                case 'polg':
+                    query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
+                case 'bezk':
+                    query = query.add_columns(tbl_bezirk.c.geometry_wkt.label('geo_wkt'))
+                case 'kant':
+                    query = query.add_columns(tbl_kanton.c.geometry_wkt.label('geo_wkt'))
     if not disable_pagination:
         query = query.offset(skip).limit(limit)
 
@@ -172,6 +205,7 @@ async def get_indicator(
         select(func.count())
         .select_from(tbl_api)
         .where(tbl_api.c.indicator_id == indicator_id)
+        .where(tbl_api.c.geo_code == geo_code)
     )
     async with db.connect() as conn:
         res = await conn.execute(query)

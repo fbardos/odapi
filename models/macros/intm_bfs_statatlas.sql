@@ -9,7 +9,7 @@
     Cannot be read from config yaml file, because during parsing,
     does not read from there.
     Other options like the indicator can be read from config yaml file.
-    
+
     Example config inside model config yaml:
 
         > config:
@@ -42,9 +42,13 @@
 with src as (
     select *
     from {{ ref('snap_bfs_statatlas') }}
-    -- temporary: only current wissensstand
     where
-        dbt_valid_to is NULL
+        geom_code in (
+            'polg'     -- politische gemeinde
+            , 'bezk'   -- bezirk
+            , 'kant'   -- kanton
+        )
+        and dbt_valid_to is NULL  -- temporary: only current wissensstand
 )
 , filter as (
     select *
@@ -60,7 +64,6 @@ with src as (
                 {% endfor %}
             )
         {% endif %}
-        and geom_code = 'polg'
 )
 , mapping as (
     select
