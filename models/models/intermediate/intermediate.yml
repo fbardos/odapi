@@ -8,7 +8,7 @@ x-tests-intm-table-statatlas-pk: &tests-intm-table-statatlas-pk
   - dbt_utils.unique_combination_of_columns:
       # Currently, geo_code should always be geom and there should only be one wissensstand
       # Also, indicator should already be selected.
-      combination_of_columns: ['geo_value', 'period_ref']
+      combination_of_columns: ['geo_code', 'geo_value', 'period_ref']
 
 x-tests-intm-table-statatlas-cols: &tests-intm-table-statatlas-cols
   - dbt_expectations.expect_table_columns_to_match_ordered_list:
@@ -30,6 +30,7 @@ x-tests-intm-table-statatlas-rows: &tests-intm-table-statatlas-rows
   - dbt_expectations.expect_table_row_count_to_be_between:
       min_value: 2000 # more than 2000 municipalities
       group_by: ['period_ref']
+      row_condition: "geo_code = 'polg'"
 
 x-tests-intm-table-statatlas-rowsmin: &tests-intm-table-statatlas-rowsmin
   - dbt_expectations.expect_table_row_count_to_be_between:

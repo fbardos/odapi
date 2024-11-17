@@ -34,6 +34,17 @@ models:
         select: ['odapi_public']
 
   # ---------------------------------------------------------------------------
+  - name: dim_bezirk
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [snapshot_year]
+          unique: false
+      grants:
+        select: ['odapi_public']
+
+  # ---------------------------------------------------------------------------
   - name: dim_bezirk_latest
   # ---------------------------------------------------------------------------
     config:
@@ -41,6 +52,17 @@ models:
       indexes:
         - columns: [bezirk_bfs_id]
           unique: true
+      grants:
+        select: ['odapi_public']
+  
+  # ---------------------------------------------------------------------------
+  - name: dim_kanton
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [snapshot_year]
+          unique: false
       grants:
         select: ['odapi_public']
 

@@ -1,5 +1,3 @@
-select
-    *
-    , ST_AsText(geometry, 0) as geometry_wkt
+select *
 from {{ ref('dim_kanton') }}
 where snapshot_code = 'latest'
