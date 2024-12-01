@@ -16,8 +16,8 @@ x-tests-intm-table-statatlas-cols: &tests-intm-table-statatlas-cols
         - indicator_id
         - geo_code
         - geo_value
-        - knowledge_code
-        - knowledge_date
+        - knowledge_date_from
+        - knowledge_date_to
         - period_type
         - period_code
         - period_ref_from
