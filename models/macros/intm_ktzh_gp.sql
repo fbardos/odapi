@@ -43,8 +43,8 @@
             {{ indicator_id }} as indicator_id
             , 'polg' as geo_code  -- politische gemeinde
             , src.bfs_nr as geo_value
-            , 'latest' as knowledge_code -- latest
-            , src.dbt_valid_from as knowledge_date
+            , src.dbt_valid_from as knowledge_date_from
+            , src.dbt_valid_to as knowledge_date_to
             , '{{ period_type }}' as period_type
             , '{{ period_code }}' as period_code
             , NULL::DATE as period_ref_from

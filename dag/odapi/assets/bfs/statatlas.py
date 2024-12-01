@@ -317,5 +317,5 @@ job_statatlas = define_asset_job(
 
 schedule_statatlas = ScheduleDefinition(
     job=job_statatlas,
-    cron_schedule='5 2 10 * *',
+    cron_schedule='5 2 * * 6',  # once per week, on Saturday at 02:05
 )

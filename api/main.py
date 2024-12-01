@@ -8,6 +8,7 @@ from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import select
 from sqlalchemy import Table
+from sqlalchemy.sql.functions import coalesce
 from typing import Optional
 import pandas as pd
 from typing import Literal
@@ -54,11 +55,11 @@ app = FastAPI(
         * `DONE` Provide historized municipal reference
         * `DONE` Make API async.
         * `DONE` Add other geographic levels like cantons and districts
-        * `TODO` Add indicators only available for districts or cantons
+        * `DONE` Add possibility to filter by knowledge date other than latest
 
         Later:
 
-        * `TODO` Add possibility to filter by knowledge date other than latest
+        * `TODO` Add indicators only available for districts or cantons
         * `TODO` Add non-indicator data from different cantons (e.g. Verkehrsdaten)
     """)
 )
@@ -118,6 +119,7 @@ async def get_indicator(
     request: Request,
     indicator_id: int = Query(..., description='Select an indicator. If you want to check all possible indicators run path /indicator'),
     geo_code: Literal['polg', 'bezk', 'kant'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`. Other values are `bezk` for `district` and `kant` for `canton`.'),
+    knowledge_date: str = Query(dt.date.today().strftime('%Y-%m-%d'), description='Allows to query a different state of the data in the past. Format: ISO-8601, Example: `2023-12-31`'),
     skip: int = Query(0, description='Pagination: Skip the first n rows.'),
     limit: int = Query(100, description='Pagination: Limit the size of one page.'),
     disable_pagination: bool = Query(False, description='You can completely disable pagination by setting param `disable_pagination==true`. Please use responsibly.'),
@@ -147,8 +149,8 @@ async def get_indicator(
             tbl_api.c.indicator_id,
             tbl_api.c.geo_code,
             tbl_api.c.geo_value,
-            tbl_api.c.knowledge_code,
-            tbl_api.c.knowledge_date,
+            tbl_api.c.knowledge_date_from,
+            tbl_api.c.knowledge_date_to,
             tbl_api.c.period_type,
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
@@ -159,6 +161,8 @@ async def get_indicator(
         )
         .where(tbl_api.c.indicator_id == indicator_id)
         .where(tbl_api.c.geo_code == geo_code)
+        .where(tbl_api.c.knowledge_date_from <= dt.date.fromisoformat(knowledge_date))
+        .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > dt.date.fromisoformat(knowledge_date))
     )
     if join_indicator:
         query = (
@@ -267,7 +271,8 @@ async def get_indicator(
 async def list_all_indicators_for_one_geometry(
     request: Request,
     geo_code: Literal['polg', 'bezk', 'kant'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`. Other values are `bezk` for `district` and `kant` for `canton`.'),
-    geo_value: int = Query(None, description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
+    geo_value: int = Query(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
+    knowledge_date: str = Query(dt.date.today().strftime('%Y-%m-%d'), description='Allows to query a different state of the data in the past. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
     join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
@@ -296,8 +301,8 @@ async def list_all_indicators_for_one_geometry(
             tbl_api.c.indicator_id,
             tbl_api.c.geo_code,
             tbl_api.c.geo_value,
-            tbl_api.c.knowledge_code,
-            tbl_api.c.knowledge_date,
+            tbl_api.c.knowledge_date_from,
+            tbl_api.c.knowledge_date_to,
             tbl_api.c.period_type,
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
@@ -308,6 +313,8 @@ async def list_all_indicators_for_one_geometry(
         )
         .where(tbl_api.c.geo_code == geo_code)
         .where(tbl_api.c.geo_value == geo_value)
+        .where(tbl_api.c.knowledge_date_from <= dt.date.fromisoformat(knowledge_date))
+        .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > dt.date.fromisoformat(knowledge_date))
     )
     if join_indicator:
         query = (
