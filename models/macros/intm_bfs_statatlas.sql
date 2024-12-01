@@ -3,7 +3,7 @@
     /*
 
     Generates INTM table for Gemeindeportrait.
-    
+
 
     Dependencies from other models needs to manually set here.
     Cannot be read from config yaml file, because during parsing,
@@ -48,7 +48,7 @@ with src as (
             , 'bezk'   -- bezirk
             , 'kant'   -- kanton
         )
-        and dbt_valid_to is NULL  -- temporary: only current wissensstand
+        -- and dbt_valid_to is NULL  -- temporary: only current wissensstand
 )
 , filter as (
     select *
@@ -73,8 +73,8 @@ with src as (
         {{ indicator_id }} as indicator_id
         , geom_code as geo_code  -- politische gemeinde
         , geo_id::INTEGER as geo_value
-        , 'latest' as knowledge_code -- latest
-        , dbt_valid_from as knowledge_date
+        , dbt_valid_from as knowledge_date_from
+        , dbt_valid_to as knowledge_date_to
         , '{{ period_type }}' as period_type
         , '{{ period_code }}' as period_code
         {% if period_ref_from_transformation %}
