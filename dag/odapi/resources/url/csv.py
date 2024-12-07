@@ -31,8 +31,13 @@ class UrlResource(ConfigurableResource):
         return pd.read_csv(_data_buffer), size_rawdata_bytes
 
 
-class KtzhGemeportraitUrlResource(UrlResource):
+# class KtzhGemeportraitUrlResource(UrlResource):
+    # _URL_RESOURCES: List[CkanResource] = [
+    # ]
+
+class OpendataswissUrlResource(UrlResource):
     _URL_RESOURCES: List[CkanResource] = [
+        CkanResource(model_name='bfe_minergie',                     ckan_resource_id='3ae6d523-748c-466b-8368-04569473338e'),
         CkanResource(model_name='ktzh_gp_bevoelkerung',             ckan_resource_id='132b6fed-d7ea-48e3-b5dc-9e63ac16b21e'),
         CkanResource(model_name='ktzh_gp_auslaenderanteil',         ckan_resource_id='23cc674b-2eb6-4ad5-9ddf-87e86f0fb06f'),
         CkanResource(model_name='ktzh_gp_avg_haushaltsgroesse',     ckan_resource_id='ae3cc772-38e7-4d5f-87f2-73ad8e5d07c1'),
