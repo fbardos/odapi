@@ -12,7 +12,7 @@ from dagster import define_asset_job
 from dagster import sensor
 
 from odapi.resources.url.csv import CkanResource
-from odapi.resources.url.csv import KtzhGemeportraitUrlResource
+from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.ckan.ckan import OpenDataSwiss
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
@@ -20,12 +20,12 @@ from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.utils import calculate_bytes_compression
 
 
-def gemportrait_extract_factory(ckan_resource: CkanResource) -> AssetsDefinition:
+def opendataswiss_extract_factory(ckan_resource: CkanResource) -> AssetsDefinition:
 
-    @asset(compute_kind='python', group_name='src_ktzh', key=f'extract_{ckan_resource.model_name}')
+    @asset(compute_kind='python', group_name='src_opendataswiss', key=f'extract_{ckan_resource.model_name}')
     def _asset(
             context: AssetExecutionContext,
-            data_ktzh: KtzhGemeportraitUrlResource,
+            data_opendataswiss: OpendataswissUrlResource,
             xcom: XcomPostgresResource,
             extractor: ExtractHandler,
             opendata_swiss: OpenDataSwiss,
@@ -34,7 +34,7 @@ def gemportrait_extract_factory(ckan_resource: CkanResource) -> AssetsDefinition
         key = '/'.join([ckan_resource.model_name, f'extracted_data_{execution_date.isoformat()}.fernet'])
 
         # Load data from CKAN
-        df, byte_size = data_ktzh.load_data(opendata_swiss.get_resource_url(ckan_resource.ckan_resource_id))
+        df, byte_size = data_opendataswiss.load_data(opendata_swiss.get_resource_url(ckan_resource.ckan_resource_id))
         assert isinstance(df, pd.DataFrame)
 
         # Execute the extractor
@@ -56,11 +56,11 @@ def gemportrait_extract_factory(ckan_resource: CkanResource) -> AssetsDefinition
     return _asset
 
 
-def gemportrait_load_extract_factory(asset_name: str) -> AssetsDefinition:
+def opendataswiss_load_extract_factory(asset_name: str) -> AssetsDefinition:
 
     @asset(
         compute_kind='python',
-        group_name='src_ktzh',
+        group_name='src_opendataswiss',
         key=['src', asset_name],
         ins={'upstream_object_key': AssetIn(f'extract_{asset_name}')},
     )
@@ -83,24 +83,30 @@ def gemportrait_load_extract_factory(asset_name: str) -> AssetsDefinition:
 
 
 # Assets
-assets_gp_extract = [gemportrait_extract_factory(asset) for asset in KtzhGemeportraitUrlResource._URL_RESOURCES]
-assets_gp_load_extract = [gemportrait_load_extract_factory(asset.model_name) for asset in KtzhGemeportraitUrlResource._URL_RESOURCES]
+assets_opendataswiss_extract = [
+    opendataswiss_extract_factory(asset)
+    for asset in OpendataswissUrlResource._URL_RESOURCES
+]
+assets_opendataswiss_load_extract = [
+    opendataswiss_load_extract_factory(asset.model_name)
+    for asset in OpendataswissUrlResource._URL_RESOURCES
+]
 
 # Jobs
-jobs_gp = [
+jobs_opendataswiss = [
     define_asset_job(
         name=asset.model_name,
         selection=[
             f'extract_{asset.model_name}',
             f'src/{asset.model_name}*',
-        ]
+        ],
     )
-    for asset in KtzhGemeportraitUrlResource._URL_RESOURCES
+    for asset in OpendataswissUrlResource._URL_RESOURCES
 ]
 
 
 # Sensors
-def gemportrait_sensor_factory(job_name: str, asset_name: str, resource_id: str) -> SensorDefinition:
+def opendataswiss_sensor_factory(job_name: str, asset_name: str, resource_id: str) -> SensorDefinition:
 
     @sensor(name=asset_name, job_name=job_name, minimum_interval_seconds=60 * 60)
     def _sensor(
@@ -117,6 +123,9 @@ def gemportrait_sensor_factory(job_name: str, asset_name: str, resource_id: str)
 
         last_modified = opendata_swiss.get_resource_modified(resource_id)
         assert isinstance(last_modified, dt.datetime)
+        
+        print('last_modified', last_modified)  # XXX: REMOVE
+        print('last_execution', last_execution)  # XXX: REOMVE
 
         if last_modified > last_execution:
             yield RunRequest(run_key=job_name)
@@ -124,7 +133,11 @@ def gemportrait_sensor_factory(job_name: str, asset_name: str, resource_id: str)
     return _sensor
 
 
-sensors_gp = [
-    gemportrait_sensor_factory(job_name=asset.model_name, asset_name=asset.model_name, resource_id=asset.ckan_resource_id)
-    for asset in KtzhGemeportraitUrlResource._URL_RESOURCES
+sensors_opendataswiss = [
+    opendataswiss_sensor_factory(
+        job_name=asset.model_name,
+        asset_name=asset.model_name,
+        resource_id=asset.ckan_resource_id
+    )
+    for asset in OpendataswissUrlResource._URL_RESOURCES
 ]

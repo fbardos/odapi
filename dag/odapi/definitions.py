@@ -10,15 +10,15 @@ from odapi.resources.postgres.postgres import XcomPostgresResource
 from odapi.resources.ckan.ckan import OpenDataSwiss
 from odapi.resources.minio.minio import Minio
 from odapi.resources.crypto.fernet import FernetCipher
-from odapi.resources.url.csv import KtzhGemeportraitUrlResource
+from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
 
 
-import odapi.assets.ktzh.gemportrait as assets_ktzh_gp
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
+import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 
 
 ################################################################################
@@ -40,7 +40,7 @@ defs = Definitions(
         'db': PostgresResource(sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')),
         'xcom': XcomPostgresResource(sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')),
         'opendata_swiss': OpenDataSwiss(),
-        'data_ktzh': KtzhGemeportraitUrlResource(),
+        'data_opendataswiss': OpendataswissUrlResource(),
         # do not make bucket name hardcoded already in the resource...
         'minio': Minio(
             endpoint_url=EnvVar('MINIO__ENDPOINT_URL'),
@@ -62,12 +62,13 @@ defs = Definitions(
         'geo_swissboundaries': Swissboundaries(),
     },
     jobs=[
-        *assets_ktzh_gp.jobs_gp,
+        *assets_opendataswiss.jobs_opendataswiss,
         assets_bfs_statatlas.job_statatlas,
         assets_swissboundaries.job_bfs_swissboundaries,
     ],
     sensors=[
-        *assets_ktzh_gp.sensors_gp,
+        *assets_opendataswiss.sensors_opendataswiss,
+
     ],
     schedules=[
         assets_bfs_statatlas.schedule_statatlas,
