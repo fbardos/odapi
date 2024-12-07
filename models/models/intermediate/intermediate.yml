@@ -60,6 +60,15 @@ models:
     tests:
       - <<: *tests-intm-table-gp
 
+  # ---------------------------------------------------------------------------
+  - name: intm_bfe_minergie
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['indicator_id', 'geo_code', 'geo_value', 'period_ref']
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
 
   # Query to search for variable/path combinations:
   #

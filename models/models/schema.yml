@@ -11,6 +11,7 @@ sources:
       - name: bfs_swissboundaries_bezirk
       - name: bfs_swissboundaries_kanton
       - name: bfs_swissboundaries_land
+      - name: bfe_minergie
       - name: ktzh_gp_bevoelkerung
       - name: ktzh_gp_auslaenderanteil
       - name: ktzh_gp_avg_haushaltsgroesse

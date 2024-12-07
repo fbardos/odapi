@@ -180,3 +180,5 @@ UNION ALL
 select * from {{ ref('intm_bfs_statatlas_tax_steuerbar_einwohner')}}
 UNION ALL
 select * from {{ ref('intm_bfs_statatlas_tax_steuerbar_total')}}
+UNION ALL
+select * from {{ ref('intm_bfe_minergie')}}

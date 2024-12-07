@@ -34,3 +34,12 @@ snapshots:
     tests:
       - <<: *tests-snap-table-gp
 
+  # ---------------------------------------------------------------------------
+  - name: snap_bfe_minergie
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # TEST Strict PK
+          combination_of_columns: ['gemeinde_bfs_id', 'dbt_valid_from']
+

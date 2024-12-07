@@ -92,3 +92,10 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 91,Durchschnittliches Steuerbares Einkommen pro Einwohner/in,18 Öffentliche Finanzen,Steuern,Durchschnittliches Steuerbares Einkommen,,Franken,Steuerbares Einkommen pro Einwohner/in
 92,Reineinkommen (MCHF),18 Öffentliche Finanzen,Steuern,Reineinkommen,,Millionen Franken,Reineinkommen in MCHF
 93,Steuerbares Einkommen (MCHF),18 Öffentliche Finanzen,Steuern,Steuerbares Einkkommen,,Millionen Franken,Steuerbares Einkommen in MCHF
+94,Gymnasialquote,15 Bildung/Wissenschaft,Matura,Maturitätsquoten,,Anteil der Jugendlichen,Anteil der Jugendlichen, die bis zum 25. Altersjahr ein Maturitätszeugnis erworben haben, in % der gleichaltrigen Referenzbevölkerung
+95,Minergie-Gebäude (total),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude,Anzahl Gebäude mit Minergie-Standard
+96,Minergie-Gebäude (ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (ECO),Anzahl Gebäude mit Minergie-Standard (ECO)
+97,Minergie-Gebäude (A),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (A),Anzahl Gebäude mit Minergie-Standard (A)
+98,Minergie-Gebäude (A ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (A ECO),Anzahl Gebäude mit Minergie-Standard (A ECO)
+99,Minergie-Gebäude (P),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (P),Anzahl Gebäude mit Minergie-Standard (P)
+100,Minergie-Gebäude (P ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (P ECO),Anzahl Gebäude mit Minergie-Standard (P ECO)
