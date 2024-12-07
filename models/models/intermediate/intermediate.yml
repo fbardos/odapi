@@ -1752,3 +1752,20 @@ models:
       - <<: *tests-intm-table-statatlas-rows
       - <<: *tests-intm-table-statatlas-rowsmin
 
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_gymi_anteil
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 94
+        period_type: duedate
+        period_code: year
+      intm_statatlas:
+        indicator_regex: '^Anteil der Jugendlichen.*bis zum 25.*gymnasiales Maturit.?tszeugnis.*haben'
+        period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+    tests:
+      - <<: *tests-intm-table-statatlas-pk
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
