@@ -10,11 +10,6 @@ models:
   # ---------------------------------------------------------------------------
   - name: stgn_bfs_statatlas
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
-      # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
-      # Because of dependency on source table.
-      materialized: table
     tests:
       - dbt_utils.unique_combination_of_columns:  # TEST Surrogate key
           combination_of_columns: ['map_id', 'geo_id', 'variable', 'period_ref', 'geom_code', 'mother_path']
@@ -24,62 +19,43 @@ models:
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_gemeinde
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
-      # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
-      # Because of dependency on source table.
-      materialized: table
 
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_bezirk
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
-      # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
-      # Because of dependency on source table.
-      materialized: table
 
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_kanton
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
-      # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
-      # Because of dependency on source table.
-      materialized: table
 
   # ---------------------------------------------------------------------------
   - name: stgn_swissboundaries_land
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
-      # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
-      # Because of dependency on source table.
-      materialized: table
 
   # ---------------------------------------------------------------------------
   - name: stgn_ktzh_gp_bevoelkerung
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - <<: *tests-stgn-table-gp
 
   # ---------------------------------------------------------------------------
   - name: stgn_ktzh_gp_avg_haushaltsgroesse
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - <<: *tests-stgn-table-gp
 
   # ---------------------------------------------------------------------------
   - name: stgn_ktzh_gp_auslaenderanteil
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - <<: *tests-stgn-table-gp
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_bfe_minergie
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['gemeinde_bfs_id']
 
 
 

@@ -34,6 +34,9 @@ models:
   odapi:
     # Config indicated by + and applies to all files under models/example/
     staging:
+      +group: staging
+      # Needs to be a table, otherwise pandas.to_sql(replace) will not work.
+      # Because of dependency on source table.
       +materialized: table
       +schema: staging
     intermediate:
