@@ -6,9 +6,10 @@ x-tests-intm-table-gp: &tests-intm-table-gp
 
 x-tests-intm-table-statatlas-pk: &tests-intm-table-statatlas-pk
   - dbt_utils.unique_combination_of_columns:
-      # Currently, geo_code should always be geom and there should only be one wissensstand
-      # Also, indicator should already be selected.
-      combination_of_columns: ['geo_code', 'geo_value', 'period_ref']
+      # Currently, for one geo_code, geo_value, there can be multiple period_ref
+      # AND multiple SCD-Type2 validities.
+      # Indicator should already be selected.
+      combination_of_columns: ['geo_code', 'geo_value', 'period_ref', 'knowledge_date_from']
 
 x-tests-intm-table-statatlas-cols: &tests-intm-table-statatlas-cols
   - dbt_expectations.expect_table_columns_to_match_ordered_list:
