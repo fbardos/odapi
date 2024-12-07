@@ -30,12 +30,15 @@ class CkanApi(ConfigurableResource):
 
     def get_resource_modified(self, id: str) -> datetime.datetime:
         resource = self.get_resource_by_id(id)
-        return datetime.datetime.fromisoformat(resource.get('result', {}).get('modified'))
-    
+        modified = datetime.datetime.fromisoformat(resource.get('result', {}).get('modified'))
+        if modified.tzinfo is None:
+            modified = modified.replace(tzinfo=datetime.timezone.utc)  # Could be problematic
+        return modified
+
     def get_resource_url(self, id: str) -> str:
         resource = self.get_resource_by_id(id)
         return resource.get('result', {}).get('download_url')
-    
+
     def get_resource_byte_size(self, id: str) -> int:
         resource = self.get_resource_by_id(id)
         byte_size = resource.get('result', {}).get('byte_size')
