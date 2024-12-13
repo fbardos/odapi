@@ -5,7 +5,6 @@ import pandas as pd
 import requests
 from typing import List
 from typing import Tuple
-import numpy as np
 from dagster import asset
 from odapi.resources.postgres.postgres import PostgresResource
 from dagster import AssetExecutionContext
@@ -166,121 +165,24 @@ def bfs_statatlas(
         # Join hierarchy to the data table
         return data.merge(df_maps, left_on='MAP_ID', right_on='map_id', how='left')
 
-    # def _load_variable_grouping_from_patterns_endpoint(data: pd.DataFrame, id: int) -> pd.DataFrame:
-        # try:
-            # response = requests.get(
-                # f'https://www.atlas.bfs.admin.ch/json/13/patterns/{id}.json'
-            # )
-            # pattern = response.json()
-            # match1 = re.search(r'^\d+_\d+_(\d+)(?:_\d+){3}', pattern[0])
-            # match2 = re.search(r'^\d+_(\d+)(?:_\d+){4}', pattern[0])
-            # if match1:
-                # data['variable_grouping_1_id'] = match1.group(1)
-            # else:
-                # data['variable_grouping_1_id'] = np.nan
-            # if match2:
-                # data['variable_grouping_2_id'] = match2.group(1)
-            # else:
-                # data['variable_grouping_2_id'] = np.nan
-        # except urllib.error.HTTPError:
-            # logger.warning(f'Found no pattern data for map {i}.')
-            # data['variable_grouping_1_id'] = np.nan
-            # data['variable_grouping_2_id'] = np.nan
-        # return data
-
-    # def _load_additional_data_from_dam_api(data: pd.DataFrame, id: int) -> pd.DataFrame:
-        # """
-
-        # Warning: the DAM-API is not a reliable source of information.
-        # A lot of maps do not get any information from this API.
-
-        # """
-
-        # def _compile_jq_first_value(input, filter: str, default=np.nan):
-            # try:
-                # value = jq.compile(filter).input(input).first()
-                # return value
-            # except StopIteration:
-                # return default
-
-        # response = requests.get(
-            # 'https://dam-api.bfs.admin.ch/hub/api/dam/assets',
-            # params={'orderNr': f'KM10-{str(i).ljust(5, "0")}-__-c-____-____-d'},  # fill with leading zeroes
-            # headers={'accept': 'application/json'},
-        # )
-        # damapi = json.loads(response.content)
-        # # if a single row is returned, fill the information
-        # if jq.compile('.total').input(damapi).first() == 1:
-            # logger.info(f'Found DAM-API data for map ID {i}.')
-            # data['dam_gnp'] =               _compile_jq_first_value(damapi, '.data | .[] | .ids.gnp')
-            # data['dam_dam_id'] =            _compile_jq_first_value(damapi, '.data | .[] | .ids.damId')
-            # data['dam_article_model_id'] =  _compile_jq_first_value(damapi, '.data | .[] | .bfs.articleModel.id')
-            # data['dam_title'] =             _compile_jq_first_value(damapi, '.data | .[] | .description.titles.main')
-            # data['dam_prodima_0_code'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==0) | .code')
-            # data['dam_prodima_0_name'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==0) | .name')
-            # data['dam_prodima_1_code'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==1) | .code')
-            # data['dam_prodima_1_name'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==1) | .name')
-            # data['dam_prodima_2_code'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==2) | .code')
-            # data['dam_prodima_2_name'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==2) | .name')
-            # data['dam_prodima_3_code'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==3) | .code')
-            # data['dam_prodima_3_name'] =    _compile_jq_first_value(damapi, '.data | .[] | .description.categorization.prodima[] | select(.level==3) | .name')
-            # data['dam_orderNr'] =           _compile_jq_first_value(damapi, '.data | .[] | .shop.orderNr')
-        # else:
-            # logger.warning(f'Did not find any data from the DAM-API for map ID {i}.')
-            # data['dam_gnp'] =               np.nan
-            # data['dam_dam_id'] =            np.nan
-            # data['dam_article_model_id'] =  np.nan
-            # data['dam_title'] =             np.nan
-            # data['dam_prodima_0_code'] =    np.nan
-            # data['dam_prodima_0_name'] =    np.nan
-            # data['dam_prodima_1_code'] =    np.nan
-            # data['dam_prodima_1_code'] =    np.nan
-            # data['dam_prodima_2_name'] =    np.nan
-            # data['dam_prodima_2_name'] =    np.nan
-            # data['dam_prodima_3_name'] =    np.nan
-            # data['dam_prodima_3_name'] =    np.nan
-            # data['dam_orderNr'] =           np.nan
-        # return data
-
     dataframes = []
     skips = 0
     max_found = 0
 
-    # context.pdb.set_trace()
-
     # Load available maps by examining the structure
-    structures, maps = _load_structure(max_depth=7)  # FIX: REENABLE AFTER TESTING
-    # structures, maps = _load_structure(max_depth=4)
+    structures, maps = _load_structure(max_depth=7)
     unique_maps = list(set(maps))
 
     for map in tqdm.tqdm(unique_maps, mininterval=10, desc='Loading asset dataframes...'):
         try:
-            # dataframes.append(pd.read_csv(f'https://www.atlas.bfs.admin.ch/core/projects/13/xshared/csv/{i}_131.csv', sep=';'))
             df = pd.read_csv(f'https://www.atlas.bfs.admin.ch/core/projects/13/xshared/csv/{map.map_id}_131.csv', sep=';')
             df = _expand_mother_child_structure_relations(df, structures, maps)
-            # df = _load_variable_grouping_from_patterns_endpoint(df, map.map_id)  # not needed anymore
-            # df = _load_additional_data_from_dam_api(df, map.map_id)  # TODO: not needed anymore
             df['low_level_structure_id'] = map.structure_id
             dataframes.append(df)
             max_found = map.map_id
         except urllib.error.HTTPError:
             skips += 1
             continue
-
-    # # Fetch dataframes by brute force
-    # # From last exports, max(MAP_ID) was 27642
-    # for i in tqdm.tqdm(range(30_000), mininterval=10, desc='Loading asset dataframes'):
-    # # for i in tqdm.tqdm(range(26_050, 26_100), mininterval=10, desc='Loading asset dataframes'):  # for debugging...
-        # try:
-            # # dataframes.append(pd.read_csv(f'https://www.atlas.bfs.admin.ch/core/projects/13/xshared/csv/{i}_131.csv', sep=';'))
-            # df = pd.read_csv(f'https://www.atlas.bfs.admin.ch/core/projects/13/xshared/csv/{i}_131.csv', sep=';')
-            # df = _load_variable_grouping_from_patterns_endpoint(df, i)
-            # df = _load_additional_data_from_dam_api(df, i)
-            # dataframes.append(df)
-            # max_found = i
-        # except urllib.error.HTTPError:
-            # skips += 1
-            # continue
 
     logging.info(f'Loaded dataframes, skipped {skips} assets, highest ID found {max_found}.')
     df = pd.concat(dataframes)

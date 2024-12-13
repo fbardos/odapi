@@ -184,3 +184,5 @@ UNION ALL
 select * from {{ ref('intm_bfs_statatlas_gymi_anteil')}}
 UNION ALL
 select * from {{ ref('intm_bfe_minergie')}}
+UNION ALL
+select * from {{ ref('intm_swisstopo_zweitwohnung')}}

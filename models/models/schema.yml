@@ -15,6 +15,7 @@ sources:
       - name: ktzh_gp_bevoelkerung
       - name: ktzh_gp_auslaenderanteil
       - name: ktzh_gp_avg_haushaltsgroesse
+      - name: swisstopo_zweitwohnungen
   - name: ktzh_gwr
     database: data
     schema: src

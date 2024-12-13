@@ -57,12 +57,13 @@ app = FastAPI(
         * `DONE` Add other geographic levels like cantons and districts
         * `DONE` Add possibility to filter by knowledge date other than latest
         * `DONE` Add indicator for [Minergie Houses](https://opendata.swiss/de/dataset/anzahl-minergie-gebaude-in-gemeinden/resource/3ae6d523-748c-466b-8368-04569473338e)
+        * `DONE` Add indicator for [Zweitwohnungsanteil](https://opendata.swiss/de/dataset/wohnungsinventar-und-zweitwohnungsanteil)
+        * `TODO` Return geojson with json instead of WKT
+        * `TODO` Add other indicators from Swisstopo API
 
         Later:
-
-        * `TODO` Add indicator for [Zweitwohnungsanteil](https://opendata.swiss/de/dataset/wohnungsinventar-und-zweitwohnungsanteil)
-        * `TODO` Add indicators only available for districts or cantons
-        * `TODO` Add non-indicator data from different cantons (e.g. Verkehrsdaten)
+        * `TODO` Add possibility to get Excel file as response
+        * `TODO` Add more indicators only available for districts or cantons
     """)
 )
 add_pagination(app)
