@@ -99,3 +99,8 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 98,Minergie-Gebäude (A ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (A ECO),Anzahl Gebäude mit Minergie-Standard (A ECO)
 99,Minergie-Gebäude (P),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (P),Anzahl Gebäude mit Minergie-Standard (P)
 100,Minergie-Gebäude (P ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (P ECO),Anzahl Gebäude mit Minergie-Standard (P ECO)
+101,Anteil Erstwohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anteil,Anteil Erstwohnungen
+102,Anteil Zweitwohnungen,09 Bauen & Wohnen,Wohnen,Zweitwohnung,,Anteil,Anteil Zweitwohnungen
+103,Anzahl Erstwohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen
+104,Anzahl Erstwohnungen gleichgestellte Wohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen gleichgestellte Wohnungen
+105,Anzahl Wohnungen,09 Bauen & Wohnen,Wohnen,Bestand,,Anzahl,Anzahl Wohnungen

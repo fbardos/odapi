@@ -40,6 +40,12 @@ x-tests-intm-table-statatlas-rowsmin: &tests-intm-table-statatlas-rowsmin
 
 models:
   # ---------------------------------------------------------------------------
+  - name: intm_swissboundaries_kanton
+  # ---------------------------------------------------------------------------
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['snapshot_date', 'kanton_bfs_id']
+  # ---------------------------------------------------------------------------
   - name: intm_ktzh_gp_bevoelkerung
   # ---------------------------------------------------------------------------
     config:

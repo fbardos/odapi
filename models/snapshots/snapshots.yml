@@ -40,6 +40,15 @@ snapshots:
     config:
       group: *default-group
     tests:
-      - dbt_utils.unique_combination_of_columns:  # TEST Strict PK
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['gemeinde_bfs_id', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_swisstopo_zweitwohnung
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['stichtag', 'gemeinde_bfs_id', 'dbt_valid_from']
 
