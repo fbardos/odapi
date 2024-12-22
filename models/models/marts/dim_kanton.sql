@@ -41,5 +41,6 @@ with src as (
 select 
     *
     , EXTRACT(YEAR FROM snapshot_date) as snapshot_year
-    , ST_AsText(geometry, 0) as geometry_wkt
+    , geometry as geom_border
+    , ST_Centroid(geometry) as geom_center
 from union_tables
