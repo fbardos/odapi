@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir \
     "sqlalchemy[asyncio]==1.4" \
     asyncpg \
     python-dotenv \
+    "geopandas>=1.0" \  # used for GeoDataFrame.to_geo_dict
+    openpyxl \
+    geoalchemy2 \
     psycopg2
 
 # Copy the rest of the application code into the container
