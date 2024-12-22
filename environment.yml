@@ -20,7 +20,8 @@ dependencies:
   - ipython
   - ipdb
   - python-dotenv
-  - geopandas
+  - geopandas>=1.0  # used for GeoDataFrame.to_geo_dict
+  - openpyxl
   - geopy
   - osmnx
   - networkx

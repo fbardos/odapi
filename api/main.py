@@ -5,38 +5,54 @@ from fastapi import Response
 from sqlalchemy import MetaData
 from fastapi import Request
 from fastapi import Query
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import select
 from sqlalchemy import Table
+from sqlalchemy import Column
 from sqlalchemy.sql.functions import coalesce
+from geoalchemy2 import Geometry
 from typing import Optional
-import pandas as pd
+import geopandas as gpd
 from typing import Literal
 import datetime as dt
 import textwrap
 import os
+import pandas as pd
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from dotenv import load_dotenv
-from sqlalchemy import Table
-from sqlalchemy import func
 from enum import Enum
 
 from fastapi.responses import FileResponse
-from fastapi_pagination import add_pagination
+from fastapi.responses import JSONResponse
 
 
 # DATABASE ###################################################################
 load_dotenv()
 
 def get_engine() -> AsyncEngine:
-    return create_async_engine(os.environ['SQLALCHEMY_DATABASE_URL'])
+    return create_async_engine(os.environ['SQLALCHEMY_DATABASE_URL_ASYNC'])
+
+def get_sync_engine() -> Engine:
+    return create_engine(os.environ['SQLALCHEMY_DATABASE_URL_SYNC'])
 
 def get_metadata():
     return MetaData(bind=None, schema='dbt')
 
 
 # API ########################################################################
+class GeoCode(str, Enum):
+    polg = 'polg'
+    bezk = 'bezk'
+    kant = 'kant'
+
+
+class GeoJsonResponse(JSONResponse):
+    media_type = 'application/geo+json'
+
+
 app = FastAPI(
     title='ODAPI - Open Data API for Switzerland',
     docs_url='/',
@@ -53,20 +69,19 @@ app = FastAPI(
 
         * `DONE` Add indicators from BFS STATATLAS
         * `DONE` Provide historized municipal reference
-        * `DONE` Make API async.
+        * `WONT` Make API async.
         * `DONE` Add other geographic levels like cantons and districts
         * `DONE` Add possibility to filter by knowledge date other than latest
         * `DONE` Add indicator for [Minergie Houses](https://opendata.swiss/de/dataset/anzahl-minergie-gebaude-in-gemeinden/resource/3ae6d523-748c-466b-8368-04569473338e)
         * `DONE` Add indicator for [Zweitwohnungsanteil](https://opendata.swiss/de/dataset/wohnungsinventar-und-zweitwohnungsanteil)
-        * `TODO` Return geojson with json instead of WKT
+        * `DONE` Return geojson with json instead of WKT
+        * `DONE` Add possibility to get Excel file as response
         * `TODO` Add other indicators from Swisstopo API
 
         Later:
-        * `TODO` Add possibility to get Excel file as response
         * `TODO` Add more indicators only available for districts or cantons
     """)
 )
-add_pagination(app)
 
 
 @app.get(
@@ -74,17 +89,30 @@ add_pagination(app)
     tags=['Indicators'],
     description='List all available indicators.',
 )
-async def get_all_available_indicators(
-    db: AsyncEngine = Depends(get_engine),
-    geo_code: Literal['polg', 'bezk', 'kant'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`. Other values are `bezk` for `district` and `kant` for `canton`.'),
+def get_all_available_indicators(
+    db_sync: Engine = Depends(get_sync_engine),
+    geo_code: GeoCode = Query(
+        ...,
+        description=textwrap.dedent("""
+            Geographic level to return.
+
+            Possible values:
+
+            | Value | EN | DE |
+            | --- | --- | --- |
+            | `polg` | municipality | Politische Gemeinde |
+            | `bezk` | district | Bezirk |
+            | `kant` | canton | Kanton |
+        """),
+    ),
 ):
-    async with db.begin() as conn:
-        tbl_indicator = await conn.run_sync(
-            lambda conn: Table('seed_indicator', MetaData(bind=None, schema='dbt'), autoload=True, autoload_with=conn)
-        )
-        tbl_api = await conn.run_sync(
-            lambda conn: Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
+    tbl_indicator = Table(
+        'seed_indicator',
+        MetaData(bind=None, schema='dbt'),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -101,52 +129,86 @@ async def get_all_available_indicators(
         .where(tbl_api.c.geo_code == geo_code)
         .order_by(tbl_api.c.indicator_id.asc())
     )
-    async with db.connect() as conn:
-        res = await conn.execute(query)
-
-    return res.all()
+    with db_sync.connect() as conn:
+        df = pd.read_sql_query(
+            sql=query.compile(dialect=db_sync.dialect),
+            con=conn,
+        )
+        assert isinstance(df, pd.DataFrame)
+    return df.to_dict(orient='records')
 
 
 @app.get(
+    '/indicator/xlsx',
+    tags=['Indicators'],
+    description='Returns as Excel file for a selected indicator.',
+    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+)
+@app.get(
     '/indicator/csv',
     tags=['Indicators'],
-    description='Returns a CSV instaed of JSON. Can be easily parsed by frameworks like pandas or dplyr.',
+    description='Returns as CSV for a selected indicator. Can be easily parsed by frameworks like pandas or dplyr.',
     response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
 )
 @app.get(
     '/indicator',
     tags=['Indicators'],
-    description='Returns a JSON.',
+    description='Returns a GeoJSON for a selected indicator.',
+    response_class=GeoJsonResponse,
 )
-async def get_indicator(
+def get_indicator(
     request: Request,
-    indicator_id: int = Query(..., description='Select an indicator. If you want to check all possible indicators run path /indicator'),
-    geo_code: Literal['polg', 'bezk', 'kant'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`. Other values are `bezk` for `district` and `kant` for `canton`.'),
-    knowledge_date: str = Query(dt.date.today().strftime('%Y-%m-%d'), description='Allows to query a different state of the data in the past. Format: ISO-8601, Example: `2023-12-31`'),
-    skip: int = Query(0, description='Pagination: Skip the first n rows.'),
-    limit: int = Query(100, description='Pagination: Limit the size of one page.'),
-    disable_pagination: bool = Query(False, description='You can completely disable pagination by setting param `disable_pagination==true`. Please use responsibly.'),
-    join_indicator: bool = Query(True, description='Joins information about the indicator.'),
-    join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
-    join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
-    db: AsyncEngine = Depends(get_engine)
+    indicator_id: int = Query(..., description='Select an indicator. If you want to check all possible indicators run path `/indicator` first.'),
+    geo_code: GeoCode = Query(
+        ...,
+        description=textwrap.dedent("""
+            Geographic level to return.
+
+            Possible values:
+
+            | Value | EN | DE |
+            | --- | --- | --- |
+            | `polg` | municipality | Politische Gemeinde |
+            | `bezk` | district | Bezirk |
+            | `kant` | canton | Kanton |
+        """),
+    ),
+    knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
+    join_indicator: bool = Query(True, description='Optional. Joins information about the indicator.'),
+    join_geo: bool = Query(True, description='Optional. Joins information about the geometry like its name or its parents.'),
+    skip: Optional[int] = Query(0, description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(10, description='Optional. Limit response to the set amount of rows.'),
+    db_sync: Engine = Depends(get_sync_engine),
 ):
-    async with db.begin() as conn:
-        tbl_indicator = await conn.run_sync(
-            lambda conn: Table('seed_indicator', MetaData(bind=None, schema='dbt'), autoload=True, autoload_with=conn)
-        )
-        tbl_api = await conn.run_sync(
-            lambda conn: Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-        tbl_gemeinde = await conn.run_sync(
-            lambda conn: Table('dim_gemeinde_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-        tbl_bezirk = await conn.run_sync(
-            lambda conn: Table('dim_bezirk_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-        tbl_kanton = await conn.run_sync(
-            lambda conn: Table('dim_kanton_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
+    tbl_indicator = Table(
+        'seed_indicator',
+        MetaData(bind=None, schema='dbt'),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
+    tbl_gemeinde = Table(
+        'dim_gemeinde_latest',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_bezirk =  Table(
+        'dim_bezirk_latest',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_kanton = Table(
+        'dim_kanton_latest',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -164,9 +226,21 @@ async def get_indicator(
         )
         .where(tbl_api.c.indicator_id == indicator_id)
         .where(tbl_api.c.geo_code == geo_code)
-        .where(tbl_api.c.knowledge_date_from <= dt.date.fromisoformat(knowledge_date))
-        .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > dt.date.fromisoformat(knowledge_date))
     )
+    if knowledge_date:
+        _knowledge_date = dt.date.fromisoformat(knowledge_date)
+        query = (
+            query
+            .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
+            .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > _knowledge_date)
+        )
+    else:
+        _knowledge_date = dt.date.today() + dt.timedelta(days=1)
+        query = (
+            query
+            .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
+            .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > _knowledge_date)
+        )
     if join_indicator:
         query = (
             query
@@ -180,125 +254,152 @@ async def get_indicator(
                 tbl_indicator.c.indicator_description,
             )
         )
-    if join_geo or join_geo_wkt:
+    if join_geo:
         match geo_code:
-            case 'polg':
-                query = (
-                    query
-                    .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
-                    .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
-                    .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+            case GeoCode.polg:
+                query = query.add_columns(
+                    tbl_gemeinde.c.gemeinde_name.label('geo_name'),
+                    tbl_bezirk.c.bezirk_bfs_id,
+                    tbl_bezirk.c.bezirk_name,
+                    tbl_kanton.c.kanton_bfs_id,
+                    tbl_kanton.c.kanton_name,
                 )
-            case 'bezk':
-                query = (
-                    query
-                    .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
-                    .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+            case GeoCode.bezk:
+                query = query.add_columns(
+                    tbl_bezirk.c.bezirk_name.label('geo_name'),
+                    tbl_kanton.c.kanton_bfs_id,
+                    tbl_kanton.c.kanton_name,
                 )
-            case 'kant':
-                query = (
-                    query
-                    .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
+            case GeoCode.kant:
+                query = query.add_columns(
+                    tbl_kanton.c.kanton_name.label('geo_name'),
                 )
-        if join_geo:
-            match geo_code:
-                case 'polg':
-                    query = query.add_columns(
-                        tbl_gemeinde.c.gemeinde_name.label('geo_name'),
-                        tbl_bezirk.c.bezirk_bfs_id,
-                        tbl_bezirk.c.bezirk_name,
-                        tbl_kanton.c.kanton_bfs_id,
-                        tbl_kanton.c.kanton_name,
-                    )
-                case 'bezk':
-                    query = query.add_columns(
-                        tbl_bezirk.c.bezirk_name.label('geo_name'),
-                        tbl_kanton.c.kanton_bfs_id,
-                        tbl_kanton.c.kanton_name,
-                    )
-                case 'kant':
-                    query = query.add_columns(
-                        tbl_kanton.c.kanton_name.label('geo_name'),
-                    )
-        if join_geo_wkt:
-            match geo_code:
-                case 'polg':
-                    query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
-                case 'bezk':
-                    query = query.add_columns(tbl_bezirk.c.geometry_wkt.label('geo_wkt'))
-                case 'kant':
-                    query = query.add_columns(tbl_kanton.c.geometry_wkt.label('geo_wkt'))
-    if not disable_pagination:
-        query = query.offset(skip).limit(limit)
 
-    query_total =(
-        select(func.count())
-        .select_from(tbl_api)
-        .where(tbl_api.c.indicator_id == indicator_id)
-        .where(tbl_api.c.geo_code == geo_code)
-    )
-    async with db.connect() as conn:
-        res = await conn.execute(query)
-        res_total = await conn.execute(query_total)
-
-    if request.url.path == '/indicator':
-        return {
-            'total': res_total.scalar_one(),
-            'skip': skip,
-            'limit': limit,
-            'data': res.all(),
-        }
-    elif request.url.path == '/indicator/csv':
-        df = pd.DataFrame.from_dict(
-            data=[dict(row) for row in res.all()],
-            orient='columns',
+    # Column geometry should be the last column in the query.
+    match geo_code:
+        case GeoCode.polg:
+            query = (
+                query
+                .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+                .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
+                .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+                .add_columns(tbl_gemeinde.c.geometry)
+            )
+        case GeoCode.bezk:
+            query = (
+                query
+                .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
+                .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+                .add_columns(tbl_bezirk.c.geometry)
+            )
+        case GeoCode.kant:
+            query = (
+                query
+                .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
+                .add_columns(tbl_kanton.c.geometry)
+            )
+    if period_ref:
+        query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
+    with db_sync.connect() as conn:
+        gdf = gpd.read_postgis(
+            sql=query.compile(dialect=db_sync.dialect),
+            con=conn,
+            geom_col='geometry',
+            crs='EPSG:2056',
         )
+        assert isinstance(gdf, gpd.GeoDataFrame)
+
+    # Form response...
+    if request.url.path == '/indicator':
+        return gdf.to_geo_dict()
+    elif request.url.path == '/indicator/csv':
         buffer = io.StringIO()
-        df.to_csv(buffer, index=False)
+        gdf.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
         response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
+        return response
+    elif request.url.path == '/indicator/xlsx':
+        buffer = io.BytesIO()
+        gdf.to_excel(buffer, index=False, sheet_name='data')
+        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
         return response
 
 
 @app.get(
+    '/portrait/xlsx',
+    tags=['Indicators'],
+    description='Returns as Excel file for the selected geometry.',
+    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+)
+@app.get(
     '/portrait/csv',
     tags=['Indicators'],
-    description='Returns a CSV instaed of JSON. Can be easily parsed by frameworks like pandas or dplyr.',
+    description='Returns a CSV for the selected geometry. Can be easily parsed by frameworks like pandas or dplyr.',
     response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
 )
 @app.get(
     '/portrait',
     tags=['Indicators'],
-    description='Returns a JSON.',
+    description='Returns a GeoJSON for a selected geometry.',
 )
-async def list_all_indicators_for_one_geometry(
+def list_all_indicators_for_one_geometry(
     request: Request,
-    geo_code: Literal['polg', 'bezk', 'kant'] = Query('polg', description='geo_code describes a geographic area. Default is `polg` for `municipality`. Other values are `bezk` for `district` and `kant` for `canton`.'),
+    geo_code: GeoCode = Query(
+        ...,
+        description=textwrap.dedent("""
+            Geographic level to return.
+
+            Possible values:
+
+            | Value | EN | DE |
+            | --- | --- | --- |
+            | `polg` | municipality | Politische Gemeinde |
+            | `bezk` | district | Bezirk |
+            | `kant` | canton | Kanton |
+        """),
+    ),
     geo_value: int = Query(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
-    knowledge_date: str = Query(dt.date.today().strftime('%Y-%m-%d'), description='Allows to query a different state of the data in the past. Format: ISO-8601, Example: `2023-12-31`'),
+    knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
-    join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
-    period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
-    db: AsyncEngine = Depends(get_engine)
+    skip: Optional[int] = Query(0, description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(10, description='Optional. Limit response to the set amount of rows.'),
+    db_sync: Engine = Depends(get_sync_engine),
 ):
-    async with db.begin() as conn:
-        tbl_indicator = await conn.run_sync(
-            lambda conn: Table('seed_indicator', MetaData(bind=None, schema='dbt'), autoload=True, autoload_with=conn)
-        )
-        tbl_api = await conn.run_sync(
-            lambda conn: Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-        tbl_gemeinde = await conn.run_sync(
-            lambda conn: Table('dim_gemeinde_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-        tbl_bezirk = await conn.run_sync(
-            lambda conn: Table('dim_bezirk_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-        tbl_kanton = await conn.run_sync(
-            lambda conn: Table('dim_kanton_latest', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-
+    tbl_indicator = Table(
+        'seed_indicator',
+        MetaData(bind=None, schema='dbt'),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
+    tbl_gemeinde = Table(
+        'dim_gemeinde_latest',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_bezirk =  Table(
+        'dim_bezirk_latest',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
+    tbl_kanton = Table(
+        'dim_kanton_latest',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -316,9 +417,14 @@ async def list_all_indicators_for_one_geometry(
         )
         .where(tbl_api.c.geo_code == geo_code)
         .where(tbl_api.c.geo_value == geo_value)
-        .where(tbl_api.c.knowledge_date_from <= dt.date.fromisoformat(knowledge_date))
-        .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > dt.date.fromisoformat(knowledge_date))
     )
+    if knowledge_date:
+        _knowledge_date = dt.date.fromisoformat(knowledge_date)
+        query = (
+            query
+            .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
+            .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > _knowledge_date)
+        )
     if join_indicator:
         query = (
             query
@@ -332,74 +438,94 @@ async def list_all_indicators_for_one_geometry(
                 tbl_indicator.c.indicator_description,
             )
         )
-    if join_geo or join_geo_wkt:
+    if join_geo:
         match geo_code:
-            case 'polg':
-                query = (
-                    query
-                    .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
-                    .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
-                    .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+            case GeoCode.polg:
+                query = query.add_columns(
+                    tbl_gemeinde.c.gemeinde_name.label('geo_name'),
+                    tbl_bezirk.c.bezirk_bfs_id,
+                    tbl_bezirk.c.bezirk_name,
+                    tbl_kanton.c.kanton_bfs_id,
+                    tbl_kanton.c.kanton_name,
                 )
-            case 'bezk':
-                query = (
-                    query
-                    .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
-                    .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+            case GeoCode.bezk:
+                query = query.add_columns(
+                    tbl_bezirk.c.bezirk_name.label('geo_name'),
+                    tbl_kanton.c.kanton_bfs_id,
+                    tbl_kanton.c.kanton_name,
                 )
-            case 'kant':
-                query = (
-                    query
-                    .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
+            case GeoCode.kant:
+                query = query.add_columns(
+                    tbl_kanton.c.kanton_name.label('geo_name'),
                 )
-        if join_geo:
-            match geo_code:
-                case 'polg':
-                    query = query.add_columns(
-                        tbl_gemeinde.c.gemeinde_name.label('geo_name'),
-                        tbl_bezirk.c.bezirk_bfs_id,
-                        tbl_bezirk.c.bezirk_name,
-                        tbl_kanton.c.kanton_bfs_id,
-                        tbl_kanton.c.kanton_name,
-                    )
-                case 'bezk':
-                    query = query.add_columns(
-                        tbl_bezirk.c.bezirk_name.label('geo_name'),
-                        tbl_kanton.c.kanton_bfs_id,
-                        tbl_kanton.c.kanton_name,
-                    )
-                case 'kant':
-                    query = query.add_columns(
-                        tbl_kanton.c.kanton_name.label('geo_name'),
-                    )
-        if join_geo_wkt:
-            match geo_code:
-                case 'polg':
-                    query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
-                case 'bezk':
-                    query = query.add_columns(tbl_bezirk.c.geometry_wkt.label('geo_wkt'))
-                case 'kant':
-                    query = query.add_columns(tbl_kanton.c.geometry_wkt.label('geo_wkt'))
+    
+    # Column geometry should be the last column in the query.
+    match geo_code:
+        case GeoCode.polg:
+            query = (
+                query
+                .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
+                .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
+                .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+                .add_columns(tbl_gemeinde.c.geometry)
+            )
+        case GeoCode.bezk:
+            query = (
+                query
+                .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
+                .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
+                .add_columns(tbl_bezirk.c.geometry)
+            )
+        case GeoCode.kant:
+            query = (
+                query
+                .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
+                .add_columns(tbl_kanton.c.geometry)
+            )
     if period_ref:
         query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
-    async with db.connect() as conn:
-        res = await conn.execute(query)
-    if request.url.path == '/portrait':
-        return {
-            'data': res.all(),
-        }
-    elif request.url.path == '/portrait/csv':
-        df = pd.DataFrame.from_dict(
-            data=[dict(row) for row in res.all()],
-            orient='columns',
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
+    with db_sync.connect() as conn:
+        gdf = gpd.read_postgis(
+            sql=query.compile(dialect=db_sync.dialect),
+            con=conn,
+            geom_col='geometry',
+            crs='EPSG:2056',
         )
+        assert isinstance(gdf, gpd.GeoDataFrame)
+    
+    # Form response...
+    if request.url.path == '/portrait':
+        return gdf.to_geo_dict()
+    elif request.url.path == '/portrait/csv':
         buffer = io.StringIO()
-        df.to_csv(buffer, index=False)
+        gdf.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
         response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
         return response
+    elif request.url.path == '/portrait/xlsx':
+        buffer = io.BytesIO()
+        gdf.to_excel(buffer, index=False, sheet_name='data')
+        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
+        return response
 
 
+@app.get(
+    '/municipalities/xlsx',
+    tags=['Dimensions'],
+    description=textwrap.dedent("""
+        Returns municipalities of Switzerland for a given year (since 1850). Returns a XLSX file.
+
+        Sources:
+        * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
+        * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
+    """),
+    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+)
 @app.get(
     '/municipalities/csv',
     tags=['Dimensions'],
@@ -423,17 +549,18 @@ async def list_all_indicators_for_one_geometry(
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
 )
-async def list_municipalities_by_year(
+def list_municipalities_by_year(
     request: Request,
     year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
-    join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
-    db: AsyncEngine = Depends(get_engine),
+    db_sync: Engine = Depends(get_sync_engine),
 ):
-    async with db.begin() as conn:
-        tbl_gemeinde = await conn.run_sync(
-            lambda conn: Table('dim_gemeinde', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
-
+    tbl_gemeinde = Table(
+        'dim_gemeinde',
+        MetaData(bind=None, schema='dbt_marts'),
+        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        autoload=True,
+        autoload_with=db_sync,
+    )
     query = (
         select(
             tbl_gemeinde.c.snapshot_date,
@@ -442,29 +569,46 @@ async def list_municipalities_by_year(
             tbl_gemeinde.c.gemeinde_name,
             tbl_gemeinde.c.bezirk_bfs_id,
             tbl_gemeinde.c.kanton_bfs_id,
+            tbl_gemeinde.c.geometry,
         )
         .where(tbl_gemeinde.c.snapshot_year == year)
     )
-    if join_geo_wkt:
-        query = query.add_columns(tbl_gemeinde.c.geometry_wkt.label('geo_wkt'))
-    async with db.connect() as conn:
-        res = await conn.execute(query)
-    if request.url.path == '/municipalities':
-        return {
-            'data': res.all(),
-        }
-    elif request.url.path == '/municipalities/csv':
-        df = pd.DataFrame.from_dict(
-            data=[dict(row) for row in res.all()],
-            orient='columns',
+    with db_sync.connect() as conn:
+        gdf = gpd.read_postgis(
+            sql=query.compile(dialect=db_sync.dialect),
+            con=conn,
+            geom_col='geometry',
+            crs='EPSG:2056',
         )
+        assert isinstance(gdf, gpd.GeoDataFrame)
+    if request.url.path == '/municipalities':
+        return gdf.to_geo_dict()
+    elif request.url.path == '/municipalities/csv':
         buffer = io.StringIO()
-        df.to_csv(buffer, index=False)
+        gdf.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
         response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
         return response
+    elif request.url.path == '/municipalities/xlsx':
+        buffer = io.BytesIO()
+        gdf.to_excel(buffer, index=False, sheet_name='data')
+        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
+        return response
 
 
+@app.get(
+    '/districts/xlsx',
+    tags=['Dimensions'],
+    description=textwrap.dedent("""
+        Returns districts of Switzerland for a given year (since 1850). Returns a XLSX file.
+
+        Sources:
+        * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
+        * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
+    """),
+    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+)
 @app.get(
     '/districts/csv',
     tags=['Dimensions'],
@@ -488,16 +632,12 @@ async def list_municipalities_by_year(
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
 )
-async def list_districts_by_year(
+def list_districts_by_year(
     request: Request,
     year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
-    join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
-    db: AsyncEngine = Depends(get_engine),
+    db_sync: Engine = Depends(get_sync_engine),
 ):
-    async with db.begin() as conn:
-        tbl_bezirk = await conn.run_sync(
-            lambda conn: Table('dim_bezirk', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
+    tbl_bezirk = Table('dim_bezirk', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
 
     query = (
         select(
@@ -505,29 +645,46 @@ async def list_districts_by_year(
             tbl_bezirk.c.bezirk_bfs_id,
             tbl_bezirk.c.bezirk_name,
             tbl_bezirk.c.kanton_bfs_id,
+            tbl_bezirk.c.geometry,
         )
         .where(tbl_bezirk.c.snapshot_year == year)
     )
-    if join_geo_wkt:
-        query = query.add_columns(tbl_bezirk.c.geometry_wkt.label('geo_wkt'))
-    async with db.connect() as conn:
-        res = await conn.execute(query)
-    if request.url.path == '/districts':
-        return {
-            'data': res.all(),
-        }
-    elif request.url.path == '/districts/csv':
-        df = pd.DataFrame.from_dict(
-            data=[dict(row) for row in res.all()],
-            orient='columns',
+    with db_sync.connect() as conn:
+        gdf = gpd.read_postgis(
+            sql=query.compile(dialect=db_sync.dialect),
+            con=conn,
+            geom_col='geometry',
+            crs='EPSG:2056',
         )
+        assert isinstance(gdf, gpd.GeoDataFrame)
+    if request.url.path == '/districts':
+        return gdf.to_geo_dict()
+    elif request.url.path == '/districts/csv':
         buffer = io.StringIO()
-        df.to_csv(buffer, index=False)
+        gdf.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
         response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
         return response
+    elif request.url.path == '/districts/xlsx':
+        buffer = io.BytesIO()
+        gdf.to_excel(buffer, index=False, sheet_name='data')
+        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
+        return response
 
 
+@app.get(
+    '/cantons/xlsx',
+    tags=['Dimensions'],
+    description=textwrap.dedent("""
+        Returns cantons of Switzerland for a given year (since 1850). Returns a XLSX file.
+
+        Sources:
+        * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
+        * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
+    """),
+    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+)
 @app.get(
     '/cantons/csv',
     tags=['Dimensions'],
@@ -551,16 +708,12 @@ async def list_districts_by_year(
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
 )
-async def list_cantons_by_year(
+def list_cantons_by_year(
     request: Request,
     year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
-    join_geo_wkt: bool = Query(False, description='Joins the geometry itself as WKT. CRS = EPSG:2056 / LV95'),
-    db: AsyncEngine = Depends(get_engine),
+    db_sync: Engine = Depends(get_sync_engine),
 ):
-    async with db.begin() as conn:
-        tbl_kanton = await conn.run_sync(
-            lambda conn: Table('dim_kanton', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=conn)
-        )
+    tbl_kanton = Table('dim_kanton', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
 
     query = (
         select(
@@ -568,25 +721,29 @@ async def list_cantons_by_year(
             tbl_kanton.c.kanton_bfs_id,
             tbl_kanton.c.kanton_name,
             tbl_kanton.c.icc,
+            tbl_kanton.c.geometry,
         )
         .where(tbl_kanton.c.snapshot_year == year)
     )
-    if join_geo_wkt:
-        query = query.add_columns(tbl_kanton.c.geometry_wkt.label('geo_wkt'))
-    async with db.connect() as conn:
-        res = await conn.execute(query)
-    if request.url.path == '/cantons':
-        return {
-            'data': res.all(),
-        }
-    elif request.url.path == '/cantons/csv':
-        df = pd.DataFrame.from_dict(
-            data=[dict(row) for row in res.all()],
-            orient='columns',
+    with db_sync.connect() as conn:
+        gdf = gpd.read_postgis(
+            sql=query.compile(dialect=db_sync.dialect),
+            con=conn,
+            geom_col='geometry',
+            crs='EPSG:2056',
         )
+        assert isinstance(gdf, gpd.GeoDataFrame)
+    if request.url.path == '/cantons':
+        return gdf.to_geo_dict()
+    elif request.url.path == '/cantons/csv':
         buffer = io.StringIO()
-        df.to_csv(buffer, index=False)
+        gdf.to_csv(buffer, index=False)
         response = Response(content=buffer.getvalue(), media_type='text/csv')
         response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
         return response
-
+    elif request.url.path == '/cantons/xlsx':
+        buffer = io.BytesIO()
+        gdf.to_excel(buffer, index=False, sheet_name='data')
+        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
+        return response
