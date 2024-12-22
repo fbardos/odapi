@@ -6,7 +6,6 @@ from sqlalchemy import MetaData
 from fastapi import Request
 from fastapi import Query
 from sqlalchemy.engine import Engine
-from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import select
 from sqlalchemy import Table
 from sqlalchemy import Column
@@ -14,12 +13,10 @@ from sqlalchemy.sql.functions import coalesce
 from geoalchemy2 import Geometry
 from typing import Optional
 import geopandas as gpd
-from typing import Literal
 import datetime as dt
 import textwrap
 import os
 import pandas as pd
-from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from dotenv import load_dotenv
@@ -31,9 +28,6 @@ from fastapi.responses import JSONResponse
 
 # DATABASE ###################################################################
 load_dotenv()
-
-def get_engine() -> AsyncEngine:
-    return create_async_engine(os.environ['SQLALCHEMY_DATABASE_URL_ASYNC'])
 
 def get_sync_engine() -> Engine:
     return create_engine(os.environ['SQLALCHEMY_DATABASE_URL_SYNC'])
