@@ -15,6 +15,7 @@ from typing import Optional
 import geopandas as gpd
 import datetime as dt
 import textwrap
+from shapely.geometry import Point
 import os
 import pandas as pd
 from sqlalchemy import create_engine
@@ -42,6 +43,10 @@ class GeoCode(str, Enum):
     bezk = 'bezk'
     kant = 'kant'
 
+class GeometryMode(str, Enum):
+    empty = 'empty'
+    point = 'point'
+    border = 'border'
 
 class GeoJsonResponse(JSONResponse):
     media_type = 'application/geo+json'
@@ -171,6 +176,22 @@ def get_indicator(
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Optional. Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Optional. Joins information about the geometry like its name or its parents.'),
+    geometry_mode: GeometryMode = Query(
+        GeometryMode.point,
+        description=textwrap.dedent("""
+            Optional. Will join the coordinates of the geometries.
+            **Be careful, this can create a big response and may take some time**.
+            Especially, when no limit is set.
+            
+            Possible values:
+
+            | Value | Description | Performance |
+            | --- | --- | --- |
+            | `empty` | Dummy point with Coordinates (0, 0) | fast |
+            | `point` | Centroid of the border geometry | fast |
+            | `border` | Geometry of the actual border | slow |
+        """),
+    ),
     skip: Optional[int] = Query(None, example=0, description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
@@ -185,21 +206,24 @@ def get_indicator(
     tbl_gemeinde = Table(
         'dim_gemeinde_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_bezirk =  Table(
         'dim_bezirk_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_kanton = Table(
         'dim_kanton_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
@@ -277,21 +301,34 @@ def get_indicator(
                 .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
                 .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
                 .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
-                .add_columns(tbl_gemeinde.c.geometry)
             )
         case GeoCode.bezk:
             query = (
                 query
                 .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
                 .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
-                .add_columns(tbl_bezirk.c.geometry)
             )
         case GeoCode.kant:
             query = (
                 query
                 .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
-                .add_columns(tbl_kanton.c.geometry)
             )
+    if geometry_mode == GeometryMode.point:
+        match geo_code:
+            case GeoCode.polg:
+                query = query.add_columns(tbl_gemeinde.c.geom_center)
+            case GeoCode.bezk:
+                query = query.add_columns(tbl_bezirk.c.geom_center)
+            case GeoCode.kant:
+                query = query.add_columns(tbl_kanton.c.geom_center)
+    elif geometry_mode == GeometryMode.border:
+        match geo_code:
+            case GeoCode.polg:
+                query = query.add_columns(tbl_gemeinde.c.geom_border)
+            case GeoCode.bezk:
+                query = query.add_columns(tbl_bezirk.c.geom_border)
+            case GeoCode.kant:
+                query = query.add_columns(tbl_kanton.c.geom_border)
     if period_ref:
         query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
     if skip:
@@ -299,12 +336,29 @@ def get_indicator(
     if limit:
         query = query.limit(limit)
     with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:2056',
-        )
+        match geometry_mode:
+            case GeometryMode.point:
+                gdf = gpd.read_postgis(
+                    sql=query.compile(dialect=db_sync.dialect),
+                    con=conn,
+                    geom_col='geom_center',
+                    crs='EPSG:2056',
+                )
+            case GeometryMode.border:
+                gdf = gpd.read_postgis(
+                    sql=query.compile(dialect=db_sync.dialect),
+                    con=conn,
+                    geom_col='geom_border',
+                    crs='EPSG:2056',
+                )
+            case GeometryMode.empty:
+                gdf = pd.read_sql_query(
+                    sql=query.compile(dialect=db_sync.dialect),
+                    con=conn,
+                )
+                gdf = gpd.GeoDataFrame(gdf)
+                gdf['geometry'] = Point(0, 0)
+            
         assert isinstance(gdf, gpd.GeoDataFrame)
 
     # Form response...
@@ -362,6 +416,22 @@ def list_all_indicators_for_one_geometry(
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
+    geometry_mode: GeometryMode = Query(
+        GeometryMode.point,
+        description=textwrap.dedent("""
+            Optional. Will join the coordinates of the geometries.
+            **Be careful, this can create a big response and may take some time**.
+            Especially, when no limit is set.
+            
+            Possible values:
+
+            | Value | Description | Performance |
+            | --- | --- | --- |
+            | `empty` | Dummy point with Coordinates (0, 0) | fast |
+            | `point` | Centroid of the border geometry | fast |
+            | `border` | Geometry of the actual border | slow |
+        """),
+    ),
     skip: Optional[int] = Query(None, example=0, description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
@@ -376,21 +446,24 @@ def list_all_indicators_for_one_geometry(
     tbl_gemeinde = Table(
         'dim_gemeinde_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_bezirk =  Table(
         'dim_bezirk_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_kanton = Table(
         'dim_kanton_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
@@ -461,21 +534,34 @@ def list_all_indicators_for_one_geometry(
                 .join(tbl_gemeinde, tbl_api.c.geo_value == tbl_gemeinde.c.gemeinde_bfs_id)
                 .join(tbl_bezirk, tbl_gemeinde.c.bezirk_bfs_id == tbl_bezirk.c.bezirk_bfs_id)
                 .join(tbl_kanton, tbl_gemeinde.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
-                .add_columns(tbl_gemeinde.c.geometry)
             )
         case GeoCode.bezk:
             query = (
                 query
                 .join(tbl_bezirk, tbl_api.c.geo_value == tbl_bezirk.c.bezirk_bfs_id)
                 .join(tbl_kanton, tbl_bezirk.c.kanton_bfs_id == tbl_kanton.c.kanton_bfs_id)
-                .add_columns(tbl_bezirk.c.geometry)
             )
         case GeoCode.kant:
             query = (
                 query
                 .join(tbl_kanton, tbl_api.c.geo_value == tbl_kanton.c.kanton_bfs_id)
-                .add_columns(tbl_kanton.c.geometry)
             )
+    if geometry_mode == GeometryMode.point:
+        match geo_code:
+            case GeoCode.polg:
+                query = query.add_columns(tbl_gemeinde.c.geom_center)
+            case GeoCode.bezk:
+                query = query.add_columns(tbl_bezirk.c.geom_center)
+            case GeoCode.kant:
+                query = query.add_columns(tbl_kanton.c.geom_center)
+    elif geometry_mode == GeometryMode.border:
+        match geo_code:
+            case GeoCode.polg:
+                query = query.add_columns(tbl_gemeinde.c.geom_border)
+            case GeoCode.bezk:
+                query = query.add_columns(tbl_bezirk.c.geom_border)
+            case GeoCode.kant:
+                query = query.add_columns(tbl_kanton.c.geom_border)
     if period_ref:
         query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
     if skip:
@@ -483,12 +569,29 @@ def list_all_indicators_for_one_geometry(
     if limit:
         query = query.limit(limit)
     with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:2056',
-        )
+        match geometry_mode:
+            case GeometryMode.point:
+                gdf = gpd.read_postgis(
+                    sql=query.compile(dialect=db_sync.dialect),
+                    con=conn,
+                    geom_col='geom_center',
+                    crs='EPSG:2056',
+                )
+            case GeometryMode.border:
+                gdf = gpd.read_postgis(
+                    sql=query.compile(dialect=db_sync.dialect),
+                    con=conn,
+                    geom_col='geom_border',
+                    crs='EPSG:2056',
+                )
+            case GeometryMode.empty:
+                gdf = pd.read_sql_query(
+                    sql=query.compile(dialect=db_sync.dialect),
+                    con=conn,
+                )
+                gdf = gpd.GeoDataFrame(gdf)
+                gdf['geometry'] = Point(0, 0)
+            
         assert isinstance(gdf, gpd.GeoDataFrame)
     
     # Form response...
@@ -551,7 +654,7 @@ def list_municipalities_by_year(
     tbl_gemeinde = Table(
         'dim_gemeinde',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geometry', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
         autoload=True,
         autoload_with=db_sync,
     )
@@ -563,7 +666,7 @@ def list_municipalities_by_year(
             tbl_gemeinde.c.gemeinde_name,
             tbl_gemeinde.c.bezirk_bfs_id,
             tbl_gemeinde.c.kanton_bfs_id,
-            tbl_gemeinde.c.geometry,
+            tbl_gemeinde.c.geom_border,
         )
         .where(tbl_gemeinde.c.snapshot_year == year)
     )
@@ -571,7 +674,7 @@ def list_municipalities_by_year(
         gdf = gpd.read_postgis(
             sql=query.compile(dialect=db_sync.dialect),
             con=conn,
-            geom_col='geometry',
+            geom_col='geom_border',
             crs='EPSG:2056',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
@@ -639,7 +742,7 @@ def list_districts_by_year(
             tbl_bezirk.c.bezirk_bfs_id,
             tbl_bezirk.c.bezirk_name,
             tbl_bezirk.c.kanton_bfs_id,
-            tbl_bezirk.c.geometry,
+            tbl_bezirk.c.geom_border,
         )
         .where(tbl_bezirk.c.snapshot_year == year)
     )
@@ -647,7 +750,7 @@ def list_districts_by_year(
         gdf = gpd.read_postgis(
             sql=query.compile(dialect=db_sync.dialect),
             con=conn,
-            geom_col='geometry',
+            geom_col='geom_border',
             crs='EPSG:2056',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
@@ -715,7 +818,7 @@ def list_cantons_by_year(
             tbl_kanton.c.kanton_bfs_id,
             tbl_kanton.c.kanton_name,
             tbl_kanton.c.icc,
-            tbl_kanton.c.geometry,
+            tbl_kanton.c.geom_border,
         )
         .where(tbl_kanton.c.snapshot_year == year)
     )
@@ -723,7 +826,7 @@ def list_cantons_by_year(
         gdf = gpd.read_postgis(
             sql=query.compile(dialect=db_sync.dialect),
             con=conn,
-            geom_col='geometry',
+            geom_col='geom_border',
             crs='EPSG:2056',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
