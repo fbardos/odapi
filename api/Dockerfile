@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir \
     "sqlalchemy[asyncio]==1.4" \
     asyncpg \
     python-dotenv \
-    "geopandas>=1.0" \  # used for GeoDataFrame.to_geo_dict
+    "geopandas>=1.0" \
     openpyxl \
     geoalchemy2 \
     psycopg2
