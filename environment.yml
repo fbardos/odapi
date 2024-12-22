@@ -55,6 +55,7 @@ dependencies:
     - "fastapi[standard]"
     - fastapi-pagination
     - pyarrow
+    - uvicorn
     - jq
     - OWSLib
 
