@@ -45,6 +45,7 @@ with src as (
 select 
     *
     , EXTRACT(YEAR FROM snapshot_date) as snapshot_year
-    , geometry as geom_border
-    , ST_Centroid(geometry) as geom_center
+    -- GeoJSON uses WGS 84 (EPSG:4326) as standard
+    , ST_Transform(geometry, 4326) as geom_border
+    , ST_Transform(ST_Centroid(geometry), 4326) as geom_center
 from union_tables
