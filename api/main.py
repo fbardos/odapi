@@ -90,12 +90,12 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
         return XlsxResponse(content=buffer)
     # Must stand last, otherwise will match for every path.
     elif request.url.path.startswith(f'/{first_path_element}'):
-        gdf = gdf.astype({
-            'knowledge_date_from': 'str',
-            'knowledge_date_to': 'str',
-            'period_ref_from': 'str',
-            'period_ref': 'str',
-        })
+        columns_to_convert = [
+            'snapshot_date', 'knowledge_date_from', 'knowledge_date_to', 'period_ref_from', 'period_ref'
+        ]
+        convert_columns = {col: 'str' for col in gdf.columns if col in columns_to_convert}
+        gdf = gdf.astype(convert_columns)
+        print(gdf.info())
         
         # After some performance testing, it seems, that the solution with
         # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
