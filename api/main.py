@@ -2,9 +2,11 @@ import io
 from fastapi import FastAPI
 from fastapi import Depends
 from fastapi import Response
+from fastapi.responses import FileResponse
 from sqlalchemy import MetaData
 from fastapi import Request
 from fastapi import Query
+from fastapi import Path
 from sqlalchemy.engine import Engine
 from sqlalchemy import select
 from sqlalchemy import Table
@@ -37,21 +39,66 @@ def get_metadata():
     return MetaData(bind=None, schema='dbt')
 
 
-# API ########################################################################
+# CUSTOM CLASSES #############################################################
 class GeoCode(str, Enum):
     polg = 'polg'
     bezk = 'bezk'
     kant = 'kant'
+
 
 class GeometryMode(str, Enum):
     empty = 'empty'
     point = 'point'
     border = 'border'
 
+
 class GeoJsonResponse(JSONResponse):
     media_type = 'application/geo+json'
 
 
+class CsvResponse(Response):
+    media_type = 'text/csv'
+
+    def __init__(self, content: io.BytesIO, filename: str = 'odapi_data.csv', status_code: int = 200, *args, **kwargs):
+        super().__init__(
+            content=content.getvalue(),
+            status_code=status_code,
+            headers={'Content-Disposition': f'attachment; filename={filename}'},
+            media_type=self.media_type,
+            *args,
+            **kwargs
+        )
+
+
+class XlsxResponse(Response):
+    media_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+    def __init__(self, content: io.BytesIO, filename: str = 'odapi_data.xlsx', status_code: int = 200, *args, **kwargs):
+        super().__init__(
+            content=content.getvalue(),
+            status_code=status_code,
+            headers={'Content-Disposition': f'attachment; filename={filename}'},
+            media_type=self.media_type,
+            *args,
+            **kwargs
+        )
+
+# HELPER FUNC ################################################################
+def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDataFrame):
+    if request.url.path.startswith(f'/{first_path_element}/csv'):
+        buffer = io.BytesIO()
+        gdf.to_csv(buffer, index=False)
+        return CsvResponse(content=buffer)
+    elif request.url.path.startswith(f'/{first_path_element}/xlsx'):
+        buffer = io.BytesIO()
+        gdf.to_excel(buffer, index=False, sheet_name='data')
+        return XlsxResponse(content=buffer)
+    # Must stand last, otherwise will match for every path.
+    elif request.url.path.startswith(f'/{first_path_element}'):
+        return gdf.to_geo_dict()
+
+
+# API ########################################################################
 app = FastAPI(
     title='ODAPI - Open Data API for Switzerland',
     docs_url='/',
@@ -84,13 +131,13 @@ app = FastAPI(
 
 
 @app.get(
-    '/indicators',
+    '/indicators/{geo_code}',
     tags=['Indicators'],
     description='List all available indicators.',
 )
 def get_all_available_indicators(
     db_sync: Engine = Depends(get_sync_engine),
-    geo_code: GeoCode = Query(
+    geo_code: GeoCode = Path(
         ...,
         description=textwrap.dedent("""
             Geographic level to return.
@@ -138,27 +185,26 @@ def get_all_available_indicators(
 
 
 @app.get(
-    '/indicator/xlsx',
+    '/indicator/xlsx/{geo_code}/{indicator_id}',
     tags=['Indicators'],
     description='Returns as Excel file for a selected indicator.',
-    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+    response_class=XlsxResponse,
 )
 @app.get(
-    '/indicator/csv',
+    '/indicator/csv/{geo_code}/{indicator_id}',
     tags=['Indicators'],
     description='Returns as CSV for a selected indicator. Can be easily parsed by frameworks like pandas or dplyr.',
-    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
+    response_class=CsvResponse,
 )
 @app.get(
-    '/indicator',
+    '/indicator/{geo_code}/{indicator_id}',
     tags=['Indicators'],
     description='Returns a GeoJSON for a selected indicator.',
     response_class=GeoJsonResponse,
 )
 def get_indicator(
     request: Request,
-    indicator_id: int = Query(..., description='Select an indicator. If you want to check all possible indicators run path `/indicator` first.'),
-    geo_code: GeoCode = Query(
+    geo_code: GeoCode = Path(
         ...,
         description=textwrap.dedent("""
             Geographic level to return.
@@ -172,6 +218,7 @@ def get_indicator(
             | `kant` | canton | Kanton |
         """),
     ),
+    indicator_id: int = Path(..., description='Select an indicator. If you want to check all possible indicators run path `/indicator` first.'),
     knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Optional. Joins information about the indicator.'),
@@ -182,7 +229,7 @@ def get_indicator(
             Optional. Will join the coordinates of the geometries.
             **Be careful, this can create a big response and may take some time**.
             Especially, when no limit is set.
-            
+
             Possible values:
 
             | Value | Description | Performance |
@@ -358,46 +405,32 @@ def get_indicator(
                 )
                 gdf = gpd.GeoDataFrame(gdf)
                 gdf['geometry'] = Point(0, 0)
-            
+
         assert isinstance(gdf, gpd.GeoDataFrame)
 
-    # Form response...
-    if request.url.path == '/indicator':
-        return gdf.to_geo_dict()
-    elif request.url.path == '/indicator/csv':
-        buffer = io.StringIO()
-        gdf.to_csv(buffer, index=False)
-        response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
-        return response
-    elif request.url.path == '/indicator/xlsx':
-        buffer = io.BytesIO()
-        gdf.to_excel(buffer, index=False, sheet_name='data')
-        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
-        return response
+    return response_decision('indicator', request, gdf)
 
 
 @app.get(
-    '/portrait/xlsx',
+    '/portrait/xlsx/{geo_code}/{geo_value}',
     tags=['Indicators'],
     description='Returns as Excel file for the selected geometry.',
-    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+    response_class=XlsxResponse,
 )
 @app.get(
-    '/portrait/csv',
+    '/portrait/csv/{geo_code}/{geo_value}',
     tags=['Indicators'],
     description='Returns a CSV for the selected geometry. Can be easily parsed by frameworks like pandas or dplyr.',
-    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
+    response_class=CsvResponse,
 )
 @app.get(
-    '/portrait',
+    '/portrait/{geo_code}/{geo_value}',
     tags=['Indicators'],
     description='Returns a GeoJSON for a selected geometry.',
 )
 def list_all_indicators_for_one_geometry(
     request: Request,
-    geo_code: GeoCode = Query(
+    geo_code: GeoCode = Path(
         ...,
         description=textwrap.dedent("""
             Geographic level to return.
@@ -411,7 +444,7 @@ def list_all_indicators_for_one_geometry(
             | `kant` | canton | Kanton |
         """),
     ),
-    geo_value: int = Query(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
+    geo_value: int = Path(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
     knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Joins information about the indicator.'),
@@ -422,7 +455,7 @@ def list_all_indicators_for_one_geometry(
             Optional. Will join the coordinates of the geometries.
             **Be careful, this can create a big response and may take some time**.
             Especially, when no limit is set.
-            
+
             Possible values:
 
             | Value | Description | Performance |
@@ -525,7 +558,7 @@ def list_all_indicators_for_one_geometry(
                 query = query.add_columns(
                     tbl_kanton.c.kanton_name.label('geo_name'),
                 )
-    
+
     # Column geometry should be the last column in the query.
     match geo_code:
         case GeoCode.polg:
@@ -591,28 +624,13 @@ def list_all_indicators_for_one_geometry(
                 )
                 gdf = gpd.GeoDataFrame(gdf)
                 gdf['geometry'] = Point(0, 0)
-            
         assert isinstance(gdf, gpd.GeoDataFrame)
-    
-    # Form response...
-    if request.url.path == '/portrait':
-        return gdf.to_geo_dict()
-    elif request.url.path == '/portrait/csv':
-        buffer = io.StringIO()
-        gdf.to_csv(buffer, index=False)
-        response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
-        return response
-    elif request.url.path == '/portrait/xlsx':
-        buffer = io.BytesIO()
-        gdf.to_excel(buffer, index=False, sheet_name='data')
-        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
-        return response
+
+    return response_decision('portrait', request, gdf)
 
 
 @app.get(
-    '/municipalities/xlsx',
+    '/municipalities/xlsx/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a XLSX file.
@@ -621,10 +639,10 @@ def list_all_indicators_for_one_geometry(
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
-    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+    response_class=XlsxResponse,
 )
 @app.get(
-    '/municipalities/csv',
+    '/municipalities/csv/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a CSV.
@@ -633,10 +651,10 @@ def list_all_indicators_for_one_geometry(
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
-    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
+    response_class=CsvResponse,
 )
 @app.get(
-    '/municipalities',
+    '/municipalities/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a JSON.
@@ -648,7 +666,7 @@ def list_all_indicators_for_one_geometry(
 )
 def list_municipalities_by_year(
     request: Request,
-    year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_gemeinde = Table(
@@ -678,24 +696,11 @@ def list_municipalities_by_year(
             crs='EPSG:2056',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
-    if request.url.path == '/municipalities':
-        return gdf.to_geo_dict()
-    elif request.url.path == '/municipalities/csv':
-        buffer = io.StringIO()
-        gdf.to_csv(buffer, index=False)
-        response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
-        return response
-    elif request.url.path == '/municipalities/xlsx':
-        buffer = io.BytesIO()
-        gdf.to_excel(buffer, index=False, sheet_name='data')
-        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
-        return response
+    return response_decision('municipalities', request, gdf)
 
 
 @app.get(
-    '/districts/xlsx',
+    '/districts/xlsx/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a XLSX file.
@@ -704,10 +709,10 @@ def list_municipalities_by_year(
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
-    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+    response_class=XlsxResponse,
 )
 @app.get(
-    '/districts/csv',
+    '/districts/csv/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a CSV.
@@ -716,10 +721,10 @@ def list_municipalities_by_year(
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
-    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
+    response_class=CsvResponse,
 )
 @app.get(
-    '/districts',
+    '/districts/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a JSON.
@@ -731,7 +736,7 @@ def list_municipalities_by_year(
 )
 def list_districts_by_year(
     request: Request,
-    year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_bezirk = Table('dim_bezirk', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
@@ -754,24 +759,11 @@ def list_districts_by_year(
             crs='EPSG:2056',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
-    if request.url.path == '/districts':
-        return gdf.to_geo_dict()
-    elif request.url.path == '/districts/csv':
-        buffer = io.StringIO()
-        gdf.to_csv(buffer, index=False)
-        response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
-        return response
-    elif request.url.path == '/districts/xlsx':
-        buffer = io.BytesIO()
-        gdf.to_excel(buffer, index=False, sheet_name='data')
-        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
-        return response
+    return response_decision('districts', request, gdf)
 
 
 @app.get(
-    '/cantons/xlsx',
+    '/cantons/xlsx/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a XLSX file.
@@ -780,10 +772,10 @@ def list_districts_by_year(
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
-    response_class=FileResponse('odapi_data.xlsx', media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+    response_class=XlsxResponse,
 )
 @app.get(
-    '/cantons/csv',
+    '/cantons/csv/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a CSV.
@@ -792,10 +784,10 @@ def list_districts_by_year(
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
     """),
-    response_class=FileResponse('odapi_data.csv', media_type='text/csv'),
+    response_class=CsvResponse,
 )
 @app.get(
-    '/cantons',
+    '/cantons/{year}',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a JSON.
@@ -807,7 +799,7 @@ def list_districts_by_year(
 )
 def list_cantons_by_year(
     request: Request,
-    year: int = Query(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_kanton = Table('dim_kanton', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
@@ -830,17 +822,4 @@ def list_cantons_by_year(
             crs='EPSG:2056',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
-    if request.url.path == '/cantons':
-        return gdf.to_geo_dict()
-    elif request.url.path == '/cantons/csv':
-        buffer = io.StringIO()
-        gdf.to_csv(buffer, index=False)
-        response = Response(content=buffer.getvalue(), media_type='text/csv')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.csv'
-        return response
-    elif request.url.path == '/cantons/xlsx':
-        buffer = io.BytesIO()
-        gdf.to_excel(buffer, index=False, sheet_name='data')
-        response = Response(content=buffer.getvalue(), media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response.headers['Content-Disposition'] = 'attachment; filename=odapi_data.xlsx'
-        return response
+    return response_decision('cantons', request, gdf)
