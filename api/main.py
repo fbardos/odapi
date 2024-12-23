@@ -253,24 +253,24 @@ def get_indicator(
     tbl_gemeinde = Table(
         'dim_gemeinde_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_bezirk =  Table(
         'dim_bezirk_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_kanton = Table(
         'dim_kanton_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
@@ -479,24 +479,24 @@ def list_all_indicators_for_one_geometry(
     tbl_gemeinde = Table(
         'dim_gemeinde_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_bezirk =  Table(
         'dim_bezirk_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
     tbl_kanton = Table(
         'dim_kanton_latest',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
@@ -672,7 +672,7 @@ def list_municipalities_by_year(
     tbl_gemeinde = Table(
         'dim_gemeinde',
         MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=2056)),
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
         autoload=True,
         autoload_with=db_sync,
     )
