@@ -2,7 +2,6 @@ import io
 from fastapi import FastAPI
 from fastapi import Depends
 from fastapi import Response
-from fastapi.responses import FileResponse
 from sqlalchemy import MetaData
 from fastapi import Request
 from fastapi import Query
@@ -24,9 +23,6 @@ from sqlalchemy import create_engine
 from sqlalchemy import MetaData
 from dotenv import load_dotenv
 from enum import Enum
-
-from fastapi.responses import FileResponse
-from fastapi.responses import JSONResponse
 
 
 # DATABASE ###################################################################
@@ -52,9 +48,8 @@ class GeometryMode(str, Enum):
     border = 'border'
 
 
-class GeoJsonResponse(JSONResponse):
+class GeoJsonResponse(Response):
     media_type = 'application/geo+json'
-
 
 class CsvResponse(Response):
     media_type = 'text/csv'
@@ -95,7 +90,18 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
         return XlsxResponse(content=buffer)
     # Must stand last, otherwise will match for every path.
     elif request.url.path.startswith(f'/{first_path_element}'):
-        return gdf.to_geo_dict()
+        gdf = gdf.astype({
+            'knowledge_date_from': 'str',
+            'knowledge_date_to': 'str',
+            'period_ref_from': 'str',
+            'period_ref': 'str',
+        })
+        
+        # After some performance testing, it seems, that the solution with
+        # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
+        # GeoJSON directly and pass the raw string as custom FastAPI response.
+        assert isinstance(gdf, gpd.GeoDataFrame)
+        return GeoJsonResponse(content=gdf.to_json())
 
 
 # API ########################################################################
