@@ -42,7 +42,7 @@ class TableDefinition(ABC):
     AUTOLOAD: bool = True
     SCHEMA: str
     TABLE_NAME: str
-    COLUMNS: Optional[list[Column]] = None
+    COLUMNS: Optional[list[Column]] = []
 
     @property
     def metadata(cls):
@@ -61,6 +61,11 @@ class TableDefinition(ABC):
 class TableIndicator(TableDefinition):
     SCHEMA = 'dbt'
     TABLE_NAME = 'seed_indicator'
+
+
+class TableAvailableIndicator(TableDefinition):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'mart_available_indicator'
 
 
 class TableApi(TableDefinition):
@@ -220,23 +225,19 @@ def get_all_available_indicators(
         """),
     ),
 ):
-    tbl_indicator = TableIndicator().get_table(db_sync)
-    tbl_api = TableApi().get_table(db_sync)
+    tbl_available_indicator = TableAvailableIndicator().get_table(db_sync)
     query = (
         select(
-            tbl_api.c.indicator_id,
-            tbl_indicator.c.indicator_name,
-            tbl_indicator.c.topic_1,
-            tbl_indicator.c.topic_2,
-            tbl_indicator.c.topic_3,
-            tbl_indicator.c.topic_4,
-            tbl_indicator.c.indicator_unit,
-            tbl_indicator.c.indicator_description,
+            tbl_available_indicator.c.indicator_id,
+            tbl_available_indicator.c.indicator_name,
+            tbl_available_indicator.c.topic_1,
+            tbl_available_indicator.c.topic_2,
+            tbl_available_indicator.c.topic_3,
+            tbl_available_indicator.c.topic_4,
+            tbl_available_indicator.c.indicator_unit,
+            tbl_available_indicator.c.indicator_description,
         )
-        .distinct()
-        .join(tbl_indicator, tbl_api.c.indicator_id == tbl_indicator.c.indicator_id)
-        .where(tbl_api.c.geo_code == geo_code)
-        .order_by(tbl_api.c.indicator_id.asc())
+        .where(tbl_available_indicator.c.geo_code == geo_code)
     )
     with db_sync.connect() as conn:
         df = pd.read_sql_query(
