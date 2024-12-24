@@ -1,4 +1,5 @@
 import io
+from abc import ABC
 from fastapi import FastAPI
 from fastapi import Depends
 from fastapi import Response
@@ -28,11 +29,70 @@ from enum import Enum
 # DATABASE ###################################################################
 load_dotenv()
 
+
 def get_sync_engine() -> Engine:
     return create_engine(os.environ['SQLALCHEMY_DATABASE_URL_SYNC'])
 
+
 def get_metadata():
     return MetaData(bind=None, schema='dbt')
+
+
+class TableDefinition(ABC):
+    AUTOLOAD: bool = True
+    SCHEMA: str
+    TABLE_NAME: str
+    COLUMNS: Optional[list[Column]] = None
+
+    @property
+    def metadata(cls):
+        return MetaData(bind=None, schema=cls.SCHEMA)
+
+    def get_table(self, engine: Engine):
+        return Table(
+            self.TABLE_NAME,
+            self.metadata,
+            autoload=self.AUTOLOAD,
+            autoload_with=engine,
+            *self.COLUMNS,
+        )
+
+
+class TableIndicator(TableDefinition):
+    SCHEMA = 'dbt'
+    TABLE_NAME = 'seed_indicator'
+
+
+class TableApi(TableDefinition):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'mart_ogd_api'
+
+
+class TableGemeinde(TableDefinition):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_gemeinde_latest'
+    COLUMNS = [
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
+    ]
+
+
+class TableBezirk(TableDefinition):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_bezirk_latest'
+    COLUMNS = [
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
+    ]
+
+
+class TableKanton(TableDefinition):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_kanton_latest'
+    COLUMNS = [
+        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
+        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
+    ]
 
 
 # CUSTOM CLASSES #############################################################
@@ -50,6 +110,7 @@ class GeometryMode(str, Enum):
 
 class GeoJsonResponse(Response):
     media_type = 'application/geo+json'
+
 
 class CsvResponse(Response):
     media_type = 'text/csv'
@@ -78,6 +139,7 @@ class XlsxResponse(Response):
             **kwargs
         )
 
+
 # HELPER FUNC ################################################################
 def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDataFrame):
     if request.url.path.startswith(f'/{first_path_element}/csv'):
@@ -96,7 +158,7 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
         convert_columns = {col: 'str' for col in gdf.columns if col in columns_to_convert}
         gdf = gdf.astype(convert_columns)
         print(gdf.info())
-        
+
         # After some performance testing, it seems, that the solution with
         # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
         # GeoJSON directly and pass the raw string as custom FastAPI response.
@@ -158,13 +220,8 @@ def get_all_available_indicators(
         """),
     ),
 ):
-    tbl_indicator = Table(
-        'seed_indicator',
-        MetaData(bind=None, schema='dbt'),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
+    tbl_indicator = TableIndicator().get_table(db_sync)
+    tbl_api = TableApi().get_table(db_sync)
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -249,37 +306,11 @@ def get_indicator(
     limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
-    tbl_indicator = Table(
-        'seed_indicator',
-        MetaData(bind=None, schema='dbt'),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
-    tbl_gemeinde = Table(
-        'dim_gemeinde_latest',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_bezirk =  Table(
-        'dim_bezirk_latest',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_kanton = Table(
-        'dim_kanton_latest',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
+    tbl_indicator = TableIndicator().get_table(db_sync)
+    tbl_api = TableApi().get_table(db_sync)
+    tbl_gemeinde = TableGemeinde().get_table(db_sync)
+    tbl_bezirk =  TableBezirk().get_table(db_sync)
+    tbl_kanton = TableKanton().get_table(db_sync)
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -475,37 +506,11 @@ def list_all_indicators_for_one_geometry(
     limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
-    tbl_indicator = Table(
-        'seed_indicator',
-        MetaData(bind=None, schema='dbt'),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_api = Table('mart_ogd_api', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
-    tbl_gemeinde = Table(
-        'dim_gemeinde_latest',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_bezirk =  Table(
-        'dim_bezirk_latest',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
-    tbl_kanton = Table(
-        'dim_kanton_latest',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
+    tbl_indicator = TableIndicator().get_table(db_sync)
+    tbl_api = TableApi().get_table(db_sync)
+    tbl_gemeinde = TableGemeinde().get_table(db_sync)
+    tbl_bezirk =  TableBezirk().get_table(db_sync)
+    tbl_kanton = TableKanton().get_table(db_sync)
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -675,13 +680,7 @@ def list_municipalities_by_year(
     year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
-    tbl_gemeinde = Table(
-        'dim_gemeinde',
-        MetaData(bind=None, schema='dbt_marts'),
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        autoload=True,
-        autoload_with=db_sync,
-    )
+    tbl_gemeinde = TableGemeinde().get_table(db_sync)
     query = (
         select(
             tbl_gemeinde.c.snapshot_date,
@@ -745,7 +744,7 @@ def list_districts_by_year(
     year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
-    tbl_bezirk = Table('dim_bezirk', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
+    tbl_bezirk = TableBezirk().get_table(db_sync)
 
     query = (
         select(
@@ -808,7 +807,7 @@ def list_cantons_by_year(
     year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
-    tbl_kanton = Table('dim_kanton', MetaData(bind=None, schema='dbt_marts'), autoload=True, autoload_with=db_sync)
+    tbl_kanton = TableKanton().get_table(db_sync)
 
     query = (
         select(
