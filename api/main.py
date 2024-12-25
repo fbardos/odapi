@@ -13,6 +13,7 @@ from sqlalchemy import Table
 from sqlalchemy import Column
 from sqlalchemy.sql.functions import coalesce
 from geoalchemy2 import Geometry
+from dataclasses import dataclass
 from typing import Optional
 import geopandas as gpd
 import datetime as dt
@@ -38,23 +39,41 @@ def get_metadata():
     return MetaData(bind=None, schema='dbt')
 
 
+@dataclass
+class GeoColumnDefinition:
+    name: str
+    geometry_type: str
+    _SRID: int = 4326
+
+    @property
+    def column(self) -> Column:
+        return Column(self.name, Geometry(geometry_type=self.geometry_type, srid=self._SRID))
+
+
 class TableDefinition(ABC):
     AUTOLOAD: bool = True
     SCHEMA: str
     TABLE_NAME: str
-    COLUMNS: Optional[list[Column]] = []
+    COLUMNS: list[GeoColumnDefinition] = []
 
     @property
     def metadata(cls):
         return MetaData(bind=None, schema=cls.SCHEMA)
 
     def get_table(self, engine: Engine):
+
+        # Column objects need to be copied, otherwise will throw error,
+        # because, the same column object can't be used in multiple tables.
+        # Information about the assigned table is stored in the column object.
+        coldefs = [
+            coldef.column for coldef in self.COLUMNS if isinstance(coldef, GeoColumnDefinition)
+        ]
         return Table(
             self.TABLE_NAME,
             self.metadata,
             autoload=self.AUTOLOAD,
             autoload_with=engine,
-            *self.COLUMNS,
+            *coldefs,
         )
 
 
@@ -77,8 +96,8 @@ class TableGemeinde(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_gemeinde_latest'
     COLUMNS = [
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
+        GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
+        GeoColumnDefinition('geom_center', 'POINT'),
     ]
 
 
@@ -86,8 +105,8 @@ class TableBezirk(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_bezirk_latest'
     COLUMNS = [
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
+        GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
+        GeoColumnDefinition('geom_center', 'POINT'),
     ]
 
 
@@ -95,8 +114,8 @@ class TableKanton(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_kanton_latest'
     COLUMNS = [
-        Column('geom_border', Geometry(geometry_type='MULTIPOLYGON', srid=4326)),
-        Column('geom_center', Geometry(geometry_type='POINT', srid=4326)),
+        GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
+        GeoColumnDefinition('geom_center', 'POINT'),
     ]
 
 
