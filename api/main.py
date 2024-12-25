@@ -1,4 +1,5 @@
 import io
+import pytest
 from abc import ABC
 from fastapi import FastAPI
 from fastapi import Depends
@@ -7,6 +8,7 @@ from sqlalchemy import MetaData
 from fastapi import Request
 from fastapi import Query
 from fastapi import Path
+from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy import select
 from sqlalchemy import Table
@@ -94,6 +96,15 @@ class TableApi(TableDefinition):
 
 class TableGemeinde(TableDefinition):
     SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_gemeinde'
+    COLUMNS = [
+        GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
+        GeoColumnDefinition('geom_center', 'POINT'),
+    ]
+
+
+class TableGemeindeLatest(TableDefinition):
+    SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_gemeinde_latest'
     COLUMNS = [
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
@@ -103,6 +114,15 @@ class TableGemeinde(TableDefinition):
 
 class TableBezirk(TableDefinition):
     SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_bezirk'
+    COLUMNS = [
+        GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
+        GeoColumnDefinition('geom_center', 'POINT'),
+    ]
+
+
+class TableBezirkLatest(TableDefinition):
+    SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_bezirk_latest'
     COLUMNS = [
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
@@ -111,6 +131,15 @@ class TableBezirk(TableDefinition):
 
 
 class TableKanton(TableDefinition):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_kanton'
+    COLUMNS = [
+        GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
+        GeoColumnDefinition('geom_center', 'POINT'),
+    ]
+
+
+class TableKantonLatest(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_kanton_latest'
     COLUMNS = [
@@ -302,7 +331,7 @@ def get_indicator(
         """),
     ),
     indicator_id: int = Path(..., description='Select an indicator. If you want to check all possible indicators run path `/indicator` first.'),
-    knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Optional. Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Optional. Joins information about the geometry like its name or its parents.'),
@@ -322,15 +351,15 @@ def get_indicator(
             | `border` | Geometry of the actual border | slow |
         """),
     ),
-    skip: Optional[int] = Query(None, example=0, description='Optional. Skip the first n rows.'),
-    limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
     tbl_api = TableApi().get_table(db_sync)
-    tbl_gemeinde = TableGemeinde().get_table(db_sync)
-    tbl_bezirk =  TableBezirk().get_table(db_sync)
-    tbl_kanton = TableKanton().get_table(db_sync)
+    tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
+    tbl_bezirk =  TableBezirkLatest().get_table(db_sync)
+    tbl_kanton = TableKantonLatest().get_table(db_sync)
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -502,7 +531,7 @@ def list_all_indicators_for_one_geometry(
         """),
     ),
     geo_value: int = Path(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
-    knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
@@ -522,15 +551,15 @@ def list_all_indicators_for_one_geometry(
             | `border` | Geometry of the actual border | slow |
         """),
     ),
-    skip: Optional[int] = Query(None, example=0, description='Optional. Skip the first n rows.'),
-    limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
     tbl_api = TableApi().get_table(db_sync)
-    tbl_gemeinde = TableGemeinde().get_table(db_sync)
-    tbl_bezirk =  TableBezirk().get_table(db_sync)
-    tbl_kanton = TableKanton().get_table(db_sync)
+    tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
+    tbl_bezirk =  TableBezirkLatest().get_table(db_sync)
+    tbl_kanton = TableKantonLatest().get_table(db_sync)
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -698,6 +727,8 @@ def list_all_indicators_for_one_geometry(
 def list_municipalities_by_year(
     request: Request,
     year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_gemeinde = TableGemeinde().get_table(db_sync)
@@ -713,6 +744,10 @@ def list_municipalities_by_year(
         )
         .where(tbl_gemeinde.c.snapshot_year == year)
     )
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
     with db_sync.connect() as conn:
         gdf = gpd.read_postgis(
             sql=query.compile(dialect=db_sync.dialect),
@@ -762,6 +797,8 @@ def list_municipalities_by_year(
 def list_districts_by_year(
     request: Request,
     year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_bezirk = TableBezirk().get_table(db_sync)
@@ -776,6 +813,10 @@ def list_districts_by_year(
         )
         .where(tbl_bezirk.c.snapshot_year == year)
     )
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
     with db_sync.connect() as conn:
         gdf = gpd.read_postgis(
             sql=query.compile(dialect=db_sync.dialect),
@@ -825,6 +866,8 @@ def list_districts_by_year(
 def list_cantons_by_year(
     request: Request,
     year: int = Path(..., ge=1850, le=dt.datetime.now().year, description='Snapshot year.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_kanton = TableKanton().get_table(db_sync)
@@ -839,6 +882,10 @@ def list_cantons_by_year(
         )
         .where(tbl_kanton.c.snapshot_year == year)
     )
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
     with db_sync.connect() as conn:
         gdf = gpd.read_postgis(
             sql=query.compile(dialect=db_sync.dialect),
@@ -848,3 +895,148 @@ def list_cantons_by_year(
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
     return response_decision('cantons', request, gdf)
+
+
+# TESTS ######################################################################
+client = TestClient(app)
+
+@pytest.mark.integration
+@pytest.mark.parametrize('path', [
+    '/indicators/polg',
+    '/indicators/bezk',
+    '/indicators/kant',
+])
+def test_valid_response_indicators(path):
+    response = client.get(path)
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('path', [
+    '/indicator/polg',
+    '/indicator/bezk',
+    '/indicator/kant',
+])
+def test_valid_response_indicator_geo_code(path):
+    response = client.get(f'{path}/1?limit=100')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_indicator_duplicate_request(filetype):
+    for _ in range(4):
+        response = client.get(f'/indicator/{filetype}polg/22?limit=10')
+        assert response.status_code == 200
+        match filetype:
+            case 'csv/':
+                assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+            case 'xlsx/':
+                assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            case '':
+                assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('indicator_id', range(1, 100))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_indicator_indicator_id(indicator_id, filetype):
+    response = client.get(f'/indicator/{filetype}polg/{indicator_id}?limit=10')
+    assert response.status_code == 200
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('path', [
+    '/portrait/polg',
+    '/portrait/bezk',
+    '/portrait/kant',
+])
+def test_valid_response_portrait_geo_code(path):
+    response = client.get(f'{path}/230?limit=10')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('geo_value', (230, 261))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_portrait_geo_value(geo_value, filetype):
+    response = client.get(f'/portrait/{filetype}polg/{geo_value}?limit=10')
+    assert response.status_code == 200
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_portrait_duplicate_request(filetype):
+    for _ in range(4):
+        response = client.get(f'/portrait/{filetype}polg/230?limit=10')
+        assert response.status_code == 200
+        match filetype:
+            case 'csv/':
+                assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+            case 'xlsx/':
+                assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            case '':
+                assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('year', range(1850, dt.datetime.now().year - 1))
+@pytest.mark.parametrize('dimension', ('municipalities', 'districts', 'cantons'))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_dimensions(year, filetype, dimension):
+    response = client.get(f'/{dimension}/{filetype}{year}?limit=10')
+    assert response.status_code == 200
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('year', (1850, 1900, 1945, 1980, 1999, 2003, 2011, 2015, 2016, dt.datetime.now().year - 1))
+@pytest.mark.parametrize('dimension', ('municipalities', 'districts', 'cantons'))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_data_rows_dimensions(year, filetype, dimension):
+    response = client.get(f'/{dimension}/{filetype}{year}?limit=100')
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+            df = pd.read_csv(io.StringIO(response.text))
+            if dimension == 'cantons':
+                assert len(df) > 20 & len(df) < 30
+            else:
+                assert len(df) == 100
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            df = pd.read_excel(io.BytesIO(response.content))
+            if dimension == 'cantons':
+                assert len(df) > 20 & len(df) < 30
+            else:
+                assert len(df) == 100
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+            gdf = gpd.read_file(io.StringIO(response.text))
+            if dimension == 'cantons':
+                assert len(gdf) > 20 & len(gdf) < 30
+            else:
+                assert len(gdf) == 100
