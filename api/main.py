@@ -1,4 +1,5 @@
 import io
+import pytest
 from abc import ABC
 from fastapi import FastAPI
 from fastapi import Depends
@@ -7,6 +8,7 @@ from sqlalchemy import MetaData
 from fastapi import Request
 from fastapi import Query
 from fastapi import Path
+from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy import select
 from sqlalchemy import Table
@@ -848,3 +850,119 @@ def list_cantons_by_year(
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
     return response_decision('cantons', request, gdf)
+
+
+# TESTS ######################################################################
+client = TestClient(app)
+
+@pytest.mark.integration
+@pytest.mark.parametrize('path', [
+    '/indicators/polg',
+    '/indicators/bezk',
+    '/indicators/kant',
+])
+def test_valid_response_indicators(path):
+    response = client.get(path)
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('path', [
+    '/indicator/polg',
+    '/indicator/bezk',
+    '/indicator/kant',
+])
+def test_valid_response_indicator_geo_code(path):
+    response = client.get(f'{path}/1?limit=100')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_indicator_duplicate_request(filetype):
+    for _ in range(4):
+        response = client.get(f'/indicator/{filetype}polg/22?limit=10')
+        assert response.status_code == 200
+        match filetype:
+            case 'csv/':
+                assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+            case 'xlsx/':
+                assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            case '':
+                assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('indicator_id', range(1, 100))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_indicator_indicator_id(indicator_id, filetype):
+    response = client.get(f'/indicator/{filetype}polg/{indicator_id}?limit=10')
+    assert response.status_code == 200
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('path', [
+    '/portrait/polg',
+    '/portrait/bezk',
+    '/portrait/kant',
+])
+def test_valid_response_portrait_geo_code(path):
+    response = client.get(f'{path}/230?limit=10')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('geo_value', (230, 261))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_portrait_geo_value(geo_value, filetype):
+    response = client.get(f'/portrait/{filetype}polg/{geo_value}?limit=10')
+    assert response.status_code == 200
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_portrait_duplicate_request(filetype):
+    for _ in range(4):
+        response = client.get(f'/portrait/{filetype}polg/230?limit=10')
+        assert response.status_code == 200
+        match filetype:
+            case 'csv/':
+                assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+            case 'xlsx/':
+                assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            case '':
+                assert response.headers['content-type'] == 'application/geo+json'
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize('year', range(1850, dt.datetime.now().year - 1))
+@pytest.mark.parametrize('dimension', ('municipalities', 'districts', 'cantons'))
+@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+def test_valid_response_dimensions(year, filetype, dimension):
+    response = client.get(f'/{dimension}/{filetype}{year}')
+    assert response.status_code == 200
+    match filetype:
+        case 'csv/':
+            assert response.headers['content-type'] == 'text/csv; charset=utf-8'
+        case 'xlsx/':
+            assert response.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        case '':
+            assert response.headers['content-type'] == 'application/geo+json'
+
