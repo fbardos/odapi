@@ -475,14 +475,14 @@ def get_indicator(
                     sql=query.compile(dialect=db_sync.dialect),
                     con=conn,
                     geom_col='geom_center',
-                    crs='EPSG:2056',
+                    crs='EPSG:4326',
                 )
             case GeometryMode.border:
                 gdf = gpd.read_postgis(
                     sql=query.compile(dialect=db_sync.dialect),
                     con=conn,
                     geom_col='geom_border',
-                    crs='EPSG:2056',
+                    crs='EPSG:4326',
                 )
             case GeometryMode.empty:
                 gdf = pd.read_sql_query(
@@ -668,14 +668,14 @@ def list_all_indicators_for_one_geometry(
                     sql=query.compile(dialect=db_sync.dialect),
                     con=conn,
                     geom_col='geom_center',
-                    crs='EPSG:2056',
+                    crs='EPSG:4326',
                 )
             case GeometryMode.border:
                 gdf = gpd.read_postgis(
                     sql=query.compile(dialect=db_sync.dialect),
                     con=conn,
                     geom_col='geom_border',
-                    crs='EPSG:2056',
+                    crs='EPSG:4326',
                 )
             case GeometryMode.empty:
                 gdf = pd.read_sql_query(
@@ -753,7 +753,7 @@ def list_municipalities_by_year(
             sql=query.compile(dialect=db_sync.dialect),
             con=conn,
             geom_col='geom_border',
-            crs='EPSG:2056',
+            crs='EPSG:4326',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
     return response_decision('municipalities', request, gdf)
@@ -822,7 +822,7 @@ def list_districts_by_year(
             sql=query.compile(dialect=db_sync.dialect),
             con=conn,
             geom_col='geom_border',
-            crs='EPSG:2056',
+            crs='EPSG:4326',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
     return response_decision('districts', request, gdf)
@@ -891,7 +891,7 @@ def list_cantons_by_year(
             sql=query.compile(dialect=db_sync.dialect),
             con=conn,
             geom_col='geom_border',
-            crs='EPSG:2056',
+            crs='EPSG:4326',
         )
         assert isinstance(gdf, gpd.GeoDataFrame)
     return response_decision('cantons', request, gdf)
