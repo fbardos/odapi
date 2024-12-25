@@ -302,7 +302,7 @@ def get_indicator(
         """),
     ),
     indicator_id: int = Path(..., description='Select an indicator. If you want to check all possible indicators run path `/indicator` first.'),
-    knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Optional. Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Optional. Joins information about the geometry like its name or its parents.'),
@@ -322,8 +322,8 @@ def get_indicator(
             | `border` | Geometry of the actual border | slow |
         """),
     ),
-    skip: Optional[int] = Query(None, example=0, description='Optional. Skip the first n rows.'),
-    limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
@@ -502,7 +502,7 @@ def list_all_indicators_for_one_geometry(
         """),
     ),
     geo_value: int = Path(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
-    knowledge_date: Optional[str] = Query(None, example=dt.date.today().strftime('%Y-%m-%d'), description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(True, description='Joins information about the indicator.'),
     join_geo: bool = Query(True, description='Joins information about the geometry like its name.'),
@@ -522,8 +522,8 @@ def list_all_indicators_for_one_geometry(
             | `border` | Geometry of the actual border | slow |
         """),
     ),
-    skip: Optional[int] = Query(None, example=0, description='Optional. Skip the first n rows.'),
-    limit: Optional[int] = Query(None, example=100, description='Optional. Limit response to the set amount of rows.'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
