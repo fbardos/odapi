@@ -15,6 +15,7 @@ from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
 from odapi.resources.url.geoadmin import GeoAdminResource
+from odapi.resources.url.healthcheck import HealthCheckResource
 
 
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
@@ -63,6 +64,7 @@ defs = Definitions(
         'geoadmin': GeoAdminResource(),
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
+        'healthcheck': HealthCheckResource(),
     },
     jobs=[
         *assets_opendataswiss.jobs_opendataswiss,
