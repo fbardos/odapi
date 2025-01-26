@@ -77,6 +77,16 @@ models:
       - <<: *tests-intm-table-statatlas-rows
       - <<: *tests-intm-table-statatlas-rowsmin
 
+  # ---------------------------------------------------------------------------
+  - name: intm_estv_db_jp
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['indicator_id', 'geo_code', 'geo_value', 'period_ref']
+      - <<: *tests-intm-table-statatlas-cols
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+
   # Query to search for variable/path combinations:
   #
   # select

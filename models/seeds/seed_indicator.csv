@@ -104,3 +104,8 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 103,Anzahl Erstwohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen
 104,Anzahl Erstwohnungen gleichgestellte Wohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen gleichgestellte Wohnungen
 105,Anzahl Wohnungen,09 Bauen & Wohnen,Wohnen,Bestand,,Anzahl,Anzahl Wohnungen
+106,Anzahl Steuerpflichtige juristische Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,Anzahl juristische Personen,Anzahl juristische Personen die direkte Bundessteuer zahlen
+107,Eigenkapital juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Eigenkapital juristischer Personen
+108,Reingewinn juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Reingewinn juristischer Personen
+109,Direkte Bundessteuer juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Direkte Bundessteuer entrichtet von juristischen Personen
+110,Durchnittlicher Abzug juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,Prozent,Durchschnittlicher Abzug juristischer Personen (direkte Bundessteuer)
