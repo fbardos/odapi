@@ -13,7 +13,7 @@ with src as (
         , make_date(2025, 1, 23) as knowledge_date_from  -- Currently harcoded, make dynamic later.
         , NULL::TIMESTAMP as knowledge_date_to
         , 'duedate' as period_type
-        , 'day' as period_code
+        , 'year' as period_code
         , NULL::DATE as period_ref_from
         , period_ref
         , indicator_value_numeric
