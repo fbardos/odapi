@@ -11,6 +11,8 @@ from dagster import define_asset_job
 from dagster import ScheduleDefinition
 from dagster import AssetsDefinition
 from dagster import MetadataValue
+from dagster import success_hook
+from dagster import HookContext
 from pytz import timezone
 
 
@@ -90,9 +92,19 @@ def swisstopo_api_factory(geo_config: GeoAdminConfiguration) -> AssetsDefinition
 # Defintions
 assets_geoadmin = [swisstopo_api_factory(geo_config) for geo_config in SOURCES]
 
+
+@success_hook(required_resource_keys={'healthcheck'})
+def ping_healthchecks(context: HookContext):
+    """
+    Pings healthchecks.io to notify that the pipeline is running.
+    """
+    context.resources.healthcheck.ping_by_env('HC__GEOADMIN')
+
+
 job_geoadmin = define_asset_job(
     name='job_geoadmin',
     selection=[f'src/swisstopo_{source.name}*' for source in SOURCES],
+    hooks={ping_healthchecks},
 )
 
 schedule_geoadmin = ScheduleDefinition(

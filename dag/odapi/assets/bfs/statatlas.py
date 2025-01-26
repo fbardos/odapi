@@ -6,6 +6,7 @@ import requests
 from typing import List
 from typing import Tuple
 from dagster import asset
+from dagster import HookContext
 from odapi.resources.postgres.postgres import PostgresResource
 from dagster import AssetExecutionContext
 from dagster import MetadataValue
@@ -14,6 +15,7 @@ import datetime as dt
 from pytz import timezone
 from dataclasses import dataclass
 from dagster import define_asset_job
+from dagster import success_hook
 from dagster import get_dagster_logger
 from dagster import ScheduleDefinition
 import re
@@ -212,12 +214,22 @@ def bfs_statatlas(
     })
 
 
+@success_hook(required_resource_keys={'healthcheck'})
+def ping_healthchecks(context: HookContext):
+    """
+    Pings healthchecks.io to notify that the pipeline is running.
+    """
+    context.resources.healthcheck.ping_by_env('HC__BFS_STATATLAS')
+
+
 job_statatlas = define_asset_job(
     name='bfs_statatlas',
-    selection='src/bfs_statatlas*'
+    selection='src/bfs_statatlas*',
+    hooks={ping_healthchecks},
 )
 
 schedule_statatlas = ScheduleDefinition(
     job=job_statatlas,
     cron_schedule='5 2 * * 6',  # once per week, on Saturday at 02:05
 )
+

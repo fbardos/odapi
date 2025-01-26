@@ -186,3 +186,7 @@ UNION ALL
 select * from {{ ref('intm_bfe_minergie')}}
 UNION ALL
 select * from {{ ref('intm_swisstopo_zweitwohnung')}}
+UNION ALL
+select * from {{ ref('intm_estv_db_jp')}}
+UNION ALL
+select * from {{ ref('intm_estv_db_np')}}

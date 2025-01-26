@@ -16,6 +16,8 @@ sources:
       - name: ktzh_gp_auslaenderanteil
       - name: ktzh_gp_avg_haushaltsgroesse
       - name: swisstopo_zweitwohnungen
+      - name: sss_bevoelkerung_wohnbevoelkerung
+      - name: sss_bevoelkerung_geschlecht_zivilstand
   - name: ktzh_gwr
     database: data
     schema: src
@@ -44,6 +46,10 @@ groups:
       name: fbardos
       github: fbardos
   - name: marts
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: seeds
     owner:
       name: fbardos
       github: fbardos
