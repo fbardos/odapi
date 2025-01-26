@@ -1,5 +1,6 @@
 import io
 import pytest
+import re
 from abc import ABC
 from fastapi import FastAPI
 from fastapi import Depends
@@ -195,11 +196,13 @@ class XlsxResponse(Response):
 
 # HELPER FUNC ################################################################
 def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDataFrame):
-    if request.url.path.startswith(f'/{first_path_element}/csv'):
+    # if request.url.path.startswith(f'/{first_path_element}/csv'):
+    if re.search(f'^/{first_path_element}.*/csv$', request.url.path):
         buffer = io.BytesIO()
         gdf.to_csv(buffer, index=False)
         return CsvResponse(content=buffer)
-    elif request.url.path.startswith(f'/{first_path_element}/xlsx'):
+    # elif request.url.path.startswith(f'/{first_path_element}/xlsx'):
+    elif re.search(f'^/{first_path_element}.*/xlsx$', request.url.path):
         buffer = io.BytesIO()
         gdf.to_excel(buffer, index=False, sheet_name='data')
         return XlsxResponse(content=buffer)
@@ -299,13 +302,13 @@ def get_all_available_indicators(
 
 
 @app.get(
-    '/indicator/xlsx/{geo_code}/{indicator_id}',
+    '/indicator/{geo_code}/{indicator_id}/xlsx',
     tags=['Indicators'],
     description='Returns as Excel file for a selected indicator.',
     response_class=XlsxResponse,
 )
 @app.get(
-    '/indicator/csv/{geo_code}/{indicator_id}',
+    '/indicator/{geo_code}/{indicator_id}/csv',
     tags=['Indicators'],
     description='Returns as CSV for a selected indicator. Can be easily parsed by frameworks like pandas or dplyr.',
     response_class=CsvResponse,
@@ -500,13 +503,13 @@ def get_indicator(
 
 
 @app.get(
-    '/portrait/xlsx/{geo_code}/{geo_value}',
+    '/portrait/{geo_code}/{geo_value}/xlsx',
     tags=['Indicators'],
     description='Returns as Excel file for the selected geometry.',
     response_class=XlsxResponse,
 )
 @app.get(
-    '/portrait/csv/{geo_code}/{geo_value}',
+    '/portrait/{geo_code}/{geo_value}/csv',
     tags=['Indicators'],
     description='Returns a CSV for the selected geometry. Can be easily parsed by frameworks like pandas or dplyr.',
     response_class=CsvResponse,
@@ -692,7 +695,7 @@ def list_all_indicators_for_one_geometry(
 
 
 @app.get(
-    '/municipalities/xlsx/{year}',
+    '/municipalities/{year}/xlsx',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a XLSX file.
@@ -704,7 +707,7 @@ def list_all_indicators_for_one_geometry(
     response_class=XlsxResponse,
 )
 @app.get(
-    '/municipalities/csv/{year}',
+    '/municipalities/{year}/csv',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a CSV.
@@ -762,7 +765,7 @@ def list_municipalities_by_year(
 
 
 @app.get(
-    '/districts/xlsx/{year}',
+    '/districts/{year}/xlsx',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a XLSX file.
@@ -774,7 +777,7 @@ def list_municipalities_by_year(
     response_class=XlsxResponse,
 )
 @app.get(
-    '/districts/csv/{year}',
+    '/districts/{year}/csv',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a CSV.
@@ -831,7 +834,7 @@ def list_districts_by_year(
 
 
 @app.get(
-    '/cantons/xlsx/{year}',
+    '/cantons/{year}/xlsx',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a XLSX file.
@@ -843,7 +846,7 @@ def list_districts_by_year(
     response_class=XlsxResponse,
 )
 @app.get(
-    '/cantons/csv/{year}',
+    '/cantons/{year}/csv',
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a CSV.
@@ -927,10 +930,10 @@ def test_valid_response_indicator_geo_code(path):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+@pytest.mark.parametrize('filetype', ('/csv', '/xlsx', ''))
 def test_valid_response_indicator_duplicate_request(filetype):
     for _ in range(4):
-        response = client.get(f'/indicator/{filetype}polg/22?limit=10')
+        response = client.get(f'/indicator/polg/22{filetype}?limit=10')
         assert response.status_code == 200
         match filetype:
             case 'csv/':
@@ -943,9 +946,9 @@ def test_valid_response_indicator_duplicate_request(filetype):
 
 @pytest.mark.integration
 @pytest.mark.parametrize('indicator_id', range(1, 100))
-@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+@pytest.mark.parametrize('filetype', ('/csv', '/xlsx', ''))
 def test_valid_response_indicator_indicator_id(indicator_id, filetype):
-    response = client.get(f'/indicator/{filetype}polg/{indicator_id}?limit=10')
+    response = client.get(f'/indicator/polg/{indicator_id}{filetype}?limit=10')
     assert response.status_code == 200
     match filetype:
         case 'csv/':
@@ -970,9 +973,9 @@ def test_valid_response_portrait_geo_code(path):
 
 @pytest.mark.integration
 @pytest.mark.parametrize('geo_value', (230, 261))
-@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+@pytest.mark.parametrize('filetype', ('/csv', '/xlsx', ''))
 def test_valid_response_portrait_geo_value(geo_value, filetype):
-    response = client.get(f'/portrait/{filetype}polg/{geo_value}?limit=10')
+    response = client.get(f'/portrait/polg/{geo_value}{filetype}?limit=10')
     assert response.status_code == 200
     match filetype:
         case 'csv/':
@@ -984,10 +987,10 @@ def test_valid_response_portrait_geo_value(geo_value, filetype):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+@pytest.mark.parametrize('filetype', ('/csv', '/xlsx', ''))
 def test_valid_response_portrait_duplicate_request(filetype):
     for _ in range(4):
-        response = client.get(f'/portrait/{filetype}polg/230?limit=10')
+        response = client.get(f'/portrait/polg/230{filetype}?limit=10')
         assert response.status_code == 200
         match filetype:
             case 'csv/':
@@ -1001,9 +1004,9 @@ def test_valid_response_portrait_duplicate_request(filetype):
 @pytest.mark.integration
 @pytest.mark.parametrize('year', range(1850, dt.datetime.now().year - 1))
 @pytest.mark.parametrize('dimension', ('municipalities', 'districts', 'cantons'))
-@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+@pytest.mark.parametrize('filetype', ('/csv', '/xlsx', ''))
 def test_valid_response_dimensions(year, filetype, dimension):
-    response = client.get(f'/{dimension}/{filetype}{year}?limit=10')
+    response = client.get(f'/{dimension}/{year}{filetype}?limit=10')
     assert response.status_code == 200
     match filetype:
         case 'csv/':
@@ -1017,9 +1020,9 @@ def test_valid_response_dimensions(year, filetype, dimension):
 @pytest.mark.integration
 @pytest.mark.parametrize('year', (1850, 1900, 1945, 1980, 1999, 2003, 2011, 2015, 2016, dt.datetime.now().year - 1))
 @pytest.mark.parametrize('dimension', ('municipalities', 'districts', 'cantons'))
-@pytest.mark.parametrize('filetype', ('csv/', 'xlsx/', ''))
+@pytest.mark.parametrize('filetype', ('/csv', '/xlsx', ''))
 def test_data_rows_dimensions(year, filetype, dimension):
-    response = client.get(f'/{dimension}/{filetype}{year}?limit=100')
+    response = client.get(f'/{dimension}/{year}{filetype}?limit=100')
     match filetype:
         case 'csv/':
             assert response.headers['content-type'] == 'text/csv; charset=utf-8'
