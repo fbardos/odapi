@@ -243,10 +243,12 @@ app = FastAPI(
         * `DONE` Add indicator for [Zweitwohnungsanteil](https://opendata.swiss/de/dataset/wohnungsinventar-und-zweitwohnungsanteil)
         * `DONE` Return geojson with json instead of WKT
         * `DONE` Add possibility to get Excel file as response
-        * `TODO` Add other indicators from Swisstopo API
+        * `DONE` ESTV Direkte Bundessteuer
+        * `TODO` [Statistik der Schweizer Städte](https://opendata.swiss/de/dataset/statistics-on-swiss-cities-and-towns-2020)
 
         Later:
         * `TODO` Add more indicators only available for districts or cantons
+        * `TODO` Add other indicators from Swisstopo API
     """)
 )
 

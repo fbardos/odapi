@@ -109,3 +109,21 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 108,Reingewinn juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Reingewinn juristischer Personen
 109,Direkte Bundessteuer juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Direkte Bundessteuer entrichtet von juristischen Personen
 110,Durchnittlicher Abzug juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,Prozent,Durchschnittlicher Abzug juristischer Personen (direkte Bundessteuer)
+111,Anzahl Steuerpfichtige,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Anzahl,Anzahl Steuerpflichtige natürliche Personen
+112,Anzahl Steuerpfichtige ohne Steuer,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Anzahl,Anzahl Steuerpflichtige natürliche Personen ohne Steuer
+113,Durchschnittliches Reineinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches Reineinkommen natürliche Personen
+114,Durchschnittliches reines Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches reines Äquivalenzeinkommen natürliche Personen
+115,Durchschnittliches steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches steuerbares Äquivalenzeinkommen natürliche Personen
+116,Durchschnittliches steuerbares Einkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches steuerbares Einkommen natürliche Personen
+117,Durchschnittlicher Steuerbetrag,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittlicher Steuerbetrag natürliche Personen
+118,Einnahmen Direkte Bundessteuer,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Einnahmen Direkte Bundessteuer natürliche Personen
+119,Gini-Index Reineinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index Reineinkommen natürliche Personen
+120,Gini-Index reines Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index reines Äquivalenzeinkommen natürliche Personen
+121,Gini-Index steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index steuerbares Äquivalenzeinkommen natürliche Personen
+122,Gini-Index steuerbares Einkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index steuerbares Einkommen natürliche Personen
+123,Gini-Index Steuerbetrag,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index Steuerbetrag natürliche Personen
+124,Median Reineinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Reineinkommen natürliche Personen
+125,Median reines Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median reines Äquivalenzeinkommen natürliche Personen
+126,Median steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Äquivalenzeinkommen natürliche Personen
+127,Median steuerbares Einkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
+128,Median Steuerbetrag,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen
