@@ -1,6 +1,7 @@
 import io
 import pytest
 import re
+import networkx as nx
 from abc import ABC
 from fastapi import FastAPI
 from fastapi import Depends
@@ -193,6 +194,20 @@ class XlsxResponse(Response):
             **kwargs
         )
 
+class TxtResponose(Response):
+    media_type = 'text/plain'
+
+    # def __init__(self, content: str, filename: str = 'odapi_data.txt', status_code: int = 200, *args, **kwargs):
+    def __init__(self, content: str, status_code: int = 200, *args, **kwargs):
+        super().__init__(
+            content=content,
+            status_code=status_code,
+            # headers={'Content-Disposition': f'attachment; filename={filename}'},
+            media_type=self.media_type,
+            *args,
+            **kwargs
+        )
+
 
 # HELPER FUNC ################################################################
 def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDataFrame):
@@ -220,6 +235,39 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
         # GeoJSON directly and pass the raw string as custom FastAPI response.
         assert isinstance(gdf, gpd.GeoDataFrame)
         return GeoJsonResponse(content=gdf.to_json())
+
+def generate_indicator_tree(data: pd.DataFrame) -> Optional[str]:
+
+    ### Prepare the dataframe for parent/child relations
+    dfs = []
+
+    # topics
+    for i in range(1, 4):
+        _df = data[[f'topic_{i}', f'topic_{i+1}']].copy()
+        _df.columns = ['parent', 'child']
+        _df.dropna(inplace=True)
+        dfs.append(_df)
+
+    # indicator
+    _df = data.copy()
+    _df['filled_topic'] = _df['topic_4'].fillna(_df['topic_3']).fillna(_df['topic_2']).fillna(_df['topic_1'])
+    _df['indicator_name'] = '[#' + _df['indicator_id'].astype(str).str.zfill(4) + '] ' + _df['indicator_name'] + ' (' + _df['indicator_unit'] + ')'
+    _df = _df[['filled_topic', 'indicator_name']].copy()
+    _df.columns = ['parent', 'child']
+    _df.dropna(inplace=True)
+    dfs.append(_df)
+
+    # concat them together
+    df = pd.concat(dfs, ignore_index=True)
+    df = df.sort_values(by='parent')
+
+    # Generate network
+    G = nx.from_pandas_edgelist(df, source='parent', target='child', create_using=nx.DiGraph)
+    text = nx.generate_network_text(G, ascii_only=False, vertical_chains=True)
+    buffer = io.StringIO()
+    for line in text:
+        buffer.write(line+'\n')
+    return buffer.getvalue()
 
 
 # API ########################################################################
@@ -257,11 +305,18 @@ app = FastAPI(
 
 
 @app.get(
+    '/indicators/{geo_code}/txt',
+    tags=['Indicators'],
+    description='List all available indicators in a human readable format.',
+    response_class=TxtResponose,
+)
+@app.get(
     '/indicators/{geo_code}',
     tags=['Indicators'],
     description='List all available indicators.',
 )
 def get_all_available_indicators(
+    request: Request,
     db_sync: Engine = Depends(get_sync_engine),
     geo_code: GeoCode = Path(
         ...,
@@ -298,7 +353,11 @@ def get_all_available_indicators(
             con=conn,
         )
         assert isinstance(df, pd.DataFrame)
-    return df.to_dict(orient='records')
+    if re.search(f'^/indicators.*/txt$', request.url.path):
+        data = generate_indicator_tree(df)
+        return TxtResponose(content=data)
+    else:
+        return df.to_dict(orient='records')
 
 
 @app.get(

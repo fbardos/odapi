@@ -58,4 +58,3 @@ dependencies:
     - uvicorn
     - jq
     - OWSLib
-
