@@ -1,129 +1,129 @@
 indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indicator_description
-1,Bevoekerung (zivilrechtlich),01 Bevölkerung,Bestand,zivilrechtlich,,Personen,Anzahl der Bevölkerung
-2,Ausländeranteil,01 Bevölkerung,Migration,Ausländeranteil,,Prozent,Anteil Ausländer
-3,Bevoelkerung (staendig),01 Bevölkerung,Bestand,staendig,,Personen,Anzahl der Bevölkerung
-4,Anteil versiegelte Flaeche,02 Raum & Umwelt,Bodennutzung,Versiegelte Fläche,,Prozent,Anteil der versiegelten Flaeche
-5,Geburtenueberschuss,01 Bevölkerung,Bewegungen,Geburtenüberschuss,,Personen,Geburtenüberschuss
-6,Wanderungssaldo,01 Bevölkerung,Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-7,Wanderungssaldo,01 Bevölkerung,Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-8,Wanderungssaldo,01 Bevölkerung,Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-9,Bevölkerungsdichte,01 Bevölkerung,Bestand,Bevölkerungsdichte,Gesamtfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Gesamtflaeche
-10,Bevölkerungsdichte,01 Bevölkerung,Bestand,Bevölkerungsdichte,Produktivfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Produktivfläche
-11,Jugendquotient,01 Bevölkerung,Bestand,Altersstruktur,Jugendquotient,Prozent,Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20-64 Jahre
-12,Altersquotient,01 Bevölkerung,Bestand,Altersstruktur,Altersquotient,Prozent,65-Jährige und Ältere pro 100 Personen im Alter von 20-64 Jahren
-13,Greying Index,01 Bevölkerung,Bestand,Altersstruktur,Greying Index,Prozent,80-Jährige und Ältere pro 100 Personen im Alter von 65-79 Jahren
-14,Anteil Ausländer/innen,01 Bevölkerung,Migration/Integration,Anteil Ausländerinnen,ständig,Prozent,Anteil der ständigen ausländischen Bevölkerung an der gesamten ständigen Wohnbevölkerung
-15,Anteil Deutsche,01 Bevölkerung,Migration/Integration,Anteil Deutsche,ständig,Prozent,Anteil der deutschen Staatsangehörigen an der gesamten ständigen ausländischen Wohnbevölkerung
-16,Anteil Französisch,01 Bevölkerung,Migration/Integration,Anteil Französisch,ständig,Prozent,Anteil der französischen Staatsangehörigen an der gesamten ständigen ausländischen Wohnbevölkerung
-17,Anteil Europäisch,01 Bevölkerung,Migration/Integration,Anteil Europäisch,ständig,Prozent,Anteil der Staatsangehörigen eines EU-Mitgliedsstaates an der gesamten ständigen ausländischen Wohnbevölkerung
-18,Geburten,01 Bevölkerung,Bewegungen,Geburten,,Personen pro 1000,Lebendgeburten pro 1000 Einwohner/innen
-19,Heiraten,01 Bevölkerung,Bewegungen,Heiraten,,Personen pro 1000,Heiraten pro 1000 Einwohner/innen
-20,Scheidungen,01 Bevölkerung,Bewegungen,Scheidungen,,Personen pro 1000,Scheidungen pro 1000 Einwohner/innen
-21,Todesfälle,01 Bevölkerung,Bewegungen,Todesfälle,,Personen pro 1000,Todesfälle pro 1000 Einwohner/innen
-22,Einbürgerungen,01 Bevölkerung,Bewegungen,Einbürgerungen,,Rohe Einbürgerungsziffer,Rohe Einbbürgerungsziffer
-23,Einpersonenhaushalte,01 Bevölkerung,Familie/Haushalt,Haushaltsgroesse,Einpersonenhaushalt,Anteil Prozent,Anteil der Einpersonenhaushalte am Total der Privathaushalte
-24,Zweipersonenhaushalte,01 Bevölkerung,Familie/Haushalt,Haushaltsgroesse,Zweipersonenhaushalt,Anteil Prozent,Anteil der Zweipersonenhaushalte am Total der Privathaushalte
-25,Dreipersonenhaushalte,01 Bevölkerung,Familie/Haushalt,Haushaltsgroesse,Dreipersonenhaushalt,Anteil Prozent,Anteil der Dreipersonenhaushalte am Total der Privathaushalte
-26,Vierpersonenhaushalte,01 Bevölkerung,Familie/Haushalt,Haushaltsgroesse,Vierpersonenhaushalt,Anteil Prozent,Anteil der Vierpersonenhaushalte am Total der Privathaushalte
-27,Vielpersonenhaushalte,01 Bevölkerung,Familie/Haushalt,Haushaltsgroesse,Vielpersonenhaushalte,Anteil Prozent,Anteil der der Haushalte mit 5 oder mehr Personen am Total der Privathaushalte
-28,Haushaltsgrösse,01 Bevölkerung,Familie/Haushalt,Haushaltsgroesse,Durchschnitt,Personen,Durchschnittliche Haushaltsgrösse in Personen
-29,Siedlungsfläche,02 Raum & Umwelt,Bodennutzung,Siedlungsflächen,,Prozent,Anteil der Siedlungsfläche an der Gesamtfläche
-30,Gebäudeareal,02 Raum & Umwelt,Bodennutzung,Gebäudeareal,,Prozent,Anteil des Gebäudeareals an der Gesamtfläche
-31,Gebäudeareal,02 Raum & Umwelt,Bodennutzung,Industrie- und Gewerbeareal,,Prozent,Anteil des Industrie- und Gewerbeareals an der Gesamtfläche
-32,Gebäudeareal,02 Raum & Umwelt,Bodennutzung,Verkehrsfläche,,Prozent,Anteil der Verkehrsflächen an der Gesamtfläche
-33,Gebäudeareal,02 Raum & Umwelt,Bodennutzung,Landwirtschaftsfläche,,Prozent,Anteil der Landwirtschaftsflächen an der Gesamtfläche
-34,Gebäudeareal,02 Raum & Umwelt,Bodennutzung,Wald & Gehölze,,Prozent,Anteil der bestockten Flächen (Wald und Gehölze) an der Gesamtfläche
-35,Gebäudeareal,02 Raum & Umwelt,Bodennutzung,unproduktive Fläche,,Prozent,Anteil der unproduktiven Flächen an der Gesamtfläche
-36,Gebäudeareal,02 Raum & Umwelt,Bodenbedeckung,künstlich angelegt,,Prozent,Anteil der künstlich angelegten Flächen an der Gesamtfläch
-37,Gebäudeareal,02 Raum & Umwelt,Bodenbedeckung,vegetationslos,,Prozent,"Anteil der vegetationslosen Flächen* (Fels, Geröll, Lockergestein) an der Gesamtfläche"
-38,Gebäudeareal,02 Raum & Umwelt,Bodenbedeckung,Wasser- und Feuchtflächen,,Prozent,"Anteil der Wasser- und Feuchtflächen* (Wasser, Gletscher, Nassstandorte) an der Gesamtfläche"
-39,Arbeitsstätten Sektor 1,06 Industrie & Dienstleistungen,Arbeitsstätten,Sektor 1,,Anzahl,Zahl der Arbeitsstätten im 1. Wirtschaftssektor
-40,Arbeitsstätten Sektor 2,06 Industrie & Dienstleistungen,Arbeitsstätten,Sektor 2,,Anzahl,Zahl der Arbeitsstätten im 2. Wirtschaftssektor
-41,Arbeitsstätten Sektor 3,06 Industrie & Dienstleistungen,Arbeitsstätten,Sektor 3,,Anzahl,Zahl der Arbeitsstätten im 3. Wirtschaftssektor
-42,Beschäftigte Sektor 1,06 Industrie & Dienstleistungen,Beschäftigte,Sektor 1,,Anzahl,Zahl der Beschäftigten im 1. Wirtschaftssektor
-43,Beschäftigte Sektor 2,06 Industrie & Dienstleistungen,Beschäftigte,Sektor 2,,Anzahl,Zahl der Beschäftigten im 2. Wirtschaftssektor
-44,Beschäftigte Sektor 3,06 Industrie & Dienstleistungen,Beschäftigte,Sektor 3,,Anzahl,Zahl der Beschäftigten im 3. Wirtschaftssektor
-45,Neugründungen Unternehmen,06 Industrie & Dienstleistungen,Neugründungen,Unternehmen,,Anzahl,Anzahl der im Referenzjahr neu gegründeten Unternehmen
-46,Neugründungen Arbeitsplätze,06 Industrie & Dienstleistungen,Neugründungen,Arbeitsplätze,,Anzahl,Anzahl der im Referenzjahr in neuen Unternehmen entstandenen Arbeitsplätze
-47,Bestand Unternehmen,06 Industrie & Dienstleistungen,Bestand,Unternehmen,,Anzahl,Anzahl aktiver Unternehmen im Referenzjahr
-48,Bestand Arbeitsplätze,06 Industrie & Dienstleistungen,Bestand,Arbeitsplätze,,Anzahl,Anzahl Beschäftigte in aktiven Unternehmen im Referenzjahr
-49,Schliessungen Unternehmen,06 Industrie & Dienstleistungen,Schliessungen,Unternehmen,,Anzahl,Anzahl geschlossener Unternehmen im Referenzjahr
-50,Schliessungen Arbeitsplätze,06 Industrie & Dienstleistungen,Schliessungen,Arbeitsplätze,,Anzahl,Anzahl verlorene Stellen durch Unternehmensschliessungen im Referenzjahr
-51,Neue Gebäude,09 Bauen & Wohnen,Bauen,Neue Gebäude (mit Wohnungen),,Anzahl pro 1000 Einwohner/innen,Neu erstellte Gebäude mit Wohnungen pro 1 000 Einwohner
-52,Neue Wohnungen,09 Bauen & Wohnen,Bauen,Neue Wohnungen,,Anzahl pro 1000 Einwohner/innen,Neu erstellte Wohnungen pro 1 000 Einwohner
-53,Anteil Einfamilienhäuser,09 Bauen & Wohnen,Wohnen,EFH,,Anteil (Prozent),Anteil Einfamilienhäuser
-54,Anteil 3-4 Zimmer-Wohnungen,09 Bauen & Wohnen,Wohnen,3-4 Zimmer,,Anteil (Prozent),Anteil 3-4 Zimmer-Wohnungen
-55,Leerwohnungsziffer,09 Bauen & Wohnen,Wohnen,Leerwohnungen,,Anteil (Prozent),Anteil leer stehender Wohnungen am Gesamtwohnungsbestand
-56,Bewohner/innen in EFH,09 Bauen & Wohnen,Wohnen,Bewohner/innen in EFH,,Anteil (Prozent),Anteil Bewohner/innen in Einfamilienhäusern
-57,Scheidungen,01 Bevölkerung,Bewegungen,Scheidungen,,Anzahl,Scheidungen Anzahl
-58,Heiraten,01 Bevölkerung,Bewegungen,Heiraten,,Anzahl,Heiraten
-59,Todesfälle,01 Bevölkerung,Bewegungen,Todesfälle,,Anzahl,Todesfälle
-60,Neue Gebäude,09 Bauen & Wohnen,Bauen,Neue Gebäude (mit Wohnungen),,Anzahl,Neu erstellte Gebäude mit Wohnungen
-61,Neue Wohnungen,09 Bauen & Wohnen,Bauen,Neue Wohnungen,,Anzahl,Neu erstellte Wohnungen
-62,Durchschnittliche Wohnfläche,09 Bauen & Wohnen,Wohnen,Wohnfläche,,Quadratmeter (m2),Durchschnittliche Wohnfläche pro Person
-63,Dominierende Energiequelle (Gebäude),09 Bauen & Wohnen,Energie,Gebäude,Dominierende Energiequelle,dominiernede Energiequelle,Dominierende Energiequelle
-64,Anteil Heizöl (Gebäude),09 Bauen & Wohnen,Energie,Gebäude,Heizöl,Anteil,Anteil Gebäude mit Heizöl
-65,Anteil Gas (Gebäude),09 Bauen & Wohnen,Energie,Gebäude,Gas,Anteil,Anteil Gebäude mit Gas
-66,Anteil Wärmepumpe (Gebäude),09 Bauen & Wohnen,Energie,Gebäude,Wärmepumpe,Anteil,Anteil Gebäude mit Wärmepumpe
-67,Dominierende Energiequelle (Wohnungen),09 Bauen & Wohnen,Energie,Wohnungen,Dominierende Energiequelle,dominiernede Energiequelle,Dominierende Energiequelle
-68,Anteil Heizöl (Wohnungen),09 Bauen & Wohnen,Energie,Wohnungen,Heizöl,Anteil,Anteil Wohnungen mit Heizöl
-69,Anteil Gas (Wohnungen),09 Bauen & Wohnen,Energie,Wohnungen,Gas,Anteil,Anteil Wohnungen mit Gas
-70,Anteil Wärmepumpe (Wohnungen),09 Bauen & Wohnen,Energie,Wohnungen,Wärmepumpe,Anteil,Anteil Wohnungen mit Wärmepumpe
-71,Anzahl Elektroautos,11 Mobilität & Verkehr,Strassenfahrzeuge,Elektrofahrzeuge,Bestand,Anzahl,Anzahl der rein elektrischen Personenwagen
-72,Anteil Elektroautos,11 Mobilität & Verkehr,Strassenfahrzeuge,Elektrofahrzeuge,Bestand,Anteil,Anteil der rein elektrischen Fahrzeuge am Personenwagenbestand
-73,Pendlerbilanz,11 Mobilität & Verkehr,Pendlermobilität,Pendlerbilanz,,Bilanz Zu-/Wegpendler,Bilanz der Zu- und Wegpendler pro 100 Erwerbstätige sowie Schüler/Studierende
-74,Pendlersaldo,11 Mobilität & Verkehr,Pendlermobilität,Pendlersaldo,,Anzahl Personen,Anzahl der Zu- minus Wegpendler
-75,Sozialhilfebeziehende,13 Soziale Sicherheit,Sozialleistungen,Sozialhilfebeziehende,,Anzahl Personen,Anzahl der unterstuetzten Personen
-76,Sozialhilfequote,13 Soziale Sicherheit,Sozialleistungen,Sozialhilfequote,,Prozent,Sozialhilfequote
-77,Museen,16 Kultur & Medien,Museen,,,Anzahl,Anzahl Museen
-78,Bibliotheken,16 Kultur & Medien,Bibliotheken,,,Anzahl,Anzahl Bibliotheken
-79,Bibliotheken pro 100k Einwohner,16 Kultur & Medien,Bibliotheken,,,Anzahl,Anzahl Bibliotheken pro 100'000 Einwohner/innen
-80,Kinos,16 Kultur & Medien,Kino,Kinos,,Anzahl,Anzahl Kinos
-81,Kinosäle,16 Kultur & Medien,Kino,Kinosäle,,Anzahl,Anzahl Kinosäle
-82,Kinosäle mit 3D-Technik,16 Kultur & Medien,Kino,Kinosäle,,Anzahl,Anzahl Kinosäle mit 3D-Technik
-83,Kinokomplexe,16 Kultur & Medien,Kino,Kinokomplexe,,Anzahl,Anzahl Kinokomplexe
-84,Multiplexkinos,16 Kultur & Medien,Kino,Multiplexkinos,,Anzahl,Anzahl Multiplexkinos
-85,Anzahl Kino-Sitzplätze,16 Kultur & Medien,Kino,Kinositzplätze,,Anzahl,Anzahl Kinositzplätze
-86,Arbeitsstätten Kulturwirtschaft,16 Kultur & Medien,Kulturwirtschaft,Arbeitsstätten,,Anzahl,Arbeitsstätten der Kulturwirtschaft
-87,Beschäftigte Kulturwirtschaft,16 Kultur & Medien,Kulturwirtschaft,Beschäftigte,,Anzahl,Beschäftigte der Kulturwirtschaft
-88,Durchschnittliches Reineinkommen pro Steuerpflichtigem,18 Öffentliche Finanzen,Steuern,Durchschnittliches Reineinkommen,,Franken,Reineinkommen pro Steuerpflichtigem/-r
-89,Durchschnittliches Reineinkommen pro Einwohner/in,18 Öffentliche Finanzen,Steuern,Durchschnittliches Reineinkommen,,Franken,Reineinkommen pro Einwohner/in
-90,Durchschnittliches Steuerbares Einkommen pro Steuerpflichtigem,18 Öffentliche Finanzen,Steuern,Durchschnittliches Steuerbares Einkommen,,Franken,Steuerbares Einkommen pro Steuerpflichtigem/-r
-91,Durchschnittliches Steuerbares Einkommen pro Einwohner/in,18 Öffentliche Finanzen,Steuern,Durchschnittliches Steuerbares Einkommen,,Franken,Steuerbares Einkommen pro Einwohner/in
-92,Reineinkommen (MCHF),18 Öffentliche Finanzen,Steuern,Reineinkommen,,Millionen Franken,Reineinkommen in MCHF
-93,Steuerbares Einkommen (MCHF),18 Öffentliche Finanzen,Steuern,Steuerbares Einkkommen,,Millionen Franken,Steuerbares Einkommen in MCHF
-94,Gymnasialquote,15 Bildung/Wissenschaft,Matura,Maturitätsquoten,,Anteil der Jugendlichen,"Anteil der Jugendlichen, die bis zum 25. Altersjahr ein Maturitätszeugnis erworben haben, in % der gleichaltrigen Referenzbevölkerung"
-95,Minergie-Gebäude (total),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude,Anzahl Gebäude mit Minergie-Standard
-96,Minergie-Gebäude (ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (ECO),Anzahl Gebäude mit Minergie-Standard (ECO)
-97,Minergie-Gebäude (A),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (A),Anzahl Gebäude mit Minergie-Standard (A)
-98,Minergie-Gebäude (A ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (A ECO),Anzahl Gebäude mit Minergie-Standard (A ECO)
-99,Minergie-Gebäude (P),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (P),Anzahl Gebäude mit Minergie-Standard (P)
-100,Minergie-Gebäude (P ECO),09 Bauen & Wohnen,Energie,Gebäude,Minergie,Anzahl Gebäude (P ECO),Anzahl Gebäude mit Minergie-Standard (P ECO)
-101,Anteil Erstwohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anteil,Anteil Erstwohnungen
-102,Anteil Zweitwohnungen,09 Bauen & Wohnen,Wohnen,Zweitwohnung,,Anteil,Anteil Zweitwohnungen
-103,Anzahl Erstwohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen
-104,Anzahl Erstwohnungen gleichgestellte Wohnungen,09 Bauen & Wohnen,Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen gleichgestellte Wohnungen
-105,Anzahl Wohnungen,09 Bauen & Wohnen,Wohnen,Bestand,,Anzahl,Anzahl Wohnungen
-106,Anzahl Steuerpflichtige juristische Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,Anzahl juristische Personen,Anzahl juristische Personen die direkte Bundessteuer zahlen
-107,Eigenkapital juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Eigenkapital juristischer Personen
-108,Reingewinn juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Reingewinn juristischer Personen
-109,Direkte Bundessteuer juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Direkte Bundessteuer entrichtet von juristischen Personen
-110,Durchnittlicher Abzug juristischer Personen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Juristische Personen,Prozent,Durchschnittlicher Abzug juristischer Personen (direkte Bundessteuer)
-111,Anzahl Steuerpfichtige,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Anzahl,Anzahl Steuerpflichtige natürliche Personen
-112,Anzahl Steuerpfichtige ohne Steuer,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Anzahl,Anzahl Steuerpflichtige natürliche Personen ohne Steuer
-113,Durchschnittliches Reineinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches Reineinkommen natürliche Personen
-114,Durchschnittliches reines Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches reines Äquivalenzeinkommen natürliche Personen
-115,Durchschnittliches steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches steuerbares Äquivalenzeinkommen natürliche Personen
-116,Durchschnittliches steuerbares Einkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches steuerbares Einkommen natürliche Personen
-117,Durchschnittlicher Steuerbetrag,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittlicher Steuerbetrag natürliche Personen
-118,Einnahmen Direkte Bundessteuer,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Einnahmen Direkte Bundessteuer natürliche Personen
-119,Gini-Index Reineinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index Reineinkommen natürliche Personen
-120,Gini-Index reines Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index reines Äquivalenzeinkommen natürliche Personen
-121,Gini-Index steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index steuerbares Äquivalenzeinkommen natürliche Personen
-122,Gini-Index steuerbares Einkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index steuerbares Einkommen natürliche Personen
-123,Gini-Index Steuerbetrag,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index Steuerbetrag natürliche Personen
-124,Median Reineinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Reineinkommen natürliche Personen
-125,Median reines Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median reines Äquivalenzeinkommen natürliche Personen
-126,Median steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Äquivalenzeinkommen natürliche Personen
-127,Median steuerbares Einkommen,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
-128,Median Steuerbetrag,18 Öffentliche Finanzen,Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen
+1,Bevoekerung (zivilrechtlich),01 Bevölkerung,01.01 Bestand,zivilrechtlich,,Personen,Anzahl der Bevölkerung
+2,Ausländeranteil,01 Bevölkerung,01.04 Migration,Ausländeranteil,,Prozent,Anteil Ausländer
+3,Bevoelkerung (staendig),01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl der Bevölkerung
+4,Anteil versiegelte Flaeche,02 Raum & Umwelt,02.01 Bodennutzung,Versiegelte Fläche,,Prozent,Anteil der versiegelten Flaeche
+5,Geburtenueberschuss,01 Bevölkerung,01.02 Bewegungen,Geburtenüberschuss,,Personen,Geburtenüberschuss
+6,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+7,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+8,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+9,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Gesamtfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Gesamtflaeche
+10,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Produktivfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Produktivfläche
+11,Jugendquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Jugendquotient,Prozent,Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20-64 Jahre
+12,Altersquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Altersquotient,Prozent,65-Jährige und Ältere pro 100 Personen im Alter von 20-64 Jahren
+13,Greying Index,01 Bevölkerung,01.01 Bestand,Altersstruktur,Greying Index,Prozent,80-Jährige und Ältere pro 100 Personen im Alter von 65-79 Jahren
+14,Anteil Ausländer/innen,01 Bevölkerung,01.04 Migration,Anteil Ausländerinnen,ständig,Prozent,Anteil der ständigen ausländischen Bevölkerung an der gesamten ständigen Wohnbevölkerung
+15,Anteil Deutsche,01 Bevölkerung,01.04 Migration,Anteil Deutsche,ständig,Prozent,Anteil der deutschen Staatsangehörigen an der gesamten ständigen ausländischen Wohnbevölkerung
+16,Anteil Französisch,01 Bevölkerung,01.04 Migration,Anteil Französisch,ständig,Prozent,Anteil der französischen Staatsangehörigen an der gesamten ständigen ausländischen Wohnbevölkerung
+17,Anteil Europäisch,01 Bevölkerung,01.04 Migration,Anteil Europäisch,ständig,Prozent,Anteil der Staatsangehörigen eines EU-Mitgliedsstaates an der gesamten ständigen ausländischen Wohnbevölkerung
+18,Geburten,01 Bevölkerung,01.02 Bewegungen,Geburten,,Personen pro 1000,Lebendgeburten pro 1000 Einwohner/innen
+19,Heiraten,01 Bevölkerung,01.02 Bewegungen,Heiraten,,Personen pro 1000,Heiraten pro 1000 Einwohner/innen
+20,Scheidungen,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Personen pro 1000,Scheidungen pro 1000 Einwohner/innen
+21,Todesfälle,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Personen pro 1000,Todesfälle pro 1000 Einwohner/innen
+22,Einbürgerungen,01 Bevölkerung,01.02 Bewegungen,Einbürgerungen,,Rohe Einbürgerungsziffer,Rohe Einbbürgerungsziffer
+23,Einpersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Einpersonenhaushalt,Anteil Prozent,Anteil der Einpersonenhaushalte am Total der Privathaushalte
+24,Zweipersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Zweipersonenhaushalt,Anteil Prozent,Anteil der Zweipersonenhaushalte am Total der Privathaushalte
+25,Dreipersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Dreipersonenhaushalt,Anteil Prozent,Anteil der Dreipersonenhaushalte am Total der Privathaushalte
+26,Vierpersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Vierpersonenhaushalt,Anteil Prozent,Anteil der Vierpersonenhaushalte am Total der Privathaushalte
+27,Vielpersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Vielpersonenhaushalte,Anteil Prozent,Anteil der der Haushalte mit 5 oder mehr Personen am Total der Privathaushalte
+28,Haushaltsgrösse,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Durchschnitt,Personen,Durchschnittliche Haushaltsgrösse in Personen
+29,Siedlungsfläche,02 Raum & Umwelt,02.01 Bodennutzung,Siedlungsflächen,,Prozent,Anteil der Siedlungsfläche an der Gesamtfläche
+30,Gebäudeareal,02 Raum & Umwelt,02.01 Bodennutzung,Gebäudeareal,,Prozent,Anteil des Gebäudeareals an der Gesamtfläche
+31,Gebäudeareal,02 Raum & Umwelt,02.01 Bodennutzung,Industrie- und Gewerbeareal,,Prozent,Anteil des Industrie- und Gewerbeareals an der Gesamtfläche
+32,Gebäudeareal,02 Raum & Umwelt,02.01 Bodennutzung,Verkehrsfläche,,Prozent,Anteil der Verkehrsflächen an der Gesamtfläche
+33,Gebäudeareal,02 Raum & Umwelt,02.01 Bodennutzung,Landwirtschaftsfläche,,Prozent,Anteil der Landwirtschaftsflächen an der Gesamtfläche
+34,Gebäudeareal,02 Raum & Umwelt,02.01 Bodennutzung,Wald & Gehölze,,Prozent,Anteil der bestockten Flächen (Wald und Gehölze) an der Gesamtfläche
+35,Gebäudeareal,02 Raum & Umwelt,02.01 Bodennutzung,unproduktive Fläche,,Prozent,Anteil der unproduktiven Flächen an der Gesamtfläche
+36,Gebäudeareal,02 Raum & Umwelt,02.02 Bodenbedeckung,künstlich angelegt,,Prozent,Anteil der künstlich angelegten Flächen an der Gesamtfläch
+37,Gebäudeareal,02 Raum & Umwelt,02.02 Bodenbedeckung,vegetationslos,,Prozent,"Anteil der vegetationslosen Flächen* (Fels, Geröll, Lockergestein) an der Gesamtfläche"
+38,Gebäudeareal,02 Raum & Umwelt,02.02 Bodenbedeckung,Wasser- und Feuchtflächen,,Prozent,"Anteil der Wasser- und Feuchtflächen* (Wasser, Gletscher, Nassstandorte) an der Gesamtfläche"
+39,Arbeitsstätten Sektor 1,06 Industrie & Dienstleistungen,06.02 Arbeitsstätten,Sektor 1,,Anzahl,Zahl der Arbeitsstätten im 1. Wirtschaftssektor
+40,Arbeitsstätten Sektor 2,06 Industrie & Dienstleistungen,06.02 Arbeitsstätten,Sektor 2,,Anzahl,Zahl der Arbeitsstätten im 2. Wirtschaftssektor
+41,Arbeitsstätten Sektor 3,06 Industrie & Dienstleistungen,06.02 Arbeitsstätten,Sektor 3,,Anzahl,Zahl der Arbeitsstätten im 3. Wirtschaftssektor
+42,Beschäftigte Sektor 1,06 Industrie & Dienstleistungen,06.01 Beschäftigte,Sektor 1,,Anzahl,Zahl der Beschäftigten im 1. Wirtschaftssektor
+43,Beschäftigte Sektor 2,06 Industrie & Dienstleistungen,06.01 Beschäftigte,Sektor 2,,Anzahl,Zahl der Beschäftigten im 2. Wirtschaftssektor
+44,Beschäftigte Sektor 3,06 Industrie & Dienstleistungen,06.01 Beschäftigte,Sektor 3,,Anzahl,Zahl der Beschäftigten im 3. Wirtschaftssektor
+45,Neugründungen Unternehmen,06 Industrie & Dienstleistungen,06.04 Neugründungen,Unternehmen,,Anzahl,Anzahl der im Referenzjahr neu gegründeten Unternehmen
+46,Neugründungen Arbeitsplätze,06 Industrie & Dienstleistungen,06.04 Neugründungen,Arbeitsplätze,,Anzahl,Anzahl der im Referenzjahr in neuen Unternehmen entstandenen Arbeitsplätze
+47,Bestand Unternehmen,06 Industrie & Dienstleistungen,06.03 Bestand,Unternehmen,,Anzahl,Anzahl aktiver Unternehmen im Referenzjahr
+48,Bestand Arbeitsplätze,06 Industrie & Dienstleistungen,06.03 Bestand,Arbeitsplätze,,Anzahl,Anzahl Beschäftigte in aktiven Unternehmen im Referenzjahr
+49,Schliessungen Unternehmen,06 Industrie & Dienstleistungen,06.05 Schliessungen,Unternehmen,,Anzahl,Anzahl geschlossener Unternehmen im Referenzjahr
+50,Schliessungen Arbeitsplätze,06 Industrie & Dienstleistungen,06.05 Schliessungen,Arbeitsplätze,,Anzahl,Anzahl verlorene Stellen durch Unternehmensschliessungen im Referenzjahr
+51,Neue Gebäude,09 Bauen & Wohnen,09.01 Bauen,Neue Gebäude (mit Wohnungen),,Anzahl pro 1000 Einwohner/innen,Neu erstellte Gebäude mit Wohnungen pro 1 000 Einwohner
+52,Neue Wohnungen,09 Bauen & Wohnen,09.01 Bauen,Neue Wohnungen,,Anzahl pro 1000 Einwohner/innen,Neu erstellte Wohnungen pro 1 000 Einwohner
+53,Anteil Einfamilienhäuser,09 Bauen & Wohnen,09.02 Wohnen,EFH,,Anteil (Prozent),Anteil Einfamilienhäuser
+54,Anteil 3-4 Zimmer-Wohnungen,09 Bauen & Wohnen,09.02 Wohnen,3-4 Zimmer,,Anteil (Prozent),Anteil 3-4 Zimmer-Wohnungen
+55,Leerwohnungsziffer,09 Bauen & Wohnen,09.02 Wohnen,Leerwohnungen,,Anteil (Prozent),Anteil leer stehender Wohnungen am Gesamtwohnungsbestand
+56,Bewohner/innen in EFH,09 Bauen & Wohnen,09.02 Wohnen,Bewohner/innen in EFH,,Anteil (Prozent),Anteil Bewohner/innen in Einfamilienhäusern
+57,Scheidungen,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Scheidungen Anzahl
+58,Heiraten,01 Bevölkerung,01.02 Bewegungen,Heiraten,,Anzahl,Heiraten
+59,Todesfälle,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Todesfälle
+60,Neue Gebäude,09 Bauen & Wohnen,09.01 Bauen,Neue Gebäude (mit Wohnungen),,Anzahl,Neu erstellte Gebäude mit Wohnungen
+61,Neue Wohnungen,09 Bauen & Wohnen,09.01 Bauen,Neue Wohnungen,,Anzahl,Neu erstellte Wohnungen
+62,Durchschnittliche Wohnfläche,09 Bauen & Wohnen,09.02 Wohnen,Wohnfläche,,Quadratmeter (m2),Durchschnittliche Wohnfläche pro Person
+63,Dominierende Energiequelle (Gebäude),09 Bauen & Wohnen,09.03 Energie,Gebäude,Dominierende Energiequelle,dominiernede Energiequelle,Dominierende Energiequelle
+64,Anteil Heizöl (Gebäude),09 Bauen & Wohnen,09.03 Energie,Gebäude,Heizöl,Anteil,Anteil Gebäude mit Heizöl
+65,Anteil Gas (Gebäude),09 Bauen & Wohnen,09.03 Energie,Gebäude,Gas,Anteil,Anteil Gebäude mit Gas
+66,Anteil Wärmepumpe (Gebäude),09 Bauen & Wohnen,09.03 Energie,Gebäude,Wärmepumpe,Anteil,Anteil Gebäude mit Wärmepumpe
+67,Dominierende Energiequelle (Wohnungen),09 Bauen & Wohnen,09.03 Energie,Wohnungen,Dominierende Energiequelle,dominiernede Energiequelle,Dominierende Energiequelle
+68,Anteil Heizöl (Wohnungen),09 Bauen & Wohnen,09.03 Energie,Wohnungen,Heizöl,Anteil,Anteil Wohnungen mit Heizöl
+69,Anteil Gas (Wohnungen),09 Bauen & Wohnen,09.03 Energie,Wohnungen,Gas,Anteil,Anteil Wohnungen mit Gas
+70,Anteil Wärmepumpe (Wohnungen),09 Bauen & Wohnen,09.03 Energie,Wohnungen,Wärmepumpe,Anteil,Anteil Wohnungen mit Wärmepumpe
+71,Anzahl Elektroautos,11 Mobilität & Verkehr,11.01 Strassenfahrzeuge,Elektrofahrzeuge,Bestand,Anzahl,Anzahl der rein elektrischen Personenwagen
+72,Anteil Elektroautos,11 Mobilität & Verkehr,11.01 Strassenfahrzeuge,Elektrofahrzeuge,Bestand,Anteil,Anteil der rein elektrischen Fahrzeuge am Personenwagenbestand
+73,Pendlerbilanz,11 Mobilität & Verkehr,11.02 Pendlermobilität,Pendlerbilanz,,Bilanz Zu-/Wegpendler,Bilanz der Zu- und Wegpendler pro 100 Erwerbstätige sowie Schüler/Studierende
+74,Pendlersaldo,11 Mobilität & Verkehr,11.02 Pendlermobilität,Pendlersaldo,,Anzahl Personen,Anzahl der Zu- minus Wegpendler
+75,Sozialhilfebeziehende,13 Soziale Sicherheit,13.01 Sozialleistungen,Sozialhilfebeziehende,,Anzahl Personen,Anzahl der unterstuetzten Personen
+76,Sozialhilfequote,13 Soziale Sicherheit,13.01 Sozialleistungen,Sozialhilfequote,,Prozent,Sozialhilfequote
+77,Museen,16 Kultur & Medien,16.01 Museen,,,Anzahl,Anzahl Museen
+78,Bibliotheken,16 Kultur & Medien,16.02 Bibliotheken,,,Anzahl,Anzahl Bibliotheken
+79,Bibliotheken pro 100k Einwohner,16 Kultur & Medien,16.02 Bibliotheken,,,Anzahl,Anzahl Bibliotheken pro 100'000 Einwohner/innen
+80,Kinos,16 Kultur & Medien,16.03 Kino,Kinos,,Anzahl,Anzahl Kinos
+81,Kinosäle,16 Kultur & Medien,16.03 Kino,Kinosäle,,Anzahl,Anzahl Kinosäle
+82,Kinosäle mit 3D-Technik,16 Kultur & Medien,16.03 Kino,Kinosäle,,Anzahl,Anzahl Kinosäle mit 3D-Technik
+83,Kinokomplexe,16 Kultur & Medien,16.03 Kino,Kinokomplexe,,Anzahl,Anzahl Kinokomplexe
+84,Multiplexkinos,16 Kultur & Medien,16.03 Kino,Multiplexkinos,,Anzahl,Anzahl Multiplexkinos
+85,Anzahl Kino-Sitzplätze,16 Kultur & Medien,16.03 Kino,Kinositzplätze,,Anzahl,Anzahl Kinositzplätze
+86,Arbeitsstätten Kulturwirtschaft,16 Kultur & Medien,16.04 Kulturwirtschaft,Arbeitsstätten,,Anzahl,Arbeitsstätten der Kulturwirtschaft
+87,Beschäftigte Kulturwirtschaft,16 Kultur & Medien,16.04 Kulturwirtschaft,Beschäftigte,,Anzahl,Beschäftigte der Kulturwirtschaft
+88,Durchschnittliches Reineinkommen pro Steuerpflichtigem,18 Öffentliche Finanzen,18.01 Steuern,Durchschnittliches Reineinkommen,,Franken,Reineinkommen pro Steuerpflichtigem/-r
+89,Durchschnittliches Reineinkommen pro Einwohner/in,18 Öffentliche Finanzen,18.01 Steuern,Durchschnittliches Reineinkommen,,Franken,Reineinkommen pro Einwohner/in
+90,Durchschnittliches Steuerbares Einkommen pro Steuerpflichtigem,18 Öffentliche Finanzen,18.01 Steuern,Durchschnittliches Steuerbares Einkommen,,Franken,Steuerbares Einkommen pro Steuerpflichtigem/-r
+91,Durchschnittliches Steuerbares Einkommen pro Einwohner/in,18 Öffentliche Finanzen,18.01 Steuern,Durchschnittliches Steuerbares Einkommen,,Franken,Steuerbares Einkommen pro Einwohner/in
+92,Reineinkommen (MCHF),18 Öffentliche Finanzen,18.01 Steuern,Reineinkommen,,Millionen Franken,Reineinkommen in MCHF
+93,Steuerbares Einkommen (MCHF),18 Öffentliche Finanzen,18.01 Steuern,Steuerbares Einkkommen,,Millionen Franken,Steuerbares Einkommen in MCHF
+94,Gymnasialquote,15 Bildung/Wissenschaft,15.01 Matura,Maturitätsquoten,,Anteil der Jugendlichen,"Anteil der Jugendlichen, die bis zum 25. Altersjahr ein Maturitätszeugnis erworben haben, in % der gleichaltrigen Referenzbevölkerung"
+95,Minergie-Gebäude (total),09 Bauen & Wohnen,09.03 Energie,Gebäude,Minergie,Anzahl Gebäude,Anzahl Gebäude mit Minergie-Standard
+96,Minergie-Gebäude (ECO),09 Bauen & Wohnen,09.03 Energie,Gebäude,Minergie,Anzahl Gebäude (ECO),Anzahl Gebäude mit Minergie-Standard (ECO)
+97,Minergie-Gebäude (A),09 Bauen & Wohnen,09.03 Energie,Gebäude,Minergie,Anzahl Gebäude (A),Anzahl Gebäude mit Minergie-Standard (A)
+98,Minergie-Gebäude (A ECO),09 Bauen & Wohnen,09.03 Energie,Gebäude,Minergie,Anzahl Gebäude (A ECO),Anzahl Gebäude mit Minergie-Standard (A ECO)
+99,Minergie-Gebäude (P),09 Bauen & Wohnen,09.03 Energie,Gebäude,Minergie,Anzahl Gebäude (P),Anzahl Gebäude mit Minergie-Standard (P)
+100,Minergie-Gebäude (P ECO),09 Bauen & Wohnen,09.03 Energie,Gebäude,Minergie,Anzahl Gebäude (P ECO),Anzahl Gebäude mit Minergie-Standard (P ECO)
+101,Anteil Erstwohnungen,09 Bauen & Wohnen,09.02 Wohnen,Erstwohnung,,Anteil,Anteil Erstwohnungen
+102,Anteil Zweitwohnungen,09 Bauen & Wohnen,09.02 Wohnen,Zweitwohnung,,Anteil,Anteil Zweitwohnungen
+103,Anzahl Erstwohnungen,09 Bauen & Wohnen,09.02 Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen
+104,Anzahl Erstwohnungen gleichgestellte Wohnungen,09 Bauen & Wohnen,09.02 Wohnen,Erstwohnung,,Anzahl Wohnungen,Anzahl Erstwohnungen gleichgestellte Wohnungen
+105,Anzahl Wohnungen,09 Bauen & Wohnen,09.02 Wohnen,Bestand,,Anzahl,Anzahl Wohnungen
+106,Anzahl Steuerpflichtige juristische Personen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Juristische Personen,Anzahl juristische Personen,Anzahl juristische Personen die direkte Bundessteuer zahlen
+107,Eigenkapital juristischer Personen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Eigenkapital juristischer Personen
+108,Reingewinn juristischer Personen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Reingewinn juristischer Personen
+109,Direkte Bundessteuer juristischer Personen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Juristische Personen,CHF,Direkte Bundessteuer entrichtet von juristischen Personen
+110,Durchnittlicher Abzug juristischer Personen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Juristische Personen,Prozent,Durchschnittlicher Abzug juristischer Personen (direkte Bundessteuer)
+111,Anzahl Steuerpfichtige,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Anzahl,Anzahl Steuerpflichtige natürliche Personen
+112,Anzahl Steuerpfichtige ohne Steuer,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Anzahl,Anzahl Steuerpflichtige natürliche Personen ohne Steuer
+113,Durchschnittliches Reineinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches Reineinkommen natürliche Personen
+114,Durchschnittliches reines Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches reines Äquivalenzeinkommen natürliche Personen
+115,Durchschnittliches steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches steuerbares Äquivalenzeinkommen natürliche Personen
+116,Durchschnittliches steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittliches steuerbares Einkommen natürliche Personen
+117,Durchschnittlicher Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Durchschnittlicher Steuerbetrag natürliche Personen
+118,Einnahmen Direkte Bundessteuer,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Einnahmen Direkte Bundessteuer natürliche Personen
+119,Gini-Index Reineinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index Reineinkommen natürliche Personen
+120,Gini-Index reines Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index reines Äquivalenzeinkommen natürliche Personen
+121,Gini-Index steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index steuerbares Äquivalenzeinkommen natürliche Personen
+122,Gini-Index steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index steuerbares Einkommen natürliche Personen
+123,Gini-Index Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,Gini-Index,Gini-Index Steuerbetrag natürliche Personen
+124,Median Reineinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Reineinkommen natürliche Personen
+125,Median reines Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median reines Äquivalenzeinkommen natürliche Personen
+126,Median steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Äquivalenzeinkommen natürliche Personen
+127,Median steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
+128,Median Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen

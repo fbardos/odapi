@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy import Table
 from sqlalchemy import Column
 from sqlalchemy.sql.functions import coalesce
+# from tabulate import tabulate
 from geoalchemy2 import Geometry
 from dataclasses import dataclass
 from typing import Optional
@@ -221,6 +222,14 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
         buffer = io.BytesIO()
         gdf.to_excel(buffer, index=False, sheet_name='data')
         return XlsxResponse(content=buffer)
+    # Currently, TXT output is not needed.
+    # The table would be too wide and not readable.
+    # elif re.search(f'^/{first_path_element}.*/txt$', request.url.path):
+        # buffer = io.BytesIO()
+        # gdf.to_excel(buffer, index=False, sheet_name='data')
+        # buffer = io.StringIO()
+        # buffer.write(tabulate(gdf, headers='keys', showindex='never', tablefmt='pipe'))
+        # return TxtResponose(content=buffer.getvalue())
     # Must stand last, otherwise will match for every path.
     elif request.url.path.startswith(f'/{first_path_element}'):
         columns_to_convert = [
@@ -228,7 +237,6 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
         ]
         convert_columns = {col: 'str' for col in gdf.columns if col in columns_to_convert}
         gdf = gdf.astype(convert_columns)
-        print(gdf.info())
 
         # After some performance testing, it seems, that the solution with
         # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
