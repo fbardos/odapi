@@ -22,6 +22,7 @@ import odapi.assets.bfs.statatlas as assets_bfs_statatlas
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 import odapi.assets.swisstopo.api as assets_swisstopo
+import odapi.assets.detect_resources as assets_detect_resources
 
 
 ################################################################################
@@ -71,6 +72,7 @@ defs = Definitions(
         assets_bfs_statatlas.job_statatlas,
         assets_swissboundaries.job_bfs_swissboundaries,
         assets_swisstopo.job_geoadmin,
+        assets_detect_resources.job,
     ],
     sensors=[
         *assets_opendataswiss.sensors_opendataswiss,
@@ -80,5 +82,6 @@ defs = Definitions(
         assets_bfs_statatlas.schedule_statatlas,
         assets_swissboundaries.schedule_bfs_swissboundaries,
         assets_swisstopo.schedule_geoadmin,
+        assets_detect_resources.schedule,
     ],
 )
