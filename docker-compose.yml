@@ -174,8 +174,8 @@ services:
   # #######################################################################
   api:
     build:
-      context: api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api/Dockerfile
     restart: *restart-policy
     profiles:
       - dev
