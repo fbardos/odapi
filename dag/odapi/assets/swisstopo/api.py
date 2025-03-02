@@ -1,19 +1,20 @@
-
-from odapi.resources.url.geoadmin import GeoAdminResource
-from odapi.resources.postgres.postgres import PostgresResource
-from odapi.resources.extract.extract_handler import ExtractHandler
-from dataclasses import dataclass
-from typing import Optional
 import datetime as dt
 from abc import ABC
+from dataclasses import dataclass
+from typing import Optional
+
+from dagster import AssetsDefinition
+from dagster import HookContext
+from dagster import MetadataValue
+from dagster import ScheduleDefinition
 from dagster import asset
 from dagster import define_asset_job
-from dagster import ScheduleDefinition
-from dagster import AssetsDefinition
-from dagster import MetadataValue
 from dagster import success_hook
-from dagster import HookContext
 from pytz import timezone
+
+from odapi.resources.extract.extract_handler import ExtractHandler
+from odapi.resources.postgres.postgres import PostgresResource
+from odapi.resources.url.geoadmin import GeoAdminResource
 
 
 @dataclass(frozen=True)
@@ -21,11 +22,17 @@ class GeoAdminConfiguration(ABC):
     """
     Expects .gpkg file URLs.
 
+    Find new datasources here:
+        https://data.geo.admin.ch/, or
+        https://data.geo.admin.ch/browser
+
+
     Example (Zweitwohnungen):
 
         collection: ch.are.wohnungsinventar-zweitwohnungsanteil
 
     """
+
     name: str
     collection: str
     feature_id_regex: Optional[str] = None
@@ -33,16 +40,18 @@ class GeoAdminConfiguration(ABC):
     asset_key_regex: Optional[str] = None
     layer: Optional[str] = None
 
+
 SOURCES = [
     GeoAdminConfiguration(
         name='zweitwohnungen',
-        collection = 'ch.are.wohnungsinventar-zweitwohnungsanteil',
+        collection='ch.are.wohnungsinventar-zweitwohnungsanteil',
         # artefact_type = 'application/x.shapefile+zip',
         # asset_key_regex = r'wohnungsinventar-zweitwohnungsanteil_\d{4}-\d{2}_2056\.shp\.zip',
-        artefact_type = 'application/geopackage+sqlite3',
-        asset_key_regex = r'wohnungsinventar-zweitwohnungsanteil_\d{4}(-\d{2})?_2056\.gpkg',
+        artefact_type='application/geopackage+sqlite3',
+        asset_key_regex=r'wohnungsinventar-zweitwohnungsanteil_\d{4}(-\d{2})?_2056\.gpkg',
     ),
 ]
+
 
 def swisstopo_api_factory(geo_config: GeoAdminConfiguration) -> AssetsDefinition:
 
@@ -72,19 +81,32 @@ def swisstopo_api_factory(geo_config: GeoAdminConfiguration) -> AssetsDefinition
         gdf = gdf.drop_duplicates(subset=['duedate', 'gem_no'], keep='last')
 
         # Write to database
-        gdf.to_postgis(f'swisstopo_{geo_config.name}', db.get_sqlalchemy_engine(), schema='src', if_exists='replace', index=False)
+        gdf.to_postgis(
+            f'swisstopo_{geo_config.name}',
+            db.get_sqlalchemy_engine(),
+            schema='src',
+            if_exists='replace',
+            index=False,
+        )
 
         # Store extract via extractor
         execution_date = dt.datetime.now(tz=timezone('Europe/Zurich'))
-        key = '/'.join([f'swisstopo_{geo_config.name}', f'extracted_data_{execution_date.isoformat()}.fernet'])
+        key = '/'.join(
+            [
+                f'swisstopo_{geo_config.name}',
+                f'extracted_data_{execution_date.isoformat()}.fernet',
+            ]
+        )
         extractor.write_data(key, gdf)
 
         # Insert metadata
-        context.add_output_metadata(metadata={
-            'num_records': len(gdf.index),
-            'num_cols': len(gdf.columns),
-            'preview': MetadataValue.md(gdf.head().to_markdown()),
-        })
+        context.add_output_metadata(
+            metadata={
+                'num_records': len(gdf.index),
+                'num_cols': len(gdf.columns),
+                'preview': MetadataValue.md(gdf.head().to_markdown()),
+            }
+        )
 
     return _asset_swisstopo
 
