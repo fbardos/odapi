@@ -57,5 +57,12 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['gemeinde_bfs_id']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_wohnbevoelkerung
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
 
 

@@ -11,6 +11,8 @@ from odapi.resources.ckan.ckan import OpenDataSwiss
 from odapi.resources.minio.minio import Minio
 from odapi.resources.crypto.fernet import FernetCipher
 from odapi.resources.url.csv import OpendataswissUrlResource
+from odapi.resources.url.excel import ExcelResource
+from odapi.resources.url.excel import SssExcelResource
 from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
@@ -65,6 +67,8 @@ defs = Definitions(
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
         'healthcheck': HealthCheckResource(),
+        'excel': ExcelResource(),
+        'excel_sss': SssExcelResource(),
     },
     jobs=[
         *assets_opendataswiss.jobs_opendataswiss,

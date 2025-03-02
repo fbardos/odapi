@@ -190,3 +190,5 @@ UNION ALL
 select * from {{ ref('intm_estv_db_jp')}}
 UNION ALL
 select * from {{ ref('intm_estv_db_np')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_wohnbevoelkerung')}}

@@ -127,3 +127,4 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 126,Median steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Äquivalenzeinkommen natürliche Personen
 127,Median steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
 128,Median Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen
+129,Wachstum Bevoelkerung (10 Jahre),01 Bevölkerung,01.01 Bestand,staendig,,Prozent (%),Wachstum der Bevölkerung der letzten 10 Jahre

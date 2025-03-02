@@ -1786,3 +1786,16 @@ models:
       - <<: *tests-intm-table-statatlas-rows
       - <<: *tests-intm-table-statatlas-rowsmin
 
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_wohnbevoelkerung
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 129
+        period_type: duedate
+        period_code: year
+    tests:
+      - <<: *tests-intm-table-cols-for-union-mart
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['geo_value', 'period_ref', 'knowledge_date_from']
+
