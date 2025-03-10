@@ -1879,38 +1879,22 @@ models:
     config:
       odapi:
         indicators:
-          - indicator_id: 173
-            column_name: eu_efta_total
-          - indicator_id: 174
-            column_name: aufenthalt_b
           - indicator_id: 166
             column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
-          - indicator_id: 166
-            column_name: aufenthalt_b
+          - indicator_id: 167
+            column_name: niedergelassen_c
+          - indicator_id: 168
+            column_name: vorl_aufgenommen_f
+          - indicator_id: 169
+            column_name: kurzaufenthalter_l
+          - indicator_id: 170
+            column_name: asylsuchend_n
+          - indicator_id: 171
+            column_name: diplomat
+          - indicator_id: 172
+            column_name: andere
+          - indicator_id: 193
+            column_name: schutzstatus_s
     tests:
       - odapi_intm_columns
       - odapi_intm_rowsmin

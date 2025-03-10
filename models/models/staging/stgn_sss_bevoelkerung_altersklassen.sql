@@ -2,7 +2,8 @@ select
     src.gemeinde_name
     , src.total
     , src.source
-    {% set age_groups = [
+    , src.year
+    {% set indicators = [
         'age0_4',
         'age5_9',
         'age10_14',
@@ -25,13 +26,6 @@ select
         'age95_99',
         'age100_plus',
     ] %}
-    -- when no inhabitants are present in an age group, the value is '–'
-    {% for age_group in age_groups %}
-        , case 
-            when src.{{ age_group }}::TEXT = '–' then 0
-            else src.{{ age_group }}::INTEGER
-        end as {{ age_group }}
-    {% endfor %}
-    , src.year
+    {{ stgn_sss_replace(indicators) }}
     , {{ dbt_utils.generate_surrogate_key(['year', 'gemeinde_name']) }} as _surrogate_key
 from {{ source('src', 'sss_bevoelkerung_altersklassen')}} src

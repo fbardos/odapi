@@ -3,7 +3,7 @@ select
     , src.year
     , src.auslaender
     , src.auslaender_anteil
-    {% set herkuenfte = [
+    {% set indicators = [
         'eu_efta_total',
         'deutschland',
         'frankreich',
@@ -25,12 +25,7 @@ select
         'australasien',
         'andere_laender',
     ] %}
-    {% for herkunft in herkuenfte %}
-        , case 
-            when src.{{ herkunft }}::TEXT in ('...', '…') then 0
-            else src.{{ herkunft }}::INTEGER
-        end as {{ herkunft }}
-    {% endfor %}
+    {{ stgn_sss_replace(indicators) }}
     , src.source
     , {{ dbt_utils.generate_surrogate_key(['year', 'gemeinde_name']) }} as _surrogate_key
 from {{ source('src', 'sss_bevoelkerung_herkunft')}} src
