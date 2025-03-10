@@ -191,4 +191,4 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 190,Herkunft Nord/Südamerika,01 Bevölkerung,01.04 Migration,Herkunft,Amerika,Anzahl Personen,Anzahl Personen mit Herkunft Nord/Südamerika (total)
 191,Herkunft Australasien,01 Bevölkerung,01.04 Migration,Herkunft,Amerika,Anzahl Personen,Anzahl Personen mit Herkunft Australasien (total)
 192,Herkunft andere Länder,01 Bevölkerung,01.04 Migration,Herkunft,,Anzahl Personen,Anzahl Personen mit Herkunft andere Länder (total)
-
+193,Schutzstatus S,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie Schutzstatus S

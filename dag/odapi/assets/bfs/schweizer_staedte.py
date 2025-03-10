@@ -8,6 +8,7 @@ Source:
 """
 
 from dataclasses import dataclass
+from typing import Any
 from typing import List
 from typing import Optional
 from typing import Sequence
@@ -31,19 +32,53 @@ class SchweizerStaedteSourceConfig:
 
 
 @dataclass
+class ColumnConfig:
+    name: str
+    include_years: Optional[List[int]] = None
+    exclude_years: Optional[List[int]] = None
+    start_year: Optional[int] = None
+    end_year: Optional[int] = None
+
+    def is_included_in_year(self, year: int) -> bool:
+        if self.include_years:
+            return year in self.include_years
+        if self.exclude_years:
+            return year not in self.exclude_years
+        if self.start_year and self.end_year:
+            return self.start_year <= year <= self.end_year
+        if self.start_year:
+            return year >= self.start_year
+        if self.end_year:
+            return year <= self.end_year
+        return True
+
+
+@dataclass
 class SchweizerStaedteSheetConfig:
     sheet_name: str
     skiprows: int
     source: str
-    columns: List[str]
+    columns: List[ColumnConfig]
     usecols: Optional[str | Sequence[int]] = None
 
+    # XXX: Maybe not needed anymore with columns as List of ColumnConfig
     def columns_to_year_mapping(self, partition_year: str) -> List[str]:
         """Starting with 2023, the first column is gemeinde_bfs_id."""
         if int(partition_year) >= 2023:
             return ['gemeinde_bfs_id'] + self.columns
         else:
             return self.columns
+
+    # XXX: Maybe not needed anymore with columns as List of ColumnConfig
+    def usecols_to_year_mapping(self, usecols: Any, partition_year: str) -> Any:
+        """Starting with 2023, the first column is gemeinde_bfs_id. So when using a range, must be adjusted too."""
+        if isinstance(usecols, range):
+            if int(partition_year) >= 2023:
+                return range(len(usecols) + 1)
+            else:
+                return usecols
+        else:
+            return usecols
 
     def transform(self, data: pd.DataFrame) -> pd.DataFrame:
         """Can be overwritten by subclass if needed."""
@@ -85,16 +120,17 @@ class ConfigBevoelkerung(SssFileconfig):
             sheet_name='T 1.1',
             skiprows=4,
             columns=[
-                'gemeinde_name',
-                'staendig_total_yyyy',
-                'staendig_total_vor_yyyy_minus_10',
-                'staendig_veraenderung_10_jahre',
-                'staendig_bevoelkerungsdichte_yyyy',
-                'volkszaehlung_2000',
-                'volkszaehlung_1990',
-                'volkszaehlung_1980',
-                'volkszaehlung_1970',
-                'volkszaehlung_1930',
+                ColumnConfig('gemeinde_bfs_id', start_year=2023),
+                ColumnConfig('gemeinde_name'),
+                ColumnConfig('staendig_total_yyyy'),
+                ColumnConfig('staendig_total_vor_yyyy_minus_10'),
+                ColumnConfig('staendig_veraenderung_10_jahre'),
+                ColumnConfig('staendig_bevoelkerungsdichte_yyyy'),
+                ColumnConfig('volkszaehlung_2000'),
+                ColumnConfig('volkszaehlung_1990'),
+                ColumnConfig('volkszaehlung_1980'),
+                ColumnConfig('volkszaehlung_1970'),
+                ColumnConfig('volkszaehlung_1930'),
             ],
             source='BFS – Arealstatistik der Schweiz (AREA), Statistik der Bevölkerung und der Haushalte (STATPOP), Statistik des jährlichen Bevölkerungsstandes (ESPOP), Eidgenössische Volkszählung (VZ)',
         ),
@@ -102,47 +138,49 @@ class ConfigBevoelkerung(SssFileconfig):
             sheet_name='T 1.2a',
             skiprows=4,
             columns=[
-                'gemeinde_name',
-                'frauen',
-                'maenner',
-                'ledig',
-                'verheiratet_eingetragen_partnerschaft',
-                'verwitwet',
-                'geschieden',
+                ColumnConfig('gemeinde_bfs_id', start_year=2023),
+                ColumnConfig('gemeinde_name'),
+                ColumnConfig('frauen'),
+                ColumnConfig('maenner'),
+                ColumnConfig('ledig'),
+                ColumnConfig('verheiratet_eingetragen_partnerschaft'),
+                ColumnConfig('verwitwet'),
+                ColumnConfig('geschieden'),
                 # heiraten and scheidungen are not available for all years
                 # 'heiraten',
                 # 'scheidungen',
             ],
             source='BFS – Statistik der Bevölkerung und der Haushalte (STATPOP), Statistik der natürlichen Bevölkerungsbewegung (BEVNAT)',
-            usecols=range(7),
+            usecols=range(7),  # for 2023+ will be replaced with range(8)
         ),
         'altersklassen': SchweizerStaedteSheetConfig(
             sheet_name='T 1.2b',
             skiprows=4,
             columns=[
-                'gemeinde_name',
-                'total',
-                'age0_4',
-                'age5_9',
-                'age10_14',
-                'age15_19',
-                'age20_24',
-                'age25_29',
-                'age30_34',
-                'age35_39',
-                'age40_44',
-                'age45_49',
-                'age50_54',
-                'age55_59',
-                'age60_64',
-                'age65_69',
-                'age70_74',
-                'age75_79',
-                'age80_84',
-                'age85_89',
-                'age90_94',
-                'age95_99',
-                'age100_plus',
+                ColumnConfig('gemeinde_bfs_id', start_year=2023),
+                ColumnConfig('gemeinde_name'),
+                ColumnConfig('total'),
+                ColumnConfig('age0_4'),
+                ColumnConfig('age5_9'),
+                ColumnConfig('age10_14'),
+                ColumnConfig('age15_19'),
+                ColumnConfig('age20_24'),
+                ColumnConfig('age25_29'),
+                ColumnConfig('age30_34'),
+                ColumnConfig('age35_39'),
+                ColumnConfig('age40_44'),
+                ColumnConfig('age45_49'),
+                ColumnConfig('age50_54'),
+                ColumnConfig('age55_59'),
+                ColumnConfig('age60_64'),
+                ColumnConfig('age65_69'),
+                ColumnConfig('age70_74'),
+                ColumnConfig('age75_79'),
+                ColumnConfig('age80_84'),
+                ColumnConfig('age85_89'),
+                ColumnConfig('age90_94'),
+                ColumnConfig('age95_99'),
+                ColumnConfig('age100_plus'),
             ],
             source='BFS – Statistik der Bevölkerung und der Haushalte (STATPOP)',
         ),
@@ -150,24 +188,25 @@ class ConfigBevoelkerung(SssFileconfig):
             sheet_name='T 1.3',
             skiprows=4,
             columns=[
-                'gemeinde_name',
-                'wohnbevoelkerung_jahresanfang',
-                'lebendgeburten',
-                'todesfaelle',
-                'geburtenueberschuss',
-                'zuzug',
-                'wegzug',
-                'wanderungssaldo',
-                'bev_gesamtbilanz',
-                'bev_gesamtbilanz_prozent',
-                'wohnbevoelkerung_jahresende',
-                'lebendgeburten_pro_1000',
-                'todesfaelle_pro_1000',
-                'geburtenueberschuss_pro_1000',
-                'zuzug_pro_1000',
-                'wegzug_pro_1000',
-                'wanderungssaldo_pro_1000',
-                'bev_gesamtbilanz_pro_1000',
+                ColumnConfig('gemeinde_bfs_id', start_year=2023),
+                ColumnConfig('gemeinde_name'),
+                ColumnConfig('wohnbevoelkerung_jahresanfang'),
+                ColumnConfig('lebendgeburten'),
+                ColumnConfig('todesfaelle'),
+                ColumnConfig('geburtenueberschuss'),
+                ColumnConfig('zuzug'),
+                ColumnConfig('wegzug'),
+                ColumnConfig('wanderungssaldo'),
+                ColumnConfig('bev_gesamtbilanz'),
+                ColumnConfig('bev_gesamtbilanz_prozent'),
+                ColumnConfig('wohnbevoelkerung_jahresende'),
+                ColumnConfig('lebendgeburten_pro_1000'),
+                ColumnConfig('todesfaelle_pro_1000'),
+                ColumnConfig('geburtenueberschuss_pro_1000'),
+                ColumnConfig('zuzug_pro_1000'),
+                ColumnConfig('wegzug_pro_1000'),
+                ColumnConfig('wanderungssaldo_pro_1000'),
+                ColumnConfig('bev_gesamtbilanz_pro_1000'),
             ],
             source='Statistik der Bevölkerung und der Haushalte (STATPOP), Statistik der natürlichen Bevölkerungsbewegung (BEVNAT)',
         ),
@@ -175,15 +214,17 @@ class ConfigBevoelkerung(SssFileconfig):
             sheet_name='T 1.5a',
             skiprows=4,
             columns=[
-                'gemeinde_name',
-                'auslaender',
-                'aufenthalt_b',
-                'niedergelassen_c',
-                'vorl_aufgenommen_f',
-                'kurzaufenthalter_l',
-                'asylsuchend_n',
-                'diplomat',
-                'andere',
+                ColumnConfig('gemeinde_bfs_id', start_year=2023),
+                ColumnConfig('gemeinde_name'),
+                ColumnConfig('auslaender'),
+                ColumnConfig('aufenthalt_b'),
+                ColumnConfig('niedergelassen_c'),
+                ColumnConfig('vorl_aufgenommen_f'),
+                ColumnConfig('kurzaufenthalter_l'),
+                ColumnConfig('asylsuchend_n'),
+                ColumnConfig('schutzstatus_s', start_year=2024),
+                ColumnConfig('diplomat'),
+                ColumnConfig('andere'),
             ],
             source='BFS - Statistik der Bevölkerung und der Haushalte (STATPOP)',
         ),
@@ -191,29 +232,30 @@ class ConfigBevoelkerung(SssFileconfig):
             sheet_name='T 1.5b',
             skiprows=4,
             columns=[
-                'gemeinde_name',
-                'auslaender',
-                'auslaender_anteil',
-                'eu_efta_total',
-                'deutschland',
-                'frankreich',
-                'italien',
-                'oesterreich',
-                'spanien',
-                'portugal',
-                'uebrige_eu_total',
-                'serbien',
-                'tuerkei',
-                'nordmazedonien',
-                'russland',
-                'asien_total',
-                'sri_lanka',
-                'indien',
-                'china',
-                'afrika',
-                'nord_sued_amerika',
-                'australasien',
-                'andere_laender',
+                ColumnConfig('gemeinde_bfs_id', start_year=2023),
+                ColumnConfig('gemeinde_name'),
+                ColumnConfig('auslaender'),
+                ColumnConfig('auslaender_anteil'),
+                ColumnConfig('eu_efta_total'),
+                ColumnConfig('deutschland'),
+                ColumnConfig('frankreich'),
+                ColumnConfig('italien'),
+                ColumnConfig('oesterreich'),
+                ColumnConfig('spanien'),
+                ColumnConfig('portugal'),
+                ColumnConfig('uebrige_eu_total'),
+                ColumnConfig('serbien'),
+                ColumnConfig('tuerkei'),
+                ColumnConfig('nordmazedonien'),
+                ColumnConfig('russland'),
+                ColumnConfig('asien_total'),
+                ColumnConfig('sri_lanka'),
+                ColumnConfig('indien'),
+                ColumnConfig('china'),
+                ColumnConfig('afrika'),
+                ColumnConfig('nord_sued_amerika'),
+                ColumnConfig('australasien'),
+                ColumnConfig('andere_laender'),
             ],
             source='BFS - Statistik der Bevölkerung und der Haushalte (STATPOP)',
         ),
@@ -251,19 +293,39 @@ def sss_statistk_schweizer_staedte_factory(
         db: PostgresResource,
     ):
         source_config = ConfigBevoelkerung.XLSX_URLS[context.partition_key]
+        _active_cols = [
+            col.name
+            for col in sheet.columns
+            if col.is_included_in_year(int(context.partition_key))
+        ]
+        context.log.debug(f'Active columns in {context.partition_key}: {_active_cols}')
+        _inactive_cols = [
+            col.name
+            for col in sheet.columns
+            if not col.is_included_in_year(int(context.partition_key))
+        ]
+        context.log.debug(
+            f'Inactive columns in {context.partition_key}: {_inactive_cols}'
+        )
+        _usecols = range(len(_active_cols))
         df = excel_sss.load_excel_by_url(
             url=source_config.source_url,
-            source=sheet.source,
             sheet_name=sheet.sheet_name,
             skiprows=sheet.skiprows,
-            names=sheet.columns_to_year_mapping(context.partition_key),
+            names=_active_cols,
             index_col=None,
-            usecols=sheet.usecols,
+            usecols=_usecols,
         )
         df = sheet.transform(df)
-
         context.log.info('Executing custom post processing.')
+
+        # removing empty rows must be executed before inserting empty columns
         df = excel_sss.remove_empty_rows(df)
+        df = excel_sss.add_empty_inactive_columns(df, columns=_inactive_cols)
+        df = df[[col.name for col in sheet.columns]]  # reorder columns
+        assert isinstance(df, pd.DataFrame)
+        if sheet.source:
+            df = excel_sss.add_source_column(df, sheet.source)
         df = excel_sss.add_year_column(
             df, context.partition_key, year_offset=source_config.year_offset
         )
@@ -294,6 +356,6 @@ for file_config in [
 
 job_sss = define_asset_job(
     name='job_sss',
-    selection=[f'src/{asset_key}*' for asset_key in asset_keys],
+    selection=['seed_indicator*', *[f'src/{asset_key}*' for asset_key in asset_keys]],
     partitions_def=YEARLY_PARTITIONS_DEF,
 )

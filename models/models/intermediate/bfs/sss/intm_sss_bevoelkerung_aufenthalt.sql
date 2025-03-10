@@ -16,6 +16,7 @@ with src as (
         , sss.vorl_aufgenommen_f
         , sss.kurzaufenthalter_l
         , sss.asylsuchend_n
+        , sss.schutzstatus_s
         , sss.diplomat
         , sss.andere
         , sss.source

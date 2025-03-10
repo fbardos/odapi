@@ -11,6 +11,7 @@
             'vorl_aufgenommen_f',
             'kurzaufenthalter_l',
             'asylsuchend_n',
+            'schutzstatus_s',
             'diplomat',
             'andere',
         ],

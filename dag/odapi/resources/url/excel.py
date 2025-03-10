@@ -5,6 +5,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+import numpy as np
 import pandas as pd
 import requests
 from dagster import ConfigurableResource
@@ -17,9 +18,7 @@ class ExcelResource(ConfigurableResource):
         """Empty by default."""
         return df
 
-    def load_excel_by_url(
-        self, url: str, source: Optional[str] = None, **kwargs
-    ) -> pd.DataFrame:
+    def load_excel_by_url(self, url: str, **kwargs) -> pd.DataFrame:
         """Reads Excel file from URL and returns it as pandas.DataFrame.
 
         Args:
@@ -29,8 +28,6 @@ class ExcelResource(ConfigurableResource):
         logger = get_dagster_logger()
         logger.info(f'Reading Excel file from URL: {url}')
         df = pd.read_excel(url, **kwargs)
-        if source:
-            df['source'] = source
         logger.info(f'Postprocessing loaded DataFrame')
         df = self.postprocess(df)
         return df
@@ -56,6 +53,22 @@ class SssExcelResource(ExcelResource):
     ) -> pd.DataFrame:
         # Statistik der Schweizer Städte 2023 contains data from the end of year 2022.
         df['year'] = int(partition_year) - year_offset
+        return df
+
+    def add_source_column(self, df: pd.DataFrame, source: str) -> pd.DataFrame:
+        df['source'] = source
+        return df
+
+    def add_empty_inactive_columns(
+        self, df: pd.DataFrame, columns: List[str]
+    ) -> pd.DataFrame:
+        """Add empty columns for columns that are not present in the provided partition_year.
+
+        This is needed to ensure that the DataFrame has the same columns for all years (for DB import).
+
+        """
+        for col in columns:
+            df[col] = np.nan
         return df
 
     # # only needed to calculate size of raw data
