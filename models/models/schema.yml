@@ -18,6 +18,11 @@ sources:
       - name: swisstopo_zweitwohnungen
       - name: sss_bevoelkerung_wohnbevoelkerung
       - name: sss_bevoelkerung_geschlecht_zivilstand
+      - name: sss_bevoelkerung_altersklassen
+      - name: sss_bevoelkerung_nationalitaet
+      - name: sss_bevoelkerung_bilanz
+      - name: sss_bevoelkerung_aufenthalt
+      - name: sss_bevoelkerung_herkunft
   - name: ktzh_gwr
     database: data
     schema: src

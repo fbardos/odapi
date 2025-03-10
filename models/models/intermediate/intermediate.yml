@@ -1761,3 +1761,206 @@ models:
       - odapi_intm_rowsmin
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['geo_value', 'period_ref', 'knowledge_date_from']
+
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_geschlecht_zivilstand
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 130
+            column_name: frauen
+          - indicator_id: 131
+            column_name: maenner
+          - indicator_id: 132
+            column_name: ledig
+          - indicator_id: 133
+            column_name: verheiratet_eingetragen_partnerschaft
+          - indicator_id: 134
+            column_name: verwitwet
+          - indicator_id: 135
+            column_name: geschieden
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_altersklassen
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 136
+            column_name: "age0_4"
+          - indicator_id: 137
+            column_name: "age5_9"
+          - indicator_id: 138
+            column_name: "age10_14"
+          - indicator_id: 139
+            column_name: "age15_19"
+          - indicator_id: 140
+            column_name: "age20_24"
+          - indicator_id: 141
+            column_name: "age25_29"
+          - indicator_id: 142
+            column_name: "age30_34"
+          - indicator_id: 143
+            column_name: "age35_39"
+          - indicator_id: 144
+            column_name: "age40_44"
+          - indicator_id: 145
+            column_name: "age45_49"
+          - indicator_id: 146
+            column_name: "age50_54"
+          - indicator_id: 147
+            column_name: "age55_59"
+          - indicator_id: 148
+            column_name: "age60_64"
+          - indicator_id: 149
+            column_name: "age65_69"
+          - indicator_id: 150
+            column_name: "age70_74"
+          - indicator_id: 151
+            column_name: "age75_79"
+          - indicator_id: 152
+            column_name: "age80_84"
+          - indicator_id: 153
+            column_name: "age85_89"
+          - indicator_id: 154
+            column_name: "age90_94"
+          - indicator_id: 155
+            column_name: "age95_99"
+          - indicator_id: 156
+            column_name: "age100_plus"
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_nationalitaet
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 157
+            column_name: schweizer
+          - indicator_id: 158
+            column_name: auslaender
+          - indicator_id: 159
+            column_name: schweizer_geboren_schweiz
+          - indicator_id: 160
+            column_name: schweizer_geboren_ausland
+          - indicator_id: 161
+            column_name: auslaender_geboren_schweiz
+          - indicator_id: 162
+            column_name: auslaender_geboren_ausland
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_bilanz
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 163
+            column_name: zuzug
+          - indicator_id: 164
+            column_name: wegzug
+          - indicator_id: 165
+            column_name: lebendgeburten
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_aufenthalt
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 173
+            column_name: eu_efta_total
+          - indicator_id: 174
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+          - indicator_id: 166
+            column_name: aufenthalt_b
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_sss_bevoelkerung_herkunft
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 173
+            column_name: eu_efta_total
+          - indicator_id: 174
+            column_name: deutschland
+          - indicator_id: 175
+            column_name: frankreich
+          - indicator_id: 176
+            column_name: italien
+          - indicator_id: 177
+            column_name: oesterreich
+          - indicator_id: 178
+            column_name: spanien
+          - indicator_id: 179
+            column_name: portugal
+          - indicator_id: 180
+            column_name: uebrige_eu_total
+          - indicator_id: 181
+            column_name: serbien
+          - indicator_id: 182
+            column_name: tuerkei
+          - indicator_id: 183
+            column_name: nordmazedonien
+          - indicator_id: 184
+            column_name: russland
+          - indicator_id: 185
+            column_name: asien_total
+          - indicator_id: 186
+            column_name: sri_lanka
+          - indicator_id: 187
+            column_name: indien
+          - indicator_id: 188
+            column_name: china
+          - indicator_id: 189
+            column_name: afrika
+          - indicator_id: 190
+            column_name: nord_sued_amerika
+          - indicator_id: 191
+            column_name: australasien
+          - indicator_id: 192
+            column_name: andere_laender
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin

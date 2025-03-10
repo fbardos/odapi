@@ -192,3 +192,15 @@ UNION ALL
 select * from {{ ref('intm_estv_db_np')}}
 UNION ALL
 select * from {{ ref('intm_sss_bevoelkerung_wohnbevoelkerung')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_geschlecht_zivilstand')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_altersklassen')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_nationalitaet')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_bilanz')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_aufenthalt')}}
+UNION ALL
+select * from {{ ref('intm_sss_bevoelkerung_herkunft')}}

@@ -60,3 +60,48 @@ snapshots:
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['year', 'gemeinde_name', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_sss_bevoelkerung_altersklassen
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['year', 'gemeinde_name', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_sss_bevoelkerung_nationalitaet
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['year', 'gemeinde_name', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_sss_bevoelkerung_bilanz
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['year', 'gemeinde_name', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_sss_bevoelkerung_aufenthalt
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['year', 'gemeinde_name', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_sss_bevoelkerung_herkunft
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['year', 'gemeinde_name', 'dbt_valid_from']

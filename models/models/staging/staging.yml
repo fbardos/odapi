@@ -64,5 +64,47 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['year', 'gemeinde_name']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_geschlecht_zivilstand
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_altersklassen
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_nationalitaet
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_bilanz
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_aufenthalt
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_sss_bevoelkerung_herkunft
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['year', 'gemeinde_name']
+
 
 

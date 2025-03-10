@@ -4,9 +4,9 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 3,Bevoelkerung (staendig),01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl der Bevölkerung
 4,Anteil versiegelte Flaeche,02 Raum & Umwelt,02.01 Bodennutzung,Versiegelte Fläche,,Prozent,Anteil der versiegelten Flaeche
 5,Geburtenueberschuss,01 Bevölkerung,01.02 Bewegungen,Geburtenüberschuss,,Personen,Geburtenüberschuss
-6,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-7,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-8,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+6,Wanderungssaldo total,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+7,Wanderungssaldo Ein/Auswanderung,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+8,Wanderungssaldo Binnenwanderung,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
 9,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Gesamtfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Gesamtflaeche
 10,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Produktivfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Produktivfläche
 11,Jugendquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Jugendquotient,Prozent,Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20-64 Jahre
@@ -128,3 +128,67 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 127,Median steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
 128,Median Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen
 129,Wachstum Bevoelkerung (10 Jahre),01 Bevölkerung,01.01 Bestand,staendig,,Prozent (%),Wachstum der Bevölkerung der letzten 10 Jahre
+130,Frauen (staendig),01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Frauen
+131,Männer (staendig),01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Männer
+132,ledig,01 Bevölkerung,01.04 Zivilstand,ledig,,Personen,Ledige Personen
+133,verheiratet/eingetragene Partnerschaft,01 Bevölkerung,01.04 Zivilstand,verheiratet,,Personen,Verheiratet/eingetragene Partnerschaft
+134,verwitwet,01 Bevölkerung,01.04 Zivilstand,verwitwet,,Personen,Verwitwete Personen
+135,geschieden,01 Bevölkerung,01.04 Zivilstand,geschieden,,Personen,geschiedene Personen
+136,Bevoelkerung (staendig) Alter 0-4,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 0-4
+137,Bevoelkerung (staendig) Alter 5-9,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 5-9
+138,Bevoelkerung (staendig) Alter 10-14,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 10-14
+139,Bevoelkerung (staendig) Alter 15-19,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 15-19
+140,Bevoelkerung (staendig) Alter 20-24,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 20-24
+141,Bevoelkerung (staendig) Alter 25-29,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 25-29
+142,Bevoelkerung (staendig) Alter 30-34,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 30-34
+143,Bevoelkerung (staendig) Alter 35-39,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 35-39
+144,Bevoelkerung (staendig) Alter 40-44,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 40-44
+145,Bevoelkerung (staendig) Alter 45-49,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 45-49
+146,Bevoelkerung (staendig) Alter 50-54,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 50-54
+147,Bevoelkerung (staendig) Alter 55-59,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 55-59
+148,Bevoelkerung (staendig) Alter 60-64,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 60-64
+149,Bevoelkerung (staendig) Alter 65-69,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 65-69
+150,Bevoelkerung (staendig) Alter 70-74,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 70-74
+151,Bevoelkerung (staendig) Alter 75-79,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 75-79
+152,Bevoelkerung (staendig) Alter 80-84,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 80-84
+153,Bevoelkerung (staendig) Alter 85-89,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 85-89
+154,Bevoelkerung (staendig) Alter 90-94,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 90-94
+155,Bevoelkerung (staendig) Alter 95-99,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 95-99
+156,Bevoelkerung (staendig) Alter 100+,01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl Personen in Altersgruppe 100+
+157,Schweizer:innen,01 Bevölkerung,01.04 Migration,Nationalität,,Personen,Anzahl Schweizer:innen
+158,Ausländer:innen,01 Bevölkerung,01.04 Migration,Nationalität,,Personen,Anzahl Ausländer:innen
+159,Schweizer:innen in der Schweiz geboren,01 Bevölkerung,01.04 Migration,Geburtsort,,Personen,Anzahl Schweizer:innen in der Schweiz geboren
+160,Schweizer:innen im Ausland geboren,01 Bevölkerung,01.04 Migration,Geburtsort,,Personen,Anzahl Schweizer:innen im Ausland geboren
+161,Ausländer:innen in der Schweiz geboren,01 Bevölkerung,01.04 Migration,Geburtsort,,Personen,Anzahl Ausländer:innen in der Schweiz geboren
+162,Ausländer:innen im Ausland geboren,01 Bevölkerung,01.04 Migration,Geburtsort,,Personen,Anzahl Ausländer:innen im Ausland geboren
+163,Zuzug,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,,Anzahl,Anzahl Zuzüge
+164,Wegzug,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,,Anzahl,Anzahl Wegzüge
+165,Lebendgeburten,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Lebendgeburten
+166,Aufenthalt B,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie Aufenthalt B
+167,Niedergelassen C,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie Niedergelassen C
+168,Vorläufig aufgenommen F,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie vorläufig aufgenommen F
+169,Kurzaufenthalter L,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie Kurzaufenthalter L
+170,Asylsuchend N,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie Asylsuchend N
+171,Diplomat,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen mit Kategorie Diplomat oder internationaler Funktionär
+172,Andere Aufenthaltskategorien,01 Bevölkerung,01.04 Migration,Aufenthaltskategorie,,Anzahl Personen,Anzahl Personen anderer Aufenthaltskategorien
+173,Herkunft EU/EFTA,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft EU/EFTA (total)
+174,Herkunft Deutschland,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft Deutschland
+175,Herkunft Frankreich,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft Frankreich
+176,Herkunft Italien,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft Italien
+177,Herkunft Österreich,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft Österreich
+178,Herkunft Spanien,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft Spanien
+179,Herkunft Portugal,01 Bevölkerung,01.04 Migration,Herkunft,EU/EFTA,Anzahl Personen,Anzahl Personen mit Herkunft Portugal
+180,Herkunft übriges Europa,01 Bevölkerung,01.04 Migration,Herkunft,übriges Europa,Anzahl Personen,Anzahl Personen mit Herkunft übriges Europa (total)
+181,Herkunft Serbien,01 Bevölkerung,01.04 Migration,Herkunft,übriges Europa,Anzahl Personen,Anzahl Personen mit Herkunft Serbien
+182,Herkunft Türkei,01 Bevölkerung,01.04 Migration,Herkunft,übriges Europa,Anzahl Personen,Anzahl Personen mit Herkunft Türkei
+183,Herkunft Nordmazedonien,01 Bevölkerung,01.04 Migration,Herkunft,übriges Europa,Anzahl Personen,Anzahl Personen mit Herkunft Nordmazedonien
+184,Herkunft Russland,01 Bevölkerung,01.04 Migration,Herkunft,übriges Europa,Anzahl Personen,Anzahl Personen mit Herkunft Russland
+185,Herkunft Asien,01 Bevölkerung,01.04 Migration,Herkunft,Asien,Anzahl Personen,Anzahl Personen mit Herkunft Asien (total)
+186,Herkunft Sri Lanka,01 Bevölkerung,01.04 Migration,Herkunft,Asien,Anzahl Personen,Anzahl Personen mit Herkunft Sri Lanka
+187,Herkunft Indien,01 Bevölkerung,01.04 Migration,Herkunft,Asien,Anzahl Personen,Anzahl Personen mit Herkunft Indien
+188,Herkunft China,01 Bevölkerung,01.04 Migration,Herkunft,Asien,Anzahl Personen,Anzahl Personen mit Herkunft China
+189,Herkunft Afrika,01 Bevölkerung,01.04 Migration,Herkunft,Afrika,Anzahl Personen,Anzahl Personen mit Herkunft Afrika (total)
+190,Herkunft Nord/Südamerika,01 Bevölkerung,01.04 Migration,Herkunft,Amerika,Anzahl Personen,Anzahl Personen mit Herkunft Nord/Südamerika (total)
+191,Herkunft Australasien,01 Bevölkerung,01.04 Migration,Herkunft,Amerika,Anzahl Personen,Anzahl Personen mit Herkunft Australasien (total)
+192,Herkunft andere Länder,01 Bevölkerung,01.04 Migration,Herkunft,,Anzahl Personen,Anzahl Personen mit Herkunft andere Länder (total)
+
