@@ -29,7 +29,7 @@ class StatTabResource(ConfigurableResource):
 
         """
         logger = get_dagster_logger()
-        logger.info(f"Loading data from {uri}, encoding {self.encoding}")
+        logger.info(f"Loading data from {uri}, encoding {encoding}")
         return pyaxis.parse(uri=uri, encoding=encoding)
 
     def load_data(self, uri: str, encoding: str) -> Tuple[DataFrame, dict]:
