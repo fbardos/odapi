@@ -20,9 +20,8 @@ from pyaxis import pyaxis
 
 
 class StatTabResource(ConfigurableResource):
-    _ENCODING = 'utf-8'
 
-    def _load_px_file(self, uri: str) -> dict:
+    def _load_px_file(self, uri: str, encoding: str) -> dict:
         """Loads the actual PX file.
 
         Args:
@@ -30,10 +29,10 @@ class StatTabResource(ConfigurableResource):
 
         """
         logger = get_dagster_logger()
-        logger.info(f"Loading data from {uri}, encoding {self._ENCODING}")
-        return pyaxis.parse(uri=uri, encoding=self._ENCODING)
+        logger.info(f"Loading data from {uri}, encoding {self.encoding}")
+        return pyaxis.parse(uri=uri, encoding=encoding)
 
-    def load_data(self, uri: str) -> Tuple[DataFrame, dict]:
+    def load_data(self, uri: str, encoding: str) -> Tuple[DataFrame, dict]:
         """Returns data as pandas.DataFrame and metadata as dictionary."""
-        px = self._load_px_file(uri=uri)
+        px = self._load_px_file(uri=uri, encoding=encoding)
         return px['DATA'], px['METADATA']
