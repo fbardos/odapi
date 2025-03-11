@@ -148,6 +148,7 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
         compute_kind='python',
         group_name='src_bfs',
         key=['src', f'stat_tab_{stat_tab_cube.name}'],
+        tags={'high_memory': 'true'},
     )
     def _asset(
         context: AssetExecutionContext,

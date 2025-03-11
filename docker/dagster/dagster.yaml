@@ -14,6 +14,8 @@ run_coordinator:
         value:
           applyLimitPerUniqueValue: true
         limit: 1
+      - key: 'high_memory'
+        value: 1
 
 local_artifact_storage:
   module: dagster.core.storage.root
