@@ -6,7 +6,9 @@ import numpy as np
 from dagster import AssetExecutionContext
 from dagster import AssetsDefinition
 from dagster import MetadataValue
+from dagster import ScheduleDefinition
 from dagster import asset
+from dagster import define_asset_job
 from dagster import get_dagster_logger
 from pandas import DataFrame
 
@@ -195,4 +197,16 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
 
 assets_stat_tab = [stat_tab_factory(cube) for cube in CUBES]
 
-# XXX: Execute this once per week (and load new data)
+job_bfs_stat_tab = define_asset_job(
+    name='bfs_stat_tab',
+    selection=[
+        'seed_indicator*',
+        *[f'src/stat_tab_{cube.name}*' for cube in CUBES],
+    ],
+    # TODO: Add on success hook
+)
+
+schedule_stat_tab = ScheduleDefinition(
+    job=job_bfs_stat_tab,
+    cron_schedule='25 3 * * 6',  # once per week, on Saturday at 02:05
+)
