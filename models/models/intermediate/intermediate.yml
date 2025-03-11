@@ -2004,3 +2004,221 @@ models:
       - <<: *tests-intm-table-statatlas-rows
       - <<: *tests-intm-table-statatlas-rowsmin
 
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_zivilstand
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (more available in the bilanz)
+
+          # -------------------------------------------------------------------
+          # total
+          # -------------------------------------------------------------------
+          - indicator_id: 147
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: zivilstand
+                regex: 'Ledig'
+          - indicator_id: 148
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: zivilstand
+                regex: 'Verheiratet.*'
+          - indicator_id: 149
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: zivilstand
+                regex: 'Verwitwet.*'
+          - indicator_id: 150
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: zivilstand
+                regex: 'Geschieden.*'
+          - indicator_id: 151
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: zivilstand
+                regex: 'Ohne Angabe'
+          # -------------------------------------------------------------------
+          # Mann
+          # -------------------------------------------------------------------
+          - indicator_id: 152
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: zivilstand
+                regex: 'Ledig'
+          - indicator_id: 153
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: zivilstand
+                regex: 'Verheiratet.*'
+          - indicator_id: 154
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: zivilstand
+                regex: 'Verwitwet.*'
+          - indicator_id: 155
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: zivilstand
+                regex: 'Geschieden.*'
+          - indicator_id: 156
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: zivilstand
+                regex: 'Ohne Angabe'
+          # -------------------------------------------------------------------
+          # Frau
+          # -------------------------------------------------------------------
+          - indicator_id: 157
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: zivilstand
+                regex: 'Ledig'
+          - indicator_id: 158
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: zivilstand
+                regex: 'Verheiratet.*'
+          - indicator_id: 159
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: zivilstand
+                regex: 'Verwitwet.*'
+          - indicator_id: 160
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: zivilstand
+                regex: 'Geschieden.*'
+          - indicator_id: 161
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                regex: 'St.ndige Wohnbev.lkerung'
+              - column: geburtsort
+                regex: 'Geburtsort - Total'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: zivilstand
+                regex: 'Ohne Angabe'
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+

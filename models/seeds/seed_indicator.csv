@@ -145,3 +145,18 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 144,Todesfälle Ausländer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
 145,Todesfälle Ausländer Männer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
 146,Todesfälle Ausländer Frauen,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+147,Ledig total,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+148,Verheiratet / eingetragene Partnerschaft total,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+149,Verwitwet total,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+150,Geschieden total,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+151,Ohne Angabe Zivilstand total,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+152,Ledig Männer,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+153,Verheiratet / eingetragene Partnerschaft Männer,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+154,Verwitwet Männer,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+155,Geschieden Männer,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+156,Ohne Angabe Zivilstand Männer,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+157,Ledig Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+158,Verheiratet / eingetragene Partnerschaft Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+159,Verwitwet Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+160,Geschieden Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+161,Ohne Angabe Zivilstand Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
