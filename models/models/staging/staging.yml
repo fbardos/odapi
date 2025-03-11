@@ -60,6 +60,12 @@ models:
   # ---------------------------------------------------------------------------
   - name: stgn_stab_bev_demografisch_bilanz
   # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - staatsangehorigkeit
+          - geschlecht
+          - indicator
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
@@ -67,6 +73,13 @@ models:
   # ---------------------------------------------------------------------------
   - name: stgn_stab_bev_zivilstand
   # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - bevtyp
+          - geburtsort
+          - geschlecht
+          - zivilstand
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
@@ -74,6 +87,24 @@ models:
   # ---------------------------------------------------------------------------
   - name: stgn_stab_bev_heirat
   # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - nationalitaet_a
+          - nationalitaet_b
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bev_scheidung
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - ehedauer
+          - nationalitaet_a
+          - nationalitaet_b
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
