@@ -196,3 +196,5 @@ UNION ALL
 select * from {{ ref('intm_stab_bev_zivilstand')}}
 UNION ALL
 select * from {{ ref('intm_stab_bev_heirat')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_scheidung')}}

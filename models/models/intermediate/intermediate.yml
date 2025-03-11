@@ -2247,3 +2247,89 @@ models:
                 regex: '- Total$'
               - column: nationalitaet_b
                 regex: '- Total$'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_scheidung
+  # ---------------------------------------------------------------------------
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (more available in the bilanz)
+
+          # -------------------------------------------------------------------
+          # total
+          # -------------------------------------------------------------------
+          - indicator_id: 163
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: ehedauer
+                regex: '- Total$'
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'
+          # -------------------------------------------------------------------
+          # duration
+          # -------------------------------------------------------------------
+          - indicator_id: 164
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: ehedauer
+                regex: '0-4 Jahre$'
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'
+          - indicator_id: 165
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: ehedauer
+                regex: '5-9 Jahre$'
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'
+          - indicator_id: 166
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: ehedauer
+                regex: '10-14 Jahre$'
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'
+          - indicator_id: 167
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: ehedauer
+                regex: '15-19 Jahre$'
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'
+          - indicator_id: 168
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: ehedauer
+                regex: '20 Jahre und mehr$'
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'

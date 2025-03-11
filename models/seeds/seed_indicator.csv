@@ -161,3 +161,9 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 160,Geschieden Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
 161,Ohne Angabe Zivilstand Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
 162,Heiraten,01 Bevölkerung,01.02 Bewegungen,Heiraten,,Anzahl,Anzahl Heiraten
+163,Scheidungen total,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+164,Scheidungen nach 0-4 Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+165,Scheidungen nach 5-9 Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+166,Scheidungen nach 10-14 Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+167,Scheidungen nach 15-19 Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+167,Scheidungen nach 20+ Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen

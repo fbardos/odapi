@@ -139,6 +139,20 @@ CUBES = [
         ],
         encoding='latin1',
     ),
+    StatTabCube(
+        name='bev_scheidung',
+        bfs_id='px-x-0102020203_103',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32007788/master',
+        columns=[
+            ColumnDefinition('year'),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('ehedauer', is_indicator_group=True),
+            ColumnDefinition('nationalitaet_a', is_indicator_group=True),
+            ColumnDefinition('nationalitaet_b', is_indicator_group=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+    ),
 ]
 
 

@@ -21,6 +21,7 @@ sources:
       - name: stat_tab_bev_demografisch_bilanz
       - name: stat_tab_bev_zivilstand
       - name: stat_tab_bev_heirat
+      - name: stat_tab_bev_scheidung
   - name: ktzh_gwr
     database: data
     schema: src
