@@ -160,3 +160,4 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 159,Verwitwet Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
 160,Geschieden Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
 161,Ohne Angabe Zivilstand Frauen,01 Bevölkerung,01.01 Bestand,Zivilstand,ständig,Anzahl,Anzahl Personen
+162,Heiraten,01 Bevölkerung,01.02 Bewegungen,Heiraten,,Anzahl,Anzahl Heiraten

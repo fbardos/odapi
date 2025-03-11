@@ -27,6 +27,7 @@ class StatTabCube:
     bfs_id: str
     url: str
     columns: List[ColumnDefinition]
+    encoding: str = 'utf-8'
 
     def _rename_columns(self, df: DataFrame) -> DataFrame:
         get_dagster_logger().info(f"Renaming columns for cube {self.name}")
@@ -125,6 +126,19 @@ CUBES = [
             ColumnDefinition('indicator_value'),
         ],
     ),
+    StatTabCube(
+        name='bev_heirat',
+        bfs_id='px-x-0102020202_102',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32007787/master',
+        columns=[
+            ColumnDefinition('year'),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('nationalitaet_a', is_indicator_group=True),
+            ColumnDefinition('nationalitaet_b', is_indicator_group=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+    ),
 ]
 
 
@@ -140,7 +154,7 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
         stat_tab: StatTabResource,
         db: PostgresResource,
     ) -> None:
-        df, meta = stat_tab.load_data(stat_tab_cube.url)
+        df, meta = stat_tab.load_data(stat_tab_cube.url, stat_tab_cube.encoding)
         df = stat_tab_cube.postprocess(df, meta)
 
         context.log.info(f"Writing data to database")

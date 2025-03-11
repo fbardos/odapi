@@ -20,6 +20,7 @@ sources:
       - name: sss_bevoelkerung_geschlecht_zivilstand
       - name: stat_tab_bev_demografisch_bilanz
       - name: stat_tab_bev_zivilstand
+      - name: stat_tab_bev_heirat
   - name: ktzh_gwr
     database: data
     schema: src

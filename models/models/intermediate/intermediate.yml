@@ -2222,3 +2222,28 @@ models:
       - <<: *tests-intm-table-statatlas-rows
       - <<: *tests-intm-table-statatlas-rowsmin
 
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_heirat
+  # ---------------------------------------------------------------------------
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (more available in the bilanz)
+
+          # -------------------------------------------------------------------
+          # total
+          # -------------------------------------------------------------------
+          - indicator_id: 162
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet_a
+                regex: '- Total$'
+              - column: nationalitaet_b
+                regex: '- Total$'
