@@ -127,3 +127,21 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 126,Median steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Äquivalenzeinkommen natürliche Personen
 127,Median steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
 128,Median Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen
+129,Geburten total,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+130,Geburten Männer,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+131,Geburten Frauen,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+132,Geburten Schweizer,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+133,Geburten Schweizer Männer,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+134,Geburten Schweizer Frauen,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+135,Geburten Ausländer,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+136,Geburten Ausländer Männer,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+137,Geburten Ausländer Frauen,01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+138,Todesfälle total,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+139,Todesfälle Männer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+140,Todesfälle Frauen,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+141,Todesfälle Schweizer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+142,Todesfälle Schweizer Männer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+143,Todesfälle Schweizer Frauen,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+144,Todesfälle Ausländer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+145,Todesfälle Ausländer Männer,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle
+146,Todesfälle Ausländer Frauen,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Anzahl,Anzahl Todesfälle

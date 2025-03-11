@@ -52,3 +52,21 @@ snapshots:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['stichtag', 'gemeinde_bfs_id', 'dbt_valid_from']
 
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_bev_demografie_bilanz
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_bev_zivilstand
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+

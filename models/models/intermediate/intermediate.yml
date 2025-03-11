@@ -1786,3 +1786,221 @@ models:
       - <<: *tests-intm-table-statatlas-rows
       - <<: *tests-intm-table-statatlas-rowsmin
 
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_demografisch_bilanz
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (more available in the bilanz)
+
+          # -------------------------------------------------------------------
+          # Geburten
+          # -------------------------------------------------------------------
+          - indicator_id: 129
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: '.*- Total$'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 130
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: '.*- Total$'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 131
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: '.*- Total$'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 132
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Schweiz'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 133
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Schweiz'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 134
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Schweiz'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 135
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Ausland'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 136
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Ausland'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          - indicator_id: 137
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Ausland'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: indicator
+                regex: 'Lebendgeburt'
+          # -------------------------------------------------------------------
+          # Todesfälle
+          # -------------------------------------------------------------------
+          - indicator_id: 138
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: '.*- Total$'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 139
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: '.*- Total$'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 140
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: '.*- Total$'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 141
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Schweiz'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 142
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Schweiz'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 143
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Schweiz'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 144
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Ausland'
+              - column: geschlecht
+                regex: 'Geschlecht - Total'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 145
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Ausland'
+              - column: geschlecht
+                regex: 'Mann'
+              - column: indicator
+                regex: 'Todesfall'
+          - indicator_id: 146
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: staatsangehorigkeit
+                regex: 'Ausland'
+              - column: geschlecht
+                regex: 'Frau'
+              - column: indicator
+                regex: 'Todesfall'
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+

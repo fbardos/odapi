@@ -1,28 +1,25 @@
-from dagster import load_assets_from_package_module
 from dagster import Definitions
 from dagster import EnvVar
+from dagster import load_assets_from_package_module
 
 import odapi.assets as assets
-from odapi.assets.dbt import dbt
-from odapi.resources.postgres.postgres import PostgresResource
-from odapi.resources.postgres.postgres import XcomPostgresResource
-
-from odapi.resources.ckan.ckan import OpenDataSwiss
-from odapi.resources.minio.minio import Minio
-from odapi.resources.crypto.fernet import FernetCipher
-from odapi.resources.url.csv import OpendataswissUrlResource
-from odapi.resources.extract.extract_handler import ExtractHandler
-from odapi.resources.url.geojson import SwissboundariesTill2015
-from odapi.resources.url.gpkg import Swissboundaries
-from odapi.resources.url.geoadmin import GeoAdminResource
-from odapi.resources.url.healthcheck import HealthCheckResource
-
-
+import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
-import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 import odapi.assets.swisstopo.api as assets_swisstopo
-
+from odapi.assets.dbt import dbt
+from odapi.resources.ckan.ckan import OpenDataSwiss
+from odapi.resources.crypto.fernet import FernetCipher
+from odapi.resources.extract.extract_handler import ExtractHandler
+from odapi.resources.minio.minio import Minio
+from odapi.resources.postgres.postgres import PostgresResource
+from odapi.resources.postgres.postgres import XcomPostgresResource
+from odapi.resources.url.csv import OpendataswissUrlResource
+from odapi.resources.url.geoadmin import GeoAdminResource
+from odapi.resources.url.geojson import SwissboundariesTill2015
+from odapi.resources.url.gpkg import Swissboundaries
+from odapi.resources.url.healthcheck import HealthCheckResource
+from odapi.resources.url.stat_tab import StatTabResource
 
 ################################################################################
 # DEFINITIONS
@@ -37,11 +34,14 @@ import odapi.assets.swisstopo.api as assets_swisstopo
 defs = Definitions(
     assets=load_assets_from_package_module(assets),
     resources={
-
         # Global resources
         'dbt': dbt,
-        'db': PostgresResource(sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')),
-        'xcom': XcomPostgresResource(sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')),
+        'db': PostgresResource(
+            sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
+        ),
+        'xcom': XcomPostgresResource(
+            sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
+        ),
         'opendata_swiss': OpenDataSwiss(),
         'data_opendataswiss': OpendataswissUrlResource(),
         # do not make bucket name hardcoded already in the resource...
@@ -65,6 +65,7 @@ defs = Definitions(
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
         'healthcheck': HealthCheckResource(),
+        'stat_tab': StatTabResource(),
     },
     jobs=[
         *assets_opendataswiss.jobs_opendataswiss,
@@ -74,7 +75,6 @@ defs = Definitions(
     ],
     sensors=[
         *assets_opendataswiss.sensors_opendataswiss,
-
     ],
     schedules=[
         assets_bfs_statatlas.schedule_statatlas,

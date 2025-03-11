@@ -57,5 +57,19 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['gemeinde_bfs_id']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bev_demografisch_bilanz
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bev_zivilstand
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
 
 
