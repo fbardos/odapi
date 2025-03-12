@@ -22,6 +22,9 @@ sources:
       - name: stat_tab_bev_zivilstand
       - name: stat_tab_bev_heirat
       - name: stat_tab_bev_scheidung
+      - name: stat_tab_bev_altersklasse
+      - name: stat_tab_bev_geburtsort
+      - name: stat_tab_bev_zuwegzug
   - name: ktzh_gwr
     database: data
     schema: src

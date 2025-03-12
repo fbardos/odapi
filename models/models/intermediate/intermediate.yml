@@ -2333,3 +2333,1168 @@ models:
                 regex: '- Total$'
               - column: nationalitaet_b
                 regex: '- Total$'
+                #
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_altersklasse
+  # ---------------------------------------------------------------------------
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (more available in the bilanz)
+          # FIX: Some groups are duplicated in API, check why and add test
+
+          # -------------------------------------------------------------------
+          # total
+          # -------------------------------------------------------------------
+          - indicator_id: 169
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '0-4 Jahre'
+          - indicator_id: 170
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '5-9 Jahre'
+          - indicator_id: 171
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '10-14 Jahre'
+          - indicator_id: 172
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '15-19 Jahre'
+          - indicator_id: 173
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '20-24 Jahre'
+          - indicator_id: 174
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '25-29 Jahre'
+          - indicator_id: 175
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '30-34 Jahre'
+          - indicator_id: 176
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '35-39 Jahre'
+          - indicator_id: 177
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '40-44 Jahre'
+          - indicator_id: 178
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '45-49 Jahre'
+          - indicator_id: 179
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '50-54 Jahre'
+          - indicator_id: 180
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '55-59 Jahre'
+          - indicator_id: 181
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '60-64 Jahre'
+          - indicator_id: 182
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '65-69 Jahre'
+          - indicator_id: 183
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '70-74 Jahre'
+          - indicator_id: 184
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '75-79 Jahre'
+          - indicator_id: 185
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '80-84 Jahre'
+          - indicator_id: 186
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '85-89 Jahre'
+          - indicator_id: 187
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '90-94 Jahre'
+          - indicator_id: 188
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '95-99 Jahre'
+          - indicator_id: 189
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                regex: '- Total$'
+              - column: zivilstand
+                regex: '- Total$'
+              - column: altersklasse
+                regex: '100 Jahre und mehr'
+          # -------------------------------------------------------------------
+          # Mann
+          # -------------------------------------------------------------------
+          - indicator_id: 190
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '0-4 Jahre'
+          - indicator_id: 191
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '5-9 Jahre'
+          - indicator_id: 192
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '10-14 Jahre'
+          - indicator_id: 193
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '15-19 Jahre'
+          - indicator_id: 194
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '20-24 Jahre'
+          - indicator_id: 195
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '25-29 Jahre'
+          - indicator_id: 196
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '30-34 Jahre'
+          - indicator_id: 197
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '35-39 Jahre'
+          - indicator_id: 198
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '40-44 Jahre'
+          - indicator_id: 199
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '45-49 Jahre'
+          - indicator_id: 200
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '50-54 Jahre'
+          - indicator_id: 201
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '55-59 Jahre'
+          - indicator_id: 202
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '60-64 Jahre'
+          - indicator_id: 203
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '65-69 Jahre'
+          - indicator_id: 204
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '70-74 Jahre'
+          - indicator_id: 205
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '75-79 Jahre'
+          - indicator_id: 206
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '80-84 Jahre'
+          - indicator_id: 207
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '85-89 Jahre'
+          - indicator_id: 208
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '90-94 Jahre'
+          - indicator_id: 209
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '95-99 Jahre'
+          - indicator_id: 210
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '100 Jahre und mehr'
+          # -------------------------------------------------------------------
+          # Frau
+          # -------------------------------------------------------------------
+          - indicator_id: 211
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '0-4 Jahre'
+          - indicator_id: 212
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '5-9 Jahre'
+          - indicator_id: 213
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '10-14 Jahre'
+          - indicator_id: 214
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '15-19 Jahre'
+          - indicator_id: 215
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '20-24 Jahre'
+          - indicator_id: 216
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '25-29 Jahre'
+          - indicator_id: 217
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '30-34 Jahre'
+          - indicator_id: 218
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '35-39 Jahre'
+          - indicator_id: 219
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '40-44 Jahre'
+          - indicator_id: 220
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '45-49 Jahre'
+          - indicator_id: 221
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '50-54 Jahre'
+          - indicator_id: 222
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '55-59 Jahre'
+          - indicator_id: 223
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '60-64 Jahre'
+          - indicator_id: 224
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '65-69 Jahre'
+          - indicator_id: 225
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '70-74 Jahre'
+          - indicator_id: 226
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '75-79 Jahre'
+          - indicator_id: 227
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '80-84 Jahre'
+          - indicator_id: 228
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '85-89 Jahre'
+          - indicator_id: 229
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '90-94 Jahre'
+          - indicator_id: 230
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '95-99 Jahre'
+          - indicator_id: 231
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: altersklasse
+                exact_match: '100 Jahre und mehr'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_geburtsort
+  # ---------------------------------------------------------------------------
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (more available in the bilanz)
+
+          # -------------------------------------------------------------------
+          # total
+          # -------------------------------------------------------------------
+          - indicator_id: 232
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: geburtsort
+                exact_match: 'In der Schweiz'
+          - indicator_id: 233
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: geburtsort
+                exact_match: 'Im Ausland'
+          # -------------------------------------------------------------------
+          # Mann
+          # -------------------------------------------------------------------
+          - indicator_id: 234
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: geburtsort
+                exact_match: 'In der Schweiz'
+          - indicator_id: 235
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: geburtsort
+                exact_match: 'Im Ausland'
+          # -------------------------------------------------------------------
+          # Frau
+          # -------------------------------------------------------------------
+          - indicator_id: 236
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: geburtsort
+                exact_match: 'In der Schweiz'
+          - indicator_id: 237
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: bevtyp
+                exact_match: 'Ständige Wohnbevölkerung'
+              - column: geschlecht
+                exact_match: 'Frau'
+              - column: zivilstand
+                exact_match: 'Zivilstand - Total'
+              - column: geburtsort
+                exact_match: 'Im Ausland'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bev_zuwegzug
+  # ---------------------------------------------------------------------------
+    tests:
+      # TODO: Add PK test (as macro, not yaml variable)
+      - <<: *tests-intm-table-cols-for-union-mart
+      - <<: *tests-intm-table-statatlas-rows
+      - <<: *tests-intm-table-statatlas-rowsmin
+    config:
+      odapi:
+        indicators:
+          # TODO: Can add more indicators later (nationalitaet)
+
+          # -------------------------------------------------------------------
+          # total
+          # -------------------------------------------------------------------
+          - indicator_id: 238
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: migrationstyp
+                regex: '^Einwanderung.*'
+          - indicator_id: 239
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: migrationstyp
+                exact_match: 'Auswanderung'
+          - indicator_id: 240
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: migrationstyp
+                exact_match: 'Interkantonaler Zuzug'
+          - indicator_id: 241
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: migrationstyp
+                exact_match: 'Interkantonaler Wegzug'
+          - indicator_id: 242
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: migrationstyp
+                exact_match: 'Intrakantonaler Zuzug'
+          - indicator_id: 243
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Geschlecht - Total'
+              - column: migrationstyp
+                exact_match: 'Intrakantonaler Wegzug'
+          # -------------------------------------------------------------------
+          # Mann
+          # -------------------------------------------------------------------
+          - indicator_id: 244
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                regex: '^Einwanderung.*'
+          - indicator_id: 245
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Auswanderung'
+          - indicator_id: 246
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Interkantonaler Zuzug'
+          - indicator_id: 247
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Interkantonaler Wegzug'
+          - indicator_id: 248
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Intrakantonaler Zuzug'
+          - indicator_id: 249
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Intrakantonaler Wegzug'
+          # -------------------------------------------------------------------
+          # Frau
+          # -------------------------------------------------------------------
+          - indicator_id: 250
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                regex: '^Einwanderung.*'
+          - indicator_id: 251
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Auswanderung'
+          - indicator_id: 252
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Interkantonaler Zuzug'
+          - indicator_id: 253
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Interkantonaler Wegzug'
+          - indicator_id: 254
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Intrakantonaler Zuzug'
+          - indicator_id: 255
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            filter_and:
+              - column: nationalitaet
+                regex: '^Staatsangeh.rigkeit .* - Total$'
+              - column: geschlecht
+                exact_match: 'Mann'
+              - column: migrationstyp
+                exact_match: 'Intrakantonaler Wegzug'

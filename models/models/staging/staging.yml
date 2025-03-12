@@ -109,5 +109,46 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bev_altersklasse
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - bevtyp
+          - geschlecht
+          - zivilstand
+          - altersklasse
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bev_geburtsort
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - bevtyp
+          - geburtsort
+          - geschlecht
+          - zivilstand
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bev_zuwegzug
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - nationalitaet
+          - geschlecht
+          - migrationstyp
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
 
 

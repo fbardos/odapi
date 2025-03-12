@@ -38,7 +38,12 @@
             AND geo_code = 'polg'  -- can be extended later
             {% if indicator['filter_and'] %}
                 {% for filter_col in indicator.get('filter_and') %}
-                    AND {{ filter_col['column'] }} ~ '{{ filter_col["regex"] }}'
+                    {% if filter_col.get('regex', none) %}
+                        AND {{ filter_col['column'] }} ~ '{{ filter_col["regex"] }}'
+                    {% endif %}
+                    {% if filter_col.get('exact_match', none) %}
+                        AND {{ filter_col['column'] }} = '{{ filter_col["exact_match"] }}'
+                    {% endif %}
                 {% endfor %}
             {% endif %}
     {% endfor %}

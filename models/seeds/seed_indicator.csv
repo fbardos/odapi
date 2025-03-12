@@ -167,3 +167,90 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 166,Scheidungen nach 10-14 Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
 167,Scheidungen nach 15-19 Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
 168,Scheidungen nach 20+ Jahren,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+169,Altersklasse total 0 bis 4 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+170,Altersklasse total 5 bis 9 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+171,Altersklasse total 10 bis 14 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+172,Altersklasse total 15 bis 19 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+173,Altersklasse total 20 bis 24 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+174,Altersklasse total 25 bis 29 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+175,Altersklasse total 30 bis 34 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+176,Altersklasse total 35 bis 39 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+177,Altersklasse total 40 bis 44 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+178,Altersklasse total 45 bis 49 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+179,Altersklasse total 50 bis 54 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+180,Altersklasse total 55 bis 59 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+181,Altersklasse total 60 bis 64 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+182,Altersklasse total 65 bis 69 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+183,Altersklasse total 70 bis 74 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+184,Altersklasse total 75 bis 79 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+185,Altersklasse total 80 bis 84 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+186,Altersklasse total 85 bis 89 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+187,Altersklasse total 90 bis 94 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+188,Altersklasse total 95 bis 99 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+189,Altersklasse total 100+ Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+190,Altersklasse Mann 0 bis 4 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+191,Altersklasse Mann 5 bis 9 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+192,Altersklasse Mann 10 bis 14 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+193,Altersklasse Mann 15 bis 19 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+194,Altersklasse Mann 20 bis 24 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+195,Altersklasse Mann 25 bis 29 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+196,Altersklasse Mann 30 bis 34 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+197,Altersklasse Mann 35 bis 39 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+198,Altersklasse Mann 40 bis 44 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+199,Altersklasse Mann 45 bis 49 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+200,Altersklasse Mann 50 bis 54 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+201,Altersklasse Mann 55 bis 59 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+202,Altersklasse Mann 60 bis 64 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+203,Altersklasse Mann 65 bis 69 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+204,Altersklasse Mann 70 bis 74 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+205,Altersklasse Mann 75 bis 79 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+206,Altersklasse Mann 80 bis 84 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+207,Altersklasse Mann 85 bis 89 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+208,Altersklasse Mann 90 bis 94 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+209,Altersklasse Mann 95 bis 99 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+210,Altersklasse Mann 100+ Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+211,Altersklasse Frau 0 bis 4 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+212,Altersklasse Frau 5 bis 9 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+213,Altersklasse Frau 10 bis 14 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+214,Altersklasse Frau 15 bis 19 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+215,Altersklasse Frau 20 bis 24 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+216,Altersklasse Frau 25 bis 29 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+217,Altersklasse Frau 30 bis 34 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+218,Altersklasse Frau 35 bis 39 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+219,Altersklasse Frau 40 bis 44 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+220,Altersklasse Frau 45 bis 49 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+221,Altersklasse Frau 50 bis 54 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+222,Altersklasse Frau 55 bis 59 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+223,Altersklasse Frau 60 bis 64 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+224,Altersklasse Frau 65 bis 69 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+225,Altersklasse Frau 70 bis 74 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+226,Altersklasse Frau 75 bis 79 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+227,Altersklasse Frau 80 bis 84 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+228,Altersklasse Frau 85 bis 89 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+229,Altersklasse Frau 90 bis 94 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+230,Altersklasse Frau 95 bis 99 Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+231,Altersklasse Frau 100+ Jahre,01 Bevölkerung,01.01 Bestand,Altersklassen,ständig,Anzahl,Anzahl Personen
+232,Geburtsort Schweiz total,01 Bevölkerung,01.01 Bestand,Geburtsort,ständig,Anzahl,Anzahl Personen
+233,Geburtsort Ausland total,01 Bevölkerung,01.01 Bestand,Geburtsort,ständig,Anzahl,Anzahl Personen
+234,Geburtsort Schweiz Mann,01 Bevölkerung,01.01 Bestand,Geburtsort,ständig,Anzahl,Anzahl Personen
+235,Geburtsort Ausland Mann,01 Bevölkerung,01.01 Bestand,Geburtsort,ständig,Anzahl,Anzahl Personen
+236,Geburtsort Schweiz Frau,01 Bevölkerung,01.01 Bestand,Geburtsort,ständig,Anzahl,Anzahl Personen
+237,Geburtsort Ausland Frau,01 Bevölkerung,01.01 Bestand,Geburtsort,ständig,Anzahl,Anzahl Personen
+238,Einwanderung total,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Einwanderungen (inkl. Änderung des Bevölkerungstyps zu ständig)
+239,Auswanderung total,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Auswanderungen
+240,Interkantonaler Zuzug total,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+241,Interkantonaler Wegzug total,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+242,Intrakantonaler Zuzug total,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+243,Intrakantonaler Wegzug total,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+244,Einwanderung Mann,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Einwanderungen (inkl. Änderung des Bevölkerungstyps zu ständig)
+245,Auswanderung Mann,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Auswanderungen
+246,Interkantonaler Zuzug Mann,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+247,Interkantonaler Wegzug Mann,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+248,Intrakantonaler Zuzug Mann,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+249,Intrakantonaler Wegzug Mann,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+250,Einwanderung Frau,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Einwanderungen (inkl. Änderung des Bevölkerungstyps zu ständig)
+251,Auswanderung Frau,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Auswanderungen
+252,Interkantonaler Zuzug Frau,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+253,Interkantonaler Wegzug Frau,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+254,Intrakantonaler Zuzug Frau,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+255,Intrakantonaler Wegzug Frau,01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug

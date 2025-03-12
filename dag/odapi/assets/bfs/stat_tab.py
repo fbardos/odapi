@@ -155,6 +155,47 @@ CUBES = [
         ],
         encoding='latin1',
     ),
+    StatTabCube(
+        name='bev_altersklasse',
+        bfs_id='px-x-0102010000_103',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32207863/master',
+        columns=[
+            ColumnDefinition('year'),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('bevtyp', is_indicator_group=True),
+            ColumnDefinition('geschlecht', is_indicator_group=True),
+            ColumnDefinition('zivilstand', is_indicator_group=True),
+            ColumnDefinition('altersklasse', is_indicator_group=True),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
+    StatTabCube(
+        name='bev_geburtsort',
+        bfs_id='px-x-0102010000_100',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32207867/master',
+        columns=[
+            ColumnDefinition('year'),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('bevtyp', is_indicator_group=True),
+            ColumnDefinition('geburtsort', is_indicator_group=True),
+            ColumnDefinition('geschlecht', is_indicator_group=True),
+            ColumnDefinition('zivilstand', is_indicator_group=True),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
+    StatTabCube(
+        name='bev_zuwegzug',
+        bfs_id='px-x-0103010200_121',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32208027/master',
+        columns=[
+            ColumnDefinition('year'),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('nationalitaet', is_indicator_group=True),
+            ColumnDefinition('geschlecht', is_indicator_group=True),
+            ColumnDefinition('migrationstyp', is_indicator_group=True),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
 ]
 
 
@@ -175,6 +216,7 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
         df = stat_tab_cube.postprocess(df, meta)
 
         context.log.info(f"Writing data to database")
+        # TODO: Maybe work with chunksize if memory is an issue
         df.to_sql(
             context.asset_key.path[-1],
             db.get_sqlalchemy_engine(),
