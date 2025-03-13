@@ -1,43 +1,3 @@
-x-tests-intm-table-gp: &tests-intm-table-gp
-  - dbt_utils.unique_combination_of_columns:
-      # Currently, geo_code should always be geom and there should only be one wissensstand
-      # Also, indicator should already be selected.
-      combination_of_columns: ['geo_value', 'period_ref']
-
-x-tests-intm-table-statatlas-pk: &tests-intm-table-statatlas-pk
-  - dbt_utils.unique_combination_of_columns:
-      # Currently, for one geo_code, geo_value, there can be multiple period_ref
-      # AND multiple SCD-Type2 validities.
-      # Indicator should already be selected.
-      combination_of_columns: ['geo_code', 'geo_value', 'period_ref', 'knowledge_date_from']
-
-x-tests-intm-table-cols-for-union-mart: &tests-intm-table-cols-for-union-mart
-  - dbt_expectations.expect_table_columns_to_match_ordered_list:
-      column_list:
-        - indicator_id
-        - geo_code
-        - geo_value
-        - knowledge_date_from
-        - knowledge_date_to
-        - period_type
-        - period_code
-        - period_ref_from
-        - period_ref
-        - indicator_value_numeric
-        - indicator_value_text
-        - source
-
-x-tests-intm-table-statatlas-rows: &tests-intm-table-statatlas-rows
-  - dbt_expectations.expect_table_row_count_to_be_between:
-      min_value: 2000 # more than 2000 municipalities
-      group_by: ['period_ref']
-      row_condition: "geo_code = 'polg'"
-
-x-tests-intm-table-statatlas-rowsmin: &tests-intm-table-statatlas-rowsmin
-  - dbt_expectations.expect_table_row_count_to_be_between:
-          min_value: 1
-
-
 models:
   # ---------------------------------------------------------------------------
   - name: intm_swissboundaries_kanton
@@ -54,7 +14,7 @@ models:
         period_type: duedate
         period_code: year
     tests:
-      - <<: *tests-intm-table-gp
+      - gemportrait_intm_pk
 
   # ---------------------------------------------------------------------------
   - name: intm_ktzh_gp_auslaenderanteil
@@ -65,7 +25,7 @@ models:
         period_type: duedate
         period_code: year
     tests:
-      - <<: *tests-intm-table-gp
+      - gemportrait_intm_pk
 
   # ---------------------------------------------------------------------------
   - name: intm_bfe_minergie
@@ -73,9 +33,8 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['indicator_id', 'geo_code', 'geo_value', 'period_ref']
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_estv_db_jp
@@ -83,9 +42,9 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['indicator_id', 'geo_code', 'geo_value', 'period_ref']
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # Query to search for variable/path combinations:
   #
@@ -124,10 +83,10 @@ models:
           - '^_?\d+_72_71_70_?$'        # 01 - Bevoelkerung / Bevoelkerungsstand / Stand
         distinct_rows: true
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_versiegelte_flaeche_anteil
@@ -143,10 +102,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geburtenueberschuss
@@ -162,10 +121,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_wanderungssaldo_p1000
@@ -181,10 +140,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_int_wanderungssaldo_p1000
@@ -200,10 +159,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_binnen_wanderungssaldo_p1000
@@ -219,10 +178,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bevoelkerungsdichte_gesamt
@@ -237,10 +196,10 @@ models:
         path_regex:
           - '^_?\d+_75_3501_70_?$'  # 01 - Bevoelkerung / Bevoelkerungsdichte / Gesamtflaeche
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bevoelkerungsdichte_produktiv
@@ -255,10 +214,10 @@ models:
         path_regex:
           - '^_?\d+_3002_3501_70_?$'  # 01 - Bevoelkerung / Bevoelkerungsdichte / Produktivflaeche
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_jugendquotient
@@ -272,10 +231,10 @@ models:
         indicator_regex: 'Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20 bis 64 Jahren'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_altersquotient
@@ -289,10 +248,10 @@ models:
         indicator_regex: '(Personen im Alter von 65 oder mehr Jahren|65-Jährige und Ältere) pro 100 Personen im Alter von 20-64 Jahren'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_greyingindex
@@ -306,10 +265,10 @@ models:
         indicator_regex: '(Personen im Alter von 80 oder mehr Jahren|80-Jährige und Ältere) pro.*65(-| bis )79'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_staendig
@@ -323,10 +282,10 @@ models:
         indicator_regex: 'Anteil der ständigen ausländischen Bevölkerung.*gesamten ständigen Wohnbevölkerung'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_deutsche
@@ -340,10 +299,10 @@ models:
         indicator_regex: '^Anteil der (Wohnbev.+lkerung mit )?deutsche.+ Staatsangeh.*rig(en|keit) an der gesamten st.?ndigen'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_franzoesisch
@@ -357,10 +316,10 @@ models:
         indicator_regex: '^Anteil der (Wohnbev.+lkerung mit )?franz.?sische.+ Staatsangeh.*rig(en|keit) an der gesamten st.?ndigen'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_europaeisch
@@ -374,10 +333,10 @@ models:
         indicator_regex: '^Anteil der (Staatsangeh.+rigen|Wohnbevölkerung mit Staatsangehörigkeit) eines EU-Mitgliedsstaates.+ an der gesamten st.?ndigen'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geburten
@@ -393,10 +352,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_heiraten
@@ -412,10 +371,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_heiraten_anzahl
@@ -431,10 +390,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_scheidungen
@@ -450,10 +409,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_scheidungen_anzahl
@@ -469,10 +428,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_todesfaelle
@@ -488,10 +447,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_todesfaelle_anzahl
@@ -507,10 +466,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_einbuergerungen
@@ -526,10 +485,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_1pax
@@ -543,10 +502,10 @@ models:
         indicator_regex: '^Anteil der Einpersonenhaushalte am Total der Privathaushalte.*$'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_2pax
@@ -560,10 +519,10 @@ models:
         indicator_regex: '^Anteil der Zweipersonenhaushalte am Total der Privataushalte.*$'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_3pax
@@ -577,10 +536,10 @@ models:
         indicator_regex: '^Anteil der Dreipersonenhaushalte am Total der Privataushalte.*$'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_4pax
@@ -594,10 +553,10 @@ models:
         indicator_regex: '^Anteil der Vierpersonenhaushalte am Total der Privathaushalte.*$'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_5pluspax
@@ -611,10 +570,10 @@ models:
         indicator_regex: '^Anteil der Haushalte mit 5 oder mehr Personen am Total der Privathaushalte.*$'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushaltsgroesse
@@ -628,10 +587,10 @@ models:
         indicator_regex: '^Durchschnittliche Haushaltsgrösse.*$'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_siedlungsflaeche
@@ -647,10 +606,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_gebaeudeareal_gesamt
@@ -666,10 +625,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_industrieareal
@@ -685,10 +644,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_verkehrsflaeche
@@ -704,10 +663,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_landwirtschaftsflaeche
@@ -723,10 +682,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_waldflaeche
@@ -742,10 +701,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_unproduktivflaeche
@@ -761,10 +720,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kuenstlich_angelegt
@@ -780,10 +739,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_vegetationslose_flaeche
@@ -799,10 +758,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_wasserflaeche
@@ -818,10 +777,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_sektor1
@@ -835,10 +794,10 @@ models:
         indicator_regex: 'Zahl der Arbeitsstätten im 1\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_sektor2
@@ -852,10 +811,10 @@ models:
         indicator_regex: 'Zahl der Arbeitsstätten im 2\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_sektor3
@@ -869,10 +828,10 @@ models:
         indicator_regex: 'Zahl der Arbeitsstätten im 3\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_sektor1
@@ -886,10 +845,10 @@ models:
         indicator_regex: 'Zahl der Beschäftigten im 1\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_sektor2
@@ -903,10 +862,10 @@ models:
         indicator_regex: 'Zahl der Beschäftigten im 2\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_sektor3
@@ -920,10 +879,10 @@ models:
         indicator_regex: 'Zahl der Beschäftigten im 3\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_neu_unternehmen
@@ -939,10 +898,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_neu_arbeitsplaetze
@@ -958,10 +917,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bestand_unternehmen
@@ -977,10 +936,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bestand_arbeitsplaetze
@@ -996,10 +955,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_schliessung_unternehmen
@@ -1015,10 +974,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_schliessung_arbeitsplaetze
@@ -1034,10 +993,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bau_gebaeude
@@ -1054,10 +1013,10 @@ models:
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
         distinct_rows: true
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bau_gebaeude_anzahl
@@ -1073,10 +1032,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bau_wohnung
@@ -1092,10 +1051,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bau_wohnung_anzahl
@@ -1111,10 +1070,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_efh
@@ -1130,10 +1089,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_zi34
@@ -1149,10 +1108,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_lwz
@@ -1167,10 +1126,10 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bewohner_efh
@@ -1186,10 +1145,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_energiequelle
@@ -1208,10 +1167,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_heizoel
@@ -1227,10 +1186,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_gas
@@ -1246,10 +1205,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_waermepumpe
@@ -1265,10 +1224,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_energiequelle
@@ -1287,10 +1246,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_heizoel
@@ -1306,10 +1265,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_gas
@@ -1325,10 +1284,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_waermepumpe
@@ -1344,10 +1303,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_elektroautos_anzahl
@@ -1363,10 +1322,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_elektroautos_anteil
@@ -1382,10 +1341,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_pendler_bilanz
@@ -1399,10 +1358,10 @@ models:
         indicator_regex: 'Bilanz der Zu- und Wegpendler'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_pendler_saldo
@@ -1416,10 +1375,10 @@ models:
         indicator_regex: 'Pendlersaldo'
         # No path_regex needed, only one path (witout year) available
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_sozialhilfe_anzahl
@@ -1434,10 +1393,10 @@ models:
         path_regex:
           - '^_?\d+_112_7281_7263_?$'  # 13 - Soziale Sicherheit / Sozialleistungen / Sozialhilfebeziehende
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_sozialhilfe_quote
@@ -1452,10 +1411,10 @@ models:
         path_regex:
           - '^_?\d+_112_7281_7263_?$'  # 13 - Soziale Sicherheit / Sozialleistungen / Sozialhilfebeziehende
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_museen
@@ -1470,10 +1429,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_biblio
@@ -1486,10 +1445,10 @@ models:
       intm_statatlas:
         indicator_regex: '^Bibliotheken$'
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_biblio_100k
@@ -1502,10 +1461,10 @@ models:
       intm_statatlas:
         indicator_regex: '^Bibliotheken pro'
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinos
@@ -1520,10 +1479,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinosaele
@@ -1538,10 +1497,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinosaele_3d
@@ -1556,10 +1515,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinokomplexe
@@ -1574,10 +1533,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_multiplexkino
@@ -1592,10 +1551,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kino_sitzplaetze
@@ -1610,10 +1569,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_kultur
@@ -1626,10 +1585,10 @@ models:
       intm_statatlas:
         indicator_regex: 'Arbeitsstätten der Kulturwirtschaft'
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_kultur
@@ -1642,10 +1601,10 @@ models:
       intm_statatlas:
         indicator_regex: 'Beschäftigte der Kulturwirtschaft'
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_reineinkommen_steuerpflichtig
@@ -1662,10 +1621,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_reineinkommen_einwohner
@@ -1682,10 +1641,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_steuerbar_steuerpflichtig
@@ -1702,10 +1661,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_steuerbar_einwohner
@@ -1722,10 +1681,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_reineinkommen_total
@@ -1743,10 +1702,10 @@ models:
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
         distinct_rows: true
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_steuerbar_total
@@ -1764,10 +1723,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_gymi_anteil
@@ -1781,19 +1740,20 @@ models:
         indicator_regex: '^Anteil der Jugendlichen.*bis zum 25.*gymnasiales Maturit.?tszeugnis.*haben'
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
-      - <<: *tests-intm-table-statatlas-pk
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_demografisch_bilanz
   # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (more available in the bilanz)
-
           # -------------------------------------------------------------------
           # Geburten
           # -------------------------------------------------------------------
@@ -1801,440 +1761,69 @@ models:
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: '.*- Total$'
+            grouping:
               - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 130
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
               - column: staatsangehorigkeit
-                regex: '.*- Total$'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 131
-            is_numeric: True
-            period_type: duedate
-            period_code: year
+                name: 'Staatsangehörigkeit (Kategorie)'
+                total_value: 'Staatsangehörigkeit (Kategorie) - Total'
             filter_and:
-              - column: staatsangehorigkeit
-                regex: '.*- Total$'
-              - column: geschlecht
-                regex: 'Frau'
               - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 132
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Schweiz'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 133
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Schweiz'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 134
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Schweiz'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 135
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Ausland'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 136
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Ausland'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          - indicator_id: 137
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Ausland'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: indicator
-                regex: 'Lebendgeburt'
-          # -------------------------------------------------------------------
+                exact_match: 'Lebendgeburt'
+         # -------------------------------------------------------------------
           # Todesfälle
           # -------------------------------------------------------------------
           - indicator_id: 138
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: '.*- Total$'
+            grouping:
               - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 139
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
               - column: staatsangehorigkeit
-                regex: '.*- Total$'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 140
-            is_numeric: True
-            period_type: duedate
-            period_code: year
+                name: 'Staatsangehörigkeit (Kategorie)'
+                total_value: 'Staatsangehörigkeit (Kategorie) - Total'
             filter_and:
-              - column: staatsangehorigkeit
-                regex: '.*- Total$'
-              - column: geschlecht
-                regex: 'Frau'
               - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 141
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Schweiz'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 142
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Schweiz'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 143
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Schweiz'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 144
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Ausland'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 145
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Ausland'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: indicator
-                regex: 'Todesfall'
-          - indicator_id: 146
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: staatsangehorigkeit
-                regex: 'Ausland'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: indicator
-                regex: 'Todesfall'
-    tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+                exact_match: 'Todesfall'
 
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_zivilstand
   # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (more available in the bilanz)
-
-          # -------------------------------------------------------------------
-          # total
-          # -------------------------------------------------------------------
           - indicator_id: 147
             is_numeric: True
             period_type: duedate
             period_code: year
+            grouping:
+              - column: zivilstand
+                name: 'Zivilstand'
+                total_value: 'Zivilstand - Total'
+              - column: geburtsort
+                name: 'Geburtsort (Kategorie)'
+                total_value: 'Geburtsort - Total'
+              - column: geschlecht
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
             filter_and:
               - column: bevtyp
                 regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: zivilstand
-                regex: 'Ledig'
-          - indicator_id: 148
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: zivilstand
-                regex: 'Verheiratet.*'
-          - indicator_id: 149
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: zivilstand
-                regex: 'Verwitwet.*'
-          - indicator_id: 150
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: zivilstand
-                regex: 'Geschieden.*'
-          - indicator_id: 151
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Geschlecht - Total'
-              - column: zivilstand
-                regex: 'Ohne Angabe'
-          # -------------------------------------------------------------------
-          # Mann
-          # -------------------------------------------------------------------
-          - indicator_id: 152
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: zivilstand
-                regex: 'Ledig'
-          - indicator_id: 153
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: zivilstand
-                regex: 'Verheiratet.*'
-          - indicator_id: 154
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: zivilstand
-                regex: 'Verwitwet.*'
-          - indicator_id: 155
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: zivilstand
-                regex: 'Geschieden.*'
-          - indicator_id: 156
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Mann'
-              - column: zivilstand
-                regex: 'Ohne Angabe'
-          # -------------------------------------------------------------------
-          # Frau
-          # -------------------------------------------------------------------
-          - indicator_id: 157
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: zivilstand
-                regex: 'Ledig'
-          - indicator_id: 158
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: zivilstand
-                regex: 'Verheiratet.*'
-          - indicator_id: 159
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: zivilstand
-                regex: 'Verwitwet.*'
-          - indicator_id: 160
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: zivilstand
-                regex: 'Geschieden.*'
-          - indicator_id: 161
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                regex: 'St.ndige Wohnbev.lkerung'
-              - column: geburtsort
-                regex: 'Geburtsort - Total'
-              - column: geschlecht
-                regex: 'Frau'
-              - column: zivilstand
-                regex: 'Ohne Angabe'
-    tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
-
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_heirat
   # ---------------------------------------------------------------------------
     tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (more available in the bilanz)
-
           # -------------------------------------------------------------------
           # total
           # -------------------------------------------------------------------
@@ -2242,1259 +1831,181 @@ models:
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet_a
-                regex: '- Total$'
+                name: 'Staatsangehörigkeit (Kategorie), Partner:in 1'
+                total_value: 'Staatsangehörigkeit (Kategorie) Partner/in 1 - Total'
               - column: nationalitaet_b
-                regex: '- Total$'
+                name: 'Staatsangehörigkeit (Kategorie), Partner:in 2'
+                total_value: 'Staatsangehörigkeit (Kategorie) Partner/in 2 - Total'
 
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_scheidung
   # ---------------------------------------------------------------------------
     tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (more available in the bilanz)
-
-          # -------------------------------------------------------------------
-          # total
-          # -------------------------------------------------------------------
           - indicator_id: 163
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: ehedauer
-                regex: '- Total$'
+                name: 'Dauer der Ehe (5 Jahre)'
+                total_value: 'Ehedauer - Total'
               - column: nationalitaet_a
-                regex: '- Total$'
+                name: 'Staatsangehörigkeit (Kategorie), Partner:in 1'
+                total_value: 'Staatsangehörigkeit (Kategorie) Partner/in 1 - Total'
               - column: nationalitaet_b
-                regex: '- Total$'
-          # -------------------------------------------------------------------
-          # duration
-          # -------------------------------------------------------------------
-          - indicator_id: 164
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: ehedauer
-                regex: '0-4 Jahre$'
-              - column: nationalitaet_a
-                regex: '- Total$'
-              - column: nationalitaet_b
-                regex: '- Total$'
-          - indicator_id: 165
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: ehedauer
-                regex: '5-9 Jahre$'
-              - column: nationalitaet_a
-                regex: '- Total$'
-              - column: nationalitaet_b
-                regex: '- Total$'
-          - indicator_id: 166
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: ehedauer
-                regex: '10-14 Jahre$'
-              - column: nationalitaet_a
-                regex: '- Total$'
-              - column: nationalitaet_b
-                regex: '- Total$'
-          - indicator_id: 167
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: ehedauer
-                regex: '15-19 Jahre$'
-              - column: nationalitaet_a
-                regex: '- Total$'
-              - column: nationalitaet_b
-                regex: '- Total$'
-          - indicator_id: 168
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: ehedauer
-                regex: '20 Jahre und mehr$'
-              - column: nationalitaet_a
-                regex: '- Total$'
-              - column: nationalitaet_b
-                regex: '- Total$'
-                #
+                name: 'Staatsangehörigkeit (Kategorie), Partner:in 2'
+                total_value: 'Staatsangehörigkeit (Kategorie) Partner/in 2 - Total'
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_altersklasse
   # ---------------------------------------------------------------------------
     tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (more available in the bilanz)
-          # FIX: Some groups are duplicated in API, check why and add test
-
-          # -------------------------------------------------------------------
-          # total
-          # -------------------------------------------------------------------
           - indicator_id: 169
             is_numeric: True
             period_type: duedate
             period_code: year
+            grouping:
+              - column: altersklasse
+                name: 'Altersklasse (5 Jahre)'
+                total_value: 'Altersklasse - Total'
+              - column: geschlecht
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+              - column: zivilstand
+                name: 'Zivilstand'
+                total_value: 'Zivilstand - Total'
             filter_and:
               - column: bevtyp
                 exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '0-4 Jahre'
-          - indicator_id: 170
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '5-9 Jahre'
-          - indicator_id: 171
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '10-14 Jahre'
-          - indicator_id: 172
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '15-19 Jahre'
-          - indicator_id: 173
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '20-24 Jahre'
-          - indicator_id: 174
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '25-29 Jahre'
-          - indicator_id: 175
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '30-34 Jahre'
-          - indicator_id: 176
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '35-39 Jahre'
-          - indicator_id: 177
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '40-44 Jahre'
-          - indicator_id: 178
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '45-49 Jahre'
-          - indicator_id: 179
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '50-54 Jahre'
-          - indicator_id: 180
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '55-59 Jahre'
-          - indicator_id: 181
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '60-64 Jahre'
-          - indicator_id: 182
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '65-69 Jahre'
-          - indicator_id: 183
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '70-74 Jahre'
-          - indicator_id: 184
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '75-79 Jahre'
-          - indicator_id: 185
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '80-84 Jahre'
-          - indicator_id: 186
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '85-89 Jahre'
-          - indicator_id: 187
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '90-94 Jahre'
-          - indicator_id: 188
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '95-99 Jahre'
-          - indicator_id: 189
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                regex: '- Total$'
-              - column: zivilstand
-                regex: '- Total$'
-              - column: altersklasse
-                regex: '100 Jahre und mehr'
-          # -------------------------------------------------------------------
-          # Mann
-          # -------------------------------------------------------------------
-          - indicator_id: 190
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '0-4 Jahre'
-          - indicator_id: 191
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '5-9 Jahre'
-          - indicator_id: 192
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '10-14 Jahre'
-          - indicator_id: 193
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '15-19 Jahre'
-          - indicator_id: 194
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '20-24 Jahre'
-          - indicator_id: 195
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '25-29 Jahre'
-          - indicator_id: 196
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '30-34 Jahre'
-          - indicator_id: 197
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '35-39 Jahre'
-          - indicator_id: 198
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '40-44 Jahre'
-          - indicator_id: 199
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '45-49 Jahre'
-          - indicator_id: 200
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '50-54 Jahre'
-          - indicator_id: 201
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '55-59 Jahre'
-          - indicator_id: 202
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '60-64 Jahre'
-          - indicator_id: 203
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '65-69 Jahre'
-          - indicator_id: 204
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '70-74 Jahre'
-          - indicator_id: 205
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '75-79 Jahre'
-          - indicator_id: 206
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '80-84 Jahre'
-          - indicator_id: 207
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '85-89 Jahre'
-          - indicator_id: 208
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '90-94 Jahre'
-          - indicator_id: 209
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '95-99 Jahre'
-          - indicator_id: 210
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '100 Jahre und mehr'
-          # -------------------------------------------------------------------
-          # Frau
-          # -------------------------------------------------------------------
-          - indicator_id: 211
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '0-4 Jahre'
-          - indicator_id: 212
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '5-9 Jahre'
-          - indicator_id: 213
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '10-14 Jahre'
-          - indicator_id: 214
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '15-19 Jahre'
-          - indicator_id: 215
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '20-24 Jahre'
-          - indicator_id: 216
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '25-29 Jahre'
-          - indicator_id: 217
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '30-34 Jahre'
-          - indicator_id: 218
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '35-39 Jahre'
-          - indicator_id: 219
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '40-44 Jahre'
-          - indicator_id: 220
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '45-49 Jahre'
-          - indicator_id: 221
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '50-54 Jahre'
-          - indicator_id: 222
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '55-59 Jahre'
-          - indicator_id: 223
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '60-64 Jahre'
-          - indicator_id: 224
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '65-69 Jahre'
-          - indicator_id: 225
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '70-74 Jahre'
-          - indicator_id: 226
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '75-79 Jahre'
-          - indicator_id: 227
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '80-84 Jahre'
-          - indicator_id: 228
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '85-89 Jahre'
-          - indicator_id: 229
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '90-94 Jahre'
-          - indicator_id: 230
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '95-99 Jahre'
-          - indicator_id: 231
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: altersklasse
-                exact_match: '100 Jahre und mehr'
 
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_geburtsort
   # ---------------------------------------------------------------------------
     tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (more available in the bilanz)
-
-          # -------------------------------------------------------------------
-          # total
-          # -------------------------------------------------------------------
           - indicator_id: 232
             is_numeric: True
             period_type: duedate
             period_code: year
+            grouping:
+              - column: geburtsort
+                name: 'Geburtsort (Schweiz/Ausland)'
+                total_value: 'Geburtsort - Total'
+              - column: geschlecht
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+              - column: zivilstand
+                name: 'Zivilstand'
+                total_value: 'Zivilstand - Total'
             filter_and:
               - column: bevtyp
                 exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Geschlecht - Total'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: geburtsort
-                exact_match: 'In der Schweiz'
-          - indicator_id: 233
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Geschlecht - Total'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: geburtsort
-                exact_match: 'Im Ausland'
-          # -------------------------------------------------------------------
-          # Mann
-          # -------------------------------------------------------------------
-          - indicator_id: 234
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: geburtsort
-                exact_match: 'In der Schweiz'
-          - indicator_id: 235
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: geburtsort
-                exact_match: 'Im Ausland'
-          # -------------------------------------------------------------------
-          # Frau
-          # -------------------------------------------------------------------
-          - indicator_id: 236
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: geburtsort
-                exact_match: 'In der Schweiz'
-          - indicator_id: 237
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: bevtyp
-                exact_match: 'Ständige Wohnbevölkerung'
-              - column: geschlecht
-                exact_match: 'Frau'
-              - column: zivilstand
-                exact_match: 'Zivilstand - Total'
-              - column: geburtsort
-                exact_match: 'Im Ausland'
 
   # ---------------------------------------------------------------------------
   - name: intm_stab_bev_zuwegzug
   # ---------------------------------------------------------------------------
     tests:
-      # TODO: Add PK test (as macro, not yaml variable)
-      - <<: *tests-intm-table-cols-for-union-mart
-      - <<: *tests-intm-table-statatlas-rows
-      - <<: *tests-intm-table-statatlas-rowsmin
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
     config:
       odapi:
         indicators:
-          # TODO: Can add more indicators later (nationalitaet)
-
-          # -------------------------------------------------------------------
-          # total
-          # -------------------------------------------------------------------
           - indicator_id: 238
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
+                name: 'Staatsangehörigkeit (Auswahl)'
+                total_value: 'Staatsangehörigkeit (Auswahl) - Total'
               - column: geschlecht
-                exact_match: 'Geschlecht - Total'
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+            filter_and:
               - column: migrationstyp
                 regex: '^Einwanderung.*'
           - indicator_id: 239
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
+                name: 'Staatsangehörigkeit (Auswahl)'
+                total_value: 'Staatsangehörigkeit (Auswahl) - Total'
               - column: geschlecht
-                exact_match: 'Geschlecht - Total'
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+            filter_and:
               - column: migrationstyp
                 exact_match: 'Auswanderung'
           - indicator_id: 240
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
+                name: 'Staatsangehörigkeit (Auswahl)'
+                total_value: 'Staatsangehörigkeit (Auswahl) - Total'
               - column: geschlecht
-                exact_match: 'Geschlecht - Total'
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+            filter_and:
               - column: migrationstyp
                 exact_match: 'Interkantonaler Zuzug'
           - indicator_id: 241
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
+                name: 'Staatsangehörigkeit (Auswahl)'
+                total_value: 'Staatsangehörigkeit (Auswahl) - Total'
               - column: geschlecht
-                exact_match: 'Geschlecht - Total'
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+            filter_and:
               - column: migrationstyp
                 exact_match: 'Interkantonaler Wegzug'
           - indicator_id: 242
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
+                name: 'Staatsangehörigkeit (Auswahl)'
+                total_value: 'Staatsangehörigkeit (Auswahl) - Total'
               - column: geschlecht
-                exact_match: 'Geschlecht - Total'
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
+            filter_and:
               - column: migrationstyp
                 exact_match: 'Intrakantonaler Zuzug'
           - indicator_id: 243
             is_numeric: True
             period_type: duedate
             period_code: year
-            filter_and:
+            grouping:
               - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
+                name: 'Staatsangehörigkeit (Auswahl)'
+                total_value: 'Staatsangehörigkeit (Auswahl) - Total'
               - column: geschlecht
-                exact_match: 'Geschlecht - Total'
-              - column: migrationstyp
-                exact_match: 'Intrakantonaler Wegzug'
-          # -------------------------------------------------------------------
-          # Mann
-          # -------------------------------------------------------------------
-          - indicator_id: 244
-            is_numeric: True
-            period_type: duedate
-            period_code: year
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'
             filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                regex: '^Einwanderung.*'
-          - indicator_id: 245
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Auswanderung'
-          - indicator_id: 246
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Interkantonaler Zuzug'
-          - indicator_id: 247
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Interkantonaler Wegzug'
-          - indicator_id: 248
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Intrakantonaler Zuzug'
-          - indicator_id: 249
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Intrakantonaler Wegzug'
-          # -------------------------------------------------------------------
-          # Frau
-          # -------------------------------------------------------------------
-          - indicator_id: 250
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                regex: '^Einwanderung.*'
-          - indicator_id: 251
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Auswanderung'
-          - indicator_id: 252
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Interkantonaler Zuzug'
-          - indicator_id: 253
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Interkantonaler Wegzug'
-          - indicator_id: 254
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
-              - column: migrationstyp
-                exact_match: 'Intrakantonaler Zuzug'
-          - indicator_id: 255
-            is_numeric: True
-            period_type: duedate
-            period_code: year
-            filter_and:
-              - column: nationalitaet
-                regex: '^Staatsangeh.rigkeit .* - Total$'
-              - column: geschlecht
-                exact_match: 'Mann'
               - column: migrationstyp
                 exact_match: 'Intrakantonaler Wegzug'

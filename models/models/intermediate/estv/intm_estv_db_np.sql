@@ -30,6 +30,14 @@ with src as (
         , 'year' as period_code
         , NULL::DATE as period_ref_from
         , period_ref
+        , NULL::TEXT as group_1_name
+        , NULL::TEXT as group_1_value
+        , NULL::TEXT as group_2_name
+        , NULL::TEXT as group_2_value
+        , NULL::TEXT as group_3_name
+        , NULL::TEXT as group_3_value
+        , NULL::TEXT as group_4_name
+        , NULL::TEXT as group_4_value
         , indicator_value_numeric
         , NULL::TEXT as indicator_value_text
         , 'Eidgenössische Steuerverwaltung ESTV' as source
