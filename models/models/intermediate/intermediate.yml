@@ -2113,3 +2113,26 @@ models:
             filter_and:
               - column: migrationstyp
                 exact_match: 'Intrakantonaler Wegzug'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_geb_bestand
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 142
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: gebkategorie
+                name: 'Gebäudekategorie'
+                # here no total value, build on the fly with build_total_value
+              - column: bauperiode
+                name: 'Bauperiode'
+                # here no total value, build on the fly with build_total_value
