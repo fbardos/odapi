@@ -59,3 +59,4 @@ dependencies:
     - jq
     - OWSLib
     - pyaxis
+    - XlsxWriter

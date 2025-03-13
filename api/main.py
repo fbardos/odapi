@@ -1,39 +1,45 @@
+import datetime as dt
 import io
-import pytest
+import os
 import re
-import networkx as nx
+import textwrap
 from abc import ABC
-from fastapi import FastAPI
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
+
+import geopandas as gpd
+import networkx as nx
+import pandas as pd
+import pytest
+from dotenv import load_dotenv
 from fastapi import Depends
-from fastapi import Response
-from sqlalchemy import MetaData
-from fastapi import Request
-from fastapi import Query
+from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi import Path
+from fastapi import Query
+from fastapi import Request
+from fastapi import Response
+from fastapi import status
 from fastapi.testclient import TestClient
-from sqlalchemy.engine import Engine
-from sqlalchemy import select
-from sqlalchemy import Table
-from sqlalchemy import Column
-from sqlalchemy.sql.functions import coalesce
+
 # from tabulate import tabulate
 from geoalchemy2 import Geometry
-from dataclasses import dataclass
-from typing import Optional
-import geopandas as gpd
-import datetime as dt
-import textwrap
 from shapely.geometry import Point
-import os
-import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import Column
 from sqlalchemy import MetaData
-from dotenv import load_dotenv
-from enum import Enum
-
+from sqlalchemy import Table
+from sqlalchemy import create_engine
+from sqlalchemy import select
+from sqlalchemy.engine import Engine
+from sqlalchemy.sql.functions import coalesce
 
 # DATABASE ###################################################################
 load_dotenv()
+
+
+GROUP_TOTAL_NAME = 'GROUP TOTAL'
+EXCEL_MAX_ROWS = 1_048_575
 
 
 def get_sync_engine() -> Engine:
@@ -212,15 +218,26 @@ class TxtResponose(Response):
 
 # HELPER FUNC ################################################################
 def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDataFrame):
-    # if request.url.path.startswith(f'/{first_path_element}/csv'):
     if re.search(f'^/{first_path_element}.*/csv$', request.url.path):
         buffer = io.BytesIO()
         gdf.to_csv(buffer, index=False)
         return CsvResponse(content=buffer)
-    # elif request.url.path.startswith(f'/{first_path_element}/xlsx'):
     elif re.search(f'^/{first_path_element}.*/xlsx$', request.url.path):
         buffer = io.BytesIO()
-        gdf.to_excel(buffer, index=False, sheet_name='data')
+
+        if len(gdf.index) > EXCEL_MAX_ROWS:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=(
+                    f'Too many rows. Maximum rows for Excel is {EXCEL_MAX_ROWS}. '
+                    f'You tried to export {len(gdf.index)} rows. '
+                    'Apply more filters or switch to CSV or JSON response'
+                ),
+            )
+
+        # XlsxWriter seems to be slightly more performant than openpyxl.
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            gdf.to_excel(writer, index=False, sheet_name='odapi_data', merge_cells=False)
         return XlsxResponse(content=buffer)
     # Currently, TXT output is not needed.
     # The table would be too wide and not readable.
@@ -371,7 +388,12 @@ def get_all_available_indicators(
 @app.get(
     '/indicator/{geo_code}/{indicator_id}/xlsx',
     tags=['Indicators'],
-    description='Returns as Excel file for a selected indicator.',
+    description=textwrap.dedent("""
+        Returns as Excel file for a selected indicator.
+
+        **Be careful, this can create a big response and may take some time**.
+        **Additionally, Microsoft Excel cannot contain a spreadsheet with more than 1,048,576 rows.**
+    """),
     response_class=XlsxResponse,
 )
 @app.get(
@@ -425,6 +447,11 @@ def get_indicator(
     ),
     skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
+    expand_all_groups: Optional[bool] = Query(False, description='Optional. Expand all groups in the response.'),
+    expand_group_1: Optional[bool] = Query(False, description='Optional. Expand group 1 in the response.'),
+    expand_group_2: Optional[bool] = Query(False, description='Optional. Expand group 2 in the response.'),
+    expand_group_3: Optional[bool] = Query(False, description='Optional. Expand group 3 in the response.'),
+    expand_group_4: Optional[bool] = Query(False, description='Optional. Expand group 4 in the response.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
@@ -443,6 +470,14 @@ def get_indicator(
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
             tbl_api.c.period_ref,
+            tbl_api.c.group_1_name,
+            tbl_api.c.group_1_value,
+            tbl_api.c.group_2_name,
+            tbl_api.c.group_2_value,
+            tbl_api.c.group_3_name,
+            tbl_api.c.group_3_value,
+            tbl_api.c.group_4_name,
+            tbl_api.c.group_4_value,
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.indicator_value_text,
             tbl_api.c.source,
@@ -450,6 +485,22 @@ def get_indicator(
         .where(tbl_api.c.indicator_id == indicator_id)
         .where(tbl_api.c.geo_code == geo_code)
     )
+    if any([expand_all_groups, expand_group_1]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_1_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+    if any([expand_all_groups, expand_group_2]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_2_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+    if any([expand_all_groups, expand_group_3]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_3_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+    if any([expand_all_groups, expand_group_4]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_4_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
     if knowledge_date:
         _knowledge_date = dt.date.fromisoformat(knowledge_date)
         query = (
@@ -572,7 +623,12 @@ def get_indicator(
 @app.get(
     '/portrait/{geo_code}/{geo_value}/xlsx',
     tags=['Indicators'],
-    description='Returns as Excel file for the selected geometry.',
+    description=textwrap.dedent("""
+        Returns as Excel file for a selected indicator.
+
+        **Be careful, this can create a big response and may take some time**.
+        **Additionally, Microsoft Excel cannot contain a spreadsheet with more than 1,048,576 rows.**
+    """),
     response_class=XlsxResponse,
 )
 @app.get(
@@ -625,6 +681,11 @@ def list_all_indicators_for_one_geometry(
     ),
     skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
+    expand_all_groups: Optional[bool] = Query(False, description='Optional. Expand all groups in the response.'),
+    expand_group_1: Optional[bool] = Query(False, description='Optional. Expand group 1 in the response.'),
+    expand_group_2: Optional[bool] = Query(False, description='Optional. Expand group 2 in the response.'),
+    expand_group_3: Optional[bool] = Query(False, description='Optional. Expand group 3 in the response.'),
+    expand_group_4: Optional[bool] = Query(False, description='Optional. Expand group 4 in the response.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
@@ -643,6 +704,14 @@ def list_all_indicators_for_one_geometry(
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
             tbl_api.c.period_ref,
+            tbl_api.c.group_1_name,
+            tbl_api.c.group_1_value,
+            tbl_api.c.group_2_name,
+            tbl_api.c.group_2_value,
+            tbl_api.c.group_3_name,
+            tbl_api.c.group_3_value,
+            tbl_api.c.group_4_name,
+            tbl_api.c.group_4_value,
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.indicator_value_text,
             tbl_api.c.source,
@@ -650,6 +719,22 @@ def list_all_indicators_for_one_geometry(
         .where(tbl_api.c.geo_code == geo_code)
         .where(tbl_api.c.geo_value == geo_value)
     )
+    if any([expand_all_groups, expand_group_1]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_1_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+    if any([expand_all_groups, expand_group_2]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_2_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+    if any([expand_all_groups, expand_group_3]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_3_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+    if any([expand_all_groups, expand_group_4]):
+        pass  # if any selection is made, do not filter the table
+    else:
+        query = query.where(coalesce(tbl_api.c.group_4_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
     if knowledge_date:
         _knowledge_date = dt.date.fromisoformat(knowledge_date)
         query = (
@@ -767,6 +852,9 @@ def list_all_indicators_for_one_geometry(
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a XLSX file.
 
+        **Be careful, this can create a big response and may take some time**.
+        **Additionally, Microsoft Excel cannot contain a spreadsheet with more than 1,048,576 rows.**
+
         Sources:
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
         * [From 2016: Swissboundaries3D](https://www.swisstopo.admin.ch/de/landschaftsmodell-swissboundaries3d)
@@ -836,6 +924,9 @@ def list_municipalities_by_year(
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a XLSX file.
+        
+        **Be careful, this can create a big response and may take some time**.
+        **Additionally, Microsoft Excel cannot contain a spreadsheet with more than 1,048,576 rows.**
 
         Sources:
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
@@ -905,6 +996,9 @@ def list_districts_by_year(
     tags=['Dimensions'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a XLSX file.
+
+        **Be careful, this can create a big response and may take some time**.
+        **Additionally, Microsoft Excel cannot contain a spreadsheet with more than 1,048,576 rows.**
 
         Sources:
         * [Until 2015: data.geo.admin.ch](https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_1850-2015/historisierte-administrative_grenzen_g0_1850-2015_gemeinde_2056.json)
