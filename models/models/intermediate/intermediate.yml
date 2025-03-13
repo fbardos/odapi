@@ -1774,7 +1774,7 @@ models:
          # -------------------------------------------------------------------
           # Todesfälle
           # -------------------------------------------------------------------
-          - indicator_id: 138
+          - indicator_id: 130
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1798,7 +1798,7 @@ models:
     config:
       odapi:
         indicators:
-          - indicator_id: 147
+          - indicator_id: 131
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1827,7 +1827,7 @@ models:
           # -------------------------------------------------------------------
           # total
           # -------------------------------------------------------------------
-          - indicator_id: 162
+          - indicator_id: 132
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1848,7 +1848,7 @@ models:
     config:
       odapi:
         indicators:
-          - indicator_id: 163
+          - indicator_id: 133
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1871,7 +1871,7 @@ models:
     config:
       odapi:
         indicators:
-          - indicator_id: 169
+          - indicator_id: 134
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1898,7 +1898,7 @@ models:
     config:
       odapi:
         indicators:
-          - indicator_id: 232
+          - indicator_id: 135
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1925,7 +1925,7 @@ models:
     config:
       odapi:
         indicators:
-          - indicator_id: 238
+          - indicator_id: 136
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1939,7 +1939,7 @@ models:
             filter_and:
               - column: migrationstyp
                 regex: '^Einwanderung.*'
-          - indicator_id: 239
+          - indicator_id: 137
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1953,7 +1953,7 @@ models:
             filter_and:
               - column: migrationstyp
                 exact_match: 'Auswanderung'
-          - indicator_id: 240
+          - indicator_id: 138
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1967,7 +1967,7 @@ models:
             filter_and:
               - column: migrationstyp
                 exact_match: 'Interkantonaler Zuzug'
-          - indicator_id: 241
+          - indicator_id: 139
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1981,7 +1981,7 @@ models:
             filter_and:
               - column: migrationstyp
                 exact_match: 'Interkantonaler Wegzug'
-          - indicator_id: 242
+          - indicator_id: 140
             is_numeric: True
             period_type: duedate
             period_code: year
@@ -1995,7 +1995,7 @@ models:
             filter_and:
               - column: migrationstyp
                 exact_match: 'Intrakantonaler Zuzug'
-          - indicator_id: 243
+          - indicator_id: 141
             is_numeric: True
             period_type: duedate
             period_code: year
