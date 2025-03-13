@@ -10,6 +10,35 @@ models:
       group: *default-group
       grants:
         select: ['odapi_public']
+      indexes:
+        - columns: [geo_code, geo_value]
+          unique: false
+        - columns: [geo_code, geo_value, period_ref]
+          unique: false
+        - columns: [geo_code, geo_value, group_1_value]
+          unique: false
+        - columns: [geo_code, geo_value, group_2_value]
+          unique: false
+        - columns: [geo_code, geo_value, group_3_value]
+          unique: false
+        - columns: [geo_code, geo_value, group_4_value]
+          unique: false
+        - columns: [geo_code, geo_value, group_1_value, group_2_value, group_3_value, group_4_value]
+          unique: false
+        - columns: [geo_code, geo_value]
+          unique: false
+        - columns: [geo_code, indicator_id, period_ref]
+          unique: false
+        - columns: [geo_code, indicator_id, group_1_value]
+          unique: false
+        - columns: [geo_code, indicator_id, group_2_value]
+          unique: false
+        - columns: [geo_code, indicator_id, group_3_value]
+          unique: false
+        - columns: [geo_code, indicator_id, group_4_value]
+          unique: false
+        - columns: [geo_code, indicator_id, group_1_value, group_2_value, group_3_value, group_4_value]
+          unique: false
 
   # ---------------------------------------------------------------------------
   - name: mart_available_indicator
