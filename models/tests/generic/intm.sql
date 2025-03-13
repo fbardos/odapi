@@ -30,8 +30,13 @@
 --------------------------------------------------------------------------------
 -- GLOBAL PK
 --------------------------------------------------------------------------------
-{% test odapi_intm_pk(model) %}
+{% test odapi_intm_pk_nogroups(model) %}
     {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from'] %}
+    {{ return(adapter.dispatch('test_unique_combination_of_columns', 'dbt_utils')(model, combination_of_columns, quote_columns=False)) }}
+{% endtest %}
+
+{% test odapi_intm_pk_groups(model) %}
+    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from', 'group_1_value', 'group_2_value', 'group_3_value', 'group_4_value'] %}
     {{ return(adapter.dispatch('test_unique_combination_of_columns', 'dbt_utils')(model, combination_of_columns, quote_columns=False)) }}
 {% endtest %}
 
