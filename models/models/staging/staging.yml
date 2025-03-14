@@ -150,5 +150,59 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_geb_bestand
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - gebkategorie
+          - zimmer
+          - bauperiode
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_geb_flaeche
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - gebkategorie
+          - flaeche
+          - bauperiode
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_geb_leerwhg
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - wohnraum
+          - typ
+          - indikator
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_bau_ausgaben
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - auftraggeber
+          - bauwerk
+          - arbeit
+          - indikator
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+
+
 
 

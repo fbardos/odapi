@@ -2133,6 +2133,140 @@ models:
               - column: gebkategorie
                 name: 'Gebäudekategorie'
                 # here no total value, build on the fly with build_total_value
+              - column: zimmer
+                name: 'Anzahl Zimmer'
+                # here no total value, build on the fly with build_total_value
               - column: bauperiode
                 name: 'Bauperiode'
                 # here no total value, build on the fly with build_total_value
+                #
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_geb_flaeche
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 143
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: gebkategorie
+                name: 'Gebäudekategorie'
+                # here no total value, build on the fly with build_total_value
+              - column: flaeche
+                name: 'Wohnungsfläche'
+                # here no total value, build on the fly with build_total_value
+              - column: bauperiode
+                name: 'Bauperiode'
+                # here no total value, build on the fly with build_total_value
+                #
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_geb_leerwhg
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 144
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wohnraum
+                name: 'Anzahl Wohnräume'
+                # here no total value, build on the fly with build_total_value
+              - column: typ
+                name: 'Leerwohnungstyp'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Anzahl'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_bau_ausgaben
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 145
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: auftraggeber
+                name: 'Art der Auftraggeber'
+                total_value: 'Art der Auftraggeber - Total'
+              - column: bauwerk
+                name: 'Art der Bauwerke'
+                total_value: 'Art der Bauwerk - Total'
+              - column: arbeit
+                name: 'Art der Arbeiten'
+                total_value: 'Bauausgaben - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Laufendes Jahr - Absolute Werte'
+          - indicator_id: 146
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: auftraggeber
+                name: 'Art der Auftraggeber'
+                total_value: 'Art der Auftraggeber - Total'
+              - column: bauwerk
+                name: 'Art der Bauwerke'
+                total_value: 'Art der Bauwerk - Total'
+              - column: arbeit
+                name: 'Art der Arbeiten'
+                total_value: 'Bauausgaben - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Laufendes Jahr - Veränderungsraten'
+          - indicator_id: 147
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: auftraggeber
+                name: 'Art der Auftraggeber'
+                total_value: 'Art der Auftraggeber - Total'
+              - column: bauwerk
+                name: 'Art der Bauwerke'
+                total_value: 'Art der Bauwerk - Total'
+              - column: arbeit
+                name: 'Art der Arbeiten'
+                total_value: 'Bauausgaben - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Folgejahr (Arbeitsvorrat) - Absolute Werte'
+          - indicator_id: 148
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: auftraggeber
+                name: 'Art der Auftraggeber'
+                total_value: 'Art der Auftraggeber - Total'
+              - column: bauwerk
+                name: 'Art der Bauwerke'
+                total_value: 'Art der Bauwerk - Total'
+              - column: arbeit
+                name: 'Art der Arbeiten'
+                total_value: 'Bauausgaben - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Folgejahr (Arbeitsvorrat) - Veränderungsraten'

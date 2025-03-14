@@ -16,6 +16,8 @@
                 -- handle numeric values
                 , case
                     when indicator_value = '"..."' then NULL
+                    when indicator_value = '"...."' then NULL
+                    when indicator_value = '' then NULL
                     else indicator_value::NUMERIC
                 end as indicator_value
                 , NULLIF(geo_code, 'nan') as geo_code

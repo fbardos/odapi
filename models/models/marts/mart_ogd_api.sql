@@ -204,3 +204,11 @@ UNION ALL
 select * from {{ ref('intm_stab_bev_geburtsort')}}
 UNION ALL
 select * from {{ ref('intm_stab_bev_zuwegzug')}}
+UNION ALL
+select * from {{ ref('intm_stab_geb_bestand')}}
+UNION ALL
+select * from {{ ref('intm_stab_geb_flaeche')}}
+UNION ALL
+select * from {{ ref('intm_stab_geb_leerwhg')}}
+UNION ALL
+select * from {{ ref('intm_stab_bau_ausgaben')}}

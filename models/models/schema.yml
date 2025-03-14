@@ -25,6 +25,10 @@ sources:
       - name: stat_tab_bev_altersklasse
       - name: stat_tab_bev_geburtsort
       - name: stat_tab_bev_zuwegzug
+      - name: stat_tab_geb_bestand
+      - name: stat_tab_geb_flaeche
+      - name: stat_tab_geb_leerwhg
+      - name: stat_tab_bau_ausgaben
   - name: ktzh_gwr
     database: data
     schema: src

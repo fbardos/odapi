@@ -140,3 +140,10 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 139,"Interkantonaler Wegzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
 140,"Intrakantonaler Zuzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
 141,"Intrakantonaler Wegzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+142,"Gebäude, nach Gebäudekategorie, Anzahl Zimmer und Bauperiode",09 Bauen & Wohnen,09.01 Bauen,Bestand,,Anzahl,Anzahl Gebäude
+143,"Gebäude, nach Gebäudekategorie, Wohnungsfläche und Bauperiode",09 Bauen & Wohnen,09.01 Bauen,Bestand,,Anzahl,Anzahl Gebäude
+144,"Leerwohnungen, nach Anzahl Wohnräume und Leerwohnungstyp",09 Bauen & Wohnen,09.02 Wohnen,Leerwohnungen,,Anzahl,Anzahl Leerwohnungen
+145,"Bauausgaben absolut, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Bauausgaben,,CHF,Bauausgaben (absolute Werte)
+146,"Bauausgaben Veränderung, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Bauausgaben,,Prozent,Bauausgaben (Veränderung in %)
+147,"Arbeitsvorrat (Folgejahr) absolut, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Arbeitsvorrat (Folgejahr),,CHF,Arbeitsvorrat (Folgejahr) (absolute Werte)
+148,"Arbeitsvorrat (Folgejahr) Veränderung, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Arbeitsvorrat (Folgejahr),,Prozent,Arbeitsvorrat (Folgejahr) (Veränderung in %)

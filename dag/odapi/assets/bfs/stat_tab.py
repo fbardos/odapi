@@ -196,6 +196,60 @@ CUBES = [
             ColumnDefinition('indicator_value'),
         ],
     ),
+    StatTabCube(
+        name='geb_bestand',
+        bfs_id='px-x-0902020200_102',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32329355/master',
+        columns=[
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('gebkategorie', is_indicator_group=True),
+            ColumnDefinition('zimmer', is_indicator_group=True),
+            ColumnDefinition('bauperiode', is_indicator_group=True),
+            ColumnDefinition('year'),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
+    StatTabCube(
+        name='geb_flaeche',
+        bfs_id='px-x-0902020200_103',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32329364/master',
+        columns=[
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('gebkategorie', is_indicator_group=True),
+            ColumnDefinition('flaeche', is_indicator_group=True),
+            ColumnDefinition('bauperiode', is_indicator_group=True),
+            ColumnDefinition('year'),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
+    StatTabCube(
+        name='geb_leerwhg',
+        bfs_id='px-x-0902020300_101',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32386477/master',
+        columns=[
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('wohnraum', is_indicator_group=True),
+            ColumnDefinition('typ', is_indicator_group=True),
+            ColumnDefinition('indikator', is_indicator_group=True),
+            ColumnDefinition('year'),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
+    StatTabCube(
+        name='bau_ausgaben',
+        bfs_id='px-x-0904010000_201',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32130606/master',
+        columns=[
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('auftraggeber', is_indicator_group=True),
+            ColumnDefinition('bauwerk', is_indicator_group=True),
+            ColumnDefinition('arbeit', is_indicator_group=True),
+            ColumnDefinition('indikator', is_indicator_group=True),
+            ColumnDefinition('year'),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+    ),
 ]
 
 
