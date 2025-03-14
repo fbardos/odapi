@@ -11,3 +11,8 @@ run_coordinator:
         limit: 1
       - key: 'high_memory'
         value: 1
+
+concurrency:
+  pools:
+    granularity: "run"
+    default_limit: 1

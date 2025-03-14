@@ -77,3 +77,8 @@ event_log_storage:
       db_name:
         env: DAGSTER__PSQL_META__DB
       port: 5432
+
+concurrency:
+  pools:
+    granularity: "run"
+    default_limit: 1
