@@ -259,7 +259,7 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
         compute_kind='python',
         group_name='src_bfs',
         key=['src', f'stat_tab_{stat_tab_cube.name}'],
-        tags={'high_memory': 'true'},
+        pool='stat_tab_extract',
     )
     def _asset(
         context: AssetExecutionContext,
@@ -270,13 +270,13 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
         df = stat_tab_cube.postprocess(df, meta)
 
         context.log.info(f"Writing data to database")
-        # TODO: Maybe work with chunksize if memory is an issue
         df.to_sql(
             context.asset_key.path[-1],
             db.get_sqlalchemy_engine(),
             schema='src',
             if_exists='replace',
             index=False,
+            chunksize=5_000_000,
         )
 
         # Insert metadata
