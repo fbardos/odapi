@@ -1,5 +1,3 @@
-x-default-group: &default-group snapshots
-
 x-tests-snap-table-gp: &tests-snap-table-gp
   - dbt_utils.unique_combination_of_columns:
       combination_of_columns: ['bfs_nr', 'indikator_id', 'indikator_jahr', 'dbt_valid_from']
@@ -10,8 +8,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_bfs_statatlas
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # TEST Surrogate key
           combination_of_columns: ['map_id', 'geo_id', 'variable', 'period_ref', 'geom_code', 'mother_path', 'dbt_valid_from']
@@ -21,24 +17,18 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_ktzh_gp_bevoelkerung
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - <<: *tests-snap-table-gp
 
   # ---------------------------------------------------------------------------
   - name: snap_ktzh_gp_auslaenderanteil
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - <<: *tests-snap-table-gp
 
   # ---------------------------------------------------------------------------
   - name: snap_bfe_minergie
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['gemeinde_bfs_id', 'dbt_valid_from']
@@ -46,8 +36,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_swisstopo_zweitwohnung
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['stichtag', 'gemeinde_bfs_id', 'dbt_valid_from']
@@ -55,8 +43,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_demografie_bilanz
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
@@ -64,8 +50,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_zivilstand
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
@@ -73,8 +57,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_heirat
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
@@ -82,8 +64,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_scheidung
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
@@ -91,8 +71,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_altersklasse
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
@@ -100,8 +78,6 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_geburtsort
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
@@ -109,8 +85,27 @@ snapshots:
   # ---------------------------------------------------------------------------
   - name: snap_stab_bev_zuwegzug
   # ---------------------------------------------------------------------------
-    config:
-      group: *default-group
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_geb_bestand
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_geb_flaeche
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_geb_leerwhg
+  # ---------------------------------------------------------------------------
     tests:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
