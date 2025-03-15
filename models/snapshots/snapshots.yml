@@ -117,3 +117,24 @@ snapshots:
       - dbt_utils.unique_combination_of_columns:  # test strict PK
           combination_of_columns: ['_surr_key', 'dbt_valid_from']
 
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_raum_areal
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_raum_noas
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+
+  # ---------------------------------------------------------------------------
+  - name: snap_stab_arbeit_grenzgaenger
+  # ---------------------------------------------------------------------------
+    tests:
+      - dbt_utils.unique_combination_of_columns:  # test strict PK
+          combination_of_columns: ['_surr_key', 'dbt_valid_from']
+

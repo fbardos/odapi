@@ -1,5 +1,3 @@
-x-default-group: &default-group staging
-
 x-tests-stgn-table-gp: &tests-stgn-table-gp
   - dbt_utils.unique_combination_of_columns:
       combination_of_columns: ['bfs_nr', 'indikator_id', 'indikator_jahr']
@@ -203,6 +201,35 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_raum_areal
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - nolc04
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
 
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_raum_noas
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - noas04
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
 
-
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_arbeit_grenzgaenger
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - geschlecht
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']

@@ -212,3 +212,9 @@ UNION ALL
 select * from {{ ref('intm_stab_geb_leerwhg')}}
 UNION ALL
 select * from {{ ref('intm_stab_bau_ausgaben')}}
+UNION ALL
+select * from {{ ref('intm_stab_raum_areal')}}
+UNION ALL
+select * from {{ ref('intm_stab_raum_noas')}}
+UNION ALL
+select * from {{ ref('intm_stab_arbeit_grenzgaenger')}}

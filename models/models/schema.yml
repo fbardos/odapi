@@ -29,6 +29,9 @@ sources:
       - name: stat_tab_geb_flaeche
       - name: stat_tab_geb_leerwhg
       - name: stat_tab_bau_ausgaben
+      - name: stat_tab_raum_areal
+      - name: stat_tab_raum_noas
+      - name: stat_tab_arbeit_grenzgaenger
   - name: ktzh_gwr
     database: data
     schema: src

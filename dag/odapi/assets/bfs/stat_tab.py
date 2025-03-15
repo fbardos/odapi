@@ -1,6 +1,7 @@
-import re
 from dataclasses import dataclass
+from typing import Callable
 from typing import List
+from typing import Optional
 
 import numpy as np
 from dagster import AssetExecutionContext
@@ -21,6 +22,7 @@ class ColumnDefinition:
     name: str
     is_indicator_group: bool = False
     do_drop_before_upload: bool = False
+    is_year: bool = False
 
 
 @dataclass
@@ -30,10 +32,25 @@ class StatTabCube:
     url: str
     columns: List[ColumnDefinition]
     encoding: str = 'utf-8'
+    custom_transform: Optional[Callable[[DataFrame], DataFrame]] = None
 
     def _rename_columns(self, df: DataFrame) -> DataFrame:
         get_dagster_logger().info(f"Renaming columns for cube {self.name}")
         df.columns = [col.name for col in self.columns]
+        return df
+
+    def _restructure_year_column(self, df: DataFrame, unstructured_year_column: str) -> DataFrame:
+        get_dagster_logger().info(f"Restructure year column")
+
+        _col = unstructured_year_column
+
+        # Convert to a unified format from/to, e.g. '2024/2024'
+        df[_col] = df[_col].str.replace(r'^(\d{4})$', r'\1-\1', regex=True)
+        df[_col] = df[_col].str.replace(r'^(\d{2})(\d{2})\/(\d{2})$', r'\1\2-\1\3', regex=True)
+
+        # Split column
+        df[['year_from', 'year_to']] = df[_col].str.split('-', n=1, expand=True)
+
         return df
 
     def _restructure_until_municipality_geo_value(
@@ -65,8 +82,9 @@ class StatTabCube:
             r'^\.\.\.\.\.\.(\d+)', expand=True
         )
         df['geo_value_name'] = df[unstructured_geo_column].str.extract(
-            r'^(?:-|>>)(.*)', expand=True
+            r'^(?:-|>>|(?:\.\.\.\.\.\.\d*))(.*)', expand=True
         )
+        df['geo_value_name'] = df['geo_value_name'].str.strip()
         return df
 
     def _add_source(self, df: DataFrame, meta: dict) -> DataFrame:
@@ -92,12 +110,22 @@ class StatTabCube:
             return df
 
     def postprocess(self, df: DataFrame, meta: dict) -> DataFrame:
-        self._rename_columns(df)
-        self._restructure_until_municipality_geo_value(df, 'geo_value_unstructured')
-        self._add_source(df, meta)
+        year_column = [col.name for col in self.columns if col.is_year][0]
+        df = self._rename_columns(df)
+        if self.custom_transform:
+            df = self.custom_transform(df)
+        df = self._restructure_until_municipality_geo_value(df, 'geo_value_unstructured')
+        df = self._restructure_year_column(df, year_column)
+        df = self._add_source(df, meta)
         # self._add_column_grouped_indicator(df)  # disabled, needs a lot of memory
-        self._do_drop_columns_before_upload(df)
+        df = self._do_drop_columns_before_upload(df)
         return df
+
+def _custom_transform_quarter(df: DataFrame) -> DataFrame:
+    get_dagster_logger().info(f"Apply custom transform for quarters")
+    df = df[df['year'].str.endswith('Q4')]
+    df['year'] = df['year'].str.replace(r'Q4$', '', regex=True)
+    return df
 
 
 CUBES = [
@@ -106,7 +134,7 @@ CUBES = [
         bfs_id='px-x-0102020000_201',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32208094/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('staatsangehorigkeit', is_indicator_group=True),
             ColumnDefinition('geschlecht', is_indicator_group=True),
@@ -119,7 +147,7 @@ CUBES = [
         bfs_id='px-x-0102010000_100',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32207867/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('bevtyp', is_indicator_group=True),
             ColumnDefinition('geburtsort', is_indicator_group=True),
@@ -133,7 +161,7 @@ CUBES = [
         bfs_id='px-x-0102020202_102',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32007787/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('nationalitaet_a', is_indicator_group=True),
             ColumnDefinition('nationalitaet_b', is_indicator_group=True),
@@ -146,7 +174,7 @@ CUBES = [
         bfs_id='px-x-0102020203_103',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32007788/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('ehedauer', is_indicator_group=True),
             ColumnDefinition('nationalitaet_a', is_indicator_group=True),
@@ -160,7 +188,7 @@ CUBES = [
         bfs_id='px-x-0102010000_103',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32207863/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('bevtyp', is_indicator_group=True),
             ColumnDefinition('geschlecht', is_indicator_group=True),
@@ -174,7 +202,7 @@ CUBES = [
         bfs_id='px-x-0102010000_100',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32207867/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('bevtyp', is_indicator_group=True),
             ColumnDefinition('geburtsort', is_indicator_group=True),
@@ -188,7 +216,7 @@ CUBES = [
         bfs_id='px-x-0103010200_121',
         url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32208027/master',
         columns=[
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
             ColumnDefinition('nationalitaet', is_indicator_group=True),
             ColumnDefinition('geschlecht', is_indicator_group=True),
@@ -205,7 +233,7 @@ CUBES = [
             ColumnDefinition('gebkategorie', is_indicator_group=True),
             ColumnDefinition('zimmer', is_indicator_group=True),
             ColumnDefinition('bauperiode', is_indicator_group=True),
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('indicator_value'),
         ],
     ),
@@ -218,7 +246,7 @@ CUBES = [
             ColumnDefinition('gebkategorie', is_indicator_group=True),
             ColumnDefinition('flaeche', is_indicator_group=True),
             ColumnDefinition('bauperiode', is_indicator_group=True),
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('indicator_value'),
         ],
     ),
@@ -231,7 +259,7 @@ CUBES = [
             ColumnDefinition('wohnraum', is_indicator_group=True),
             ColumnDefinition('typ', is_indicator_group=True),
             ColumnDefinition('indikator', is_indicator_group=True),
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('indicator_value'),
         ],
     ),
@@ -245,10 +273,47 @@ CUBES = [
             ColumnDefinition('bauwerk', is_indicator_group=True),
             ColumnDefinition('arbeit', is_indicator_group=True),
             ColumnDefinition('indikator', is_indicator_group=True),
-            ColumnDefinition('year'),
+            ColumnDefinition('year', is_year=True),
             ColumnDefinition('indicator_value'),
         ],
         encoding='latin1',
+    ),
+    StatTabCube(
+        name='raum_areal',
+        bfs_id='px-x-0202020000_202',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32267662/master',
+        columns=[
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('nolc04', is_indicator_group=True),
+            ColumnDefinition('periode', is_year=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+    ),
+    StatTabCube(
+        name='raum_noas',
+        bfs_id='px-x-0202020000_102',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32267651/master',
+        columns=[
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('noas04', is_indicator_group=True),
+            ColumnDefinition('periode', is_year=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+    ),
+    StatTabCube(
+        name='arbeit_grenzgaenger',
+        bfs_id='px-x-0302010000_101',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/34087514/master',
+        columns=[
+            ColumnDefinition('geschlecht', is_indicator_group=True),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('year', is_year=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+        custom_transform=_custom_transform_quarter,
     ),
 ]
 

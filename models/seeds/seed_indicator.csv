@@ -147,3 +147,6 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 146,"Bauausgaben Veränderung, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Bauausgaben,,Prozent,Bauausgaben (Veränderung in %)
 147,"Arbeitsvorrat (Folgejahr) absolut, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Arbeitsvorrat (Folgejahr),,CHF,Arbeitsvorrat (Folgejahr) (absolute Werte)
 148,"Arbeitsvorrat (Folgejahr) Veränderung, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Arbeitsvorrat (Folgejahr),,Prozent,Arbeitsvorrat (Folgejahr) (Veränderung in %)
+149,"Bodenbedeckung, nach NOLC04",02 Raum & Umwelt,02.02 Bodenbedeckung,,,Hektar,Fläche in Hektar
+150,"Bodenbedeckung, nach NOAS04",02 Raum & Umwelt,02.02 Bodenbedeckung,,,Hektar,Fläche in Hektar
+151,"Grenzgänger, nach Geschlecht",03 Arbeit & Erwerb,03.01 Grenzgänger,,,Anzahl,Anzahl Grenzgänger
