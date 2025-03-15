@@ -190,3 +190,31 @@ UNION ALL
 select * from {{ ref('intm_estv_db_jp')}}
 UNION ALL
 select * from {{ ref('intm_estv_db_np')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_demografisch_bilanz')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_zivilstand')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_heirat')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_scheidung')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_altersklasse')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_geburtsort')}}
+UNION ALL
+select * from {{ ref('intm_stab_bev_zuwegzug')}}
+UNION ALL
+select * from {{ ref('intm_stab_geb_bestand')}}
+UNION ALL
+select * from {{ ref('intm_stab_geb_flaeche')}}
+UNION ALL
+select * from {{ ref('intm_stab_geb_leerwhg')}}
+UNION ALL
+select * from {{ ref('intm_stab_bau_ausgaben')}}
+UNION ALL
+select * from {{ ref('intm_stab_raum_areal')}}
+UNION ALL
+select * from {{ ref('intm_stab_raum_noas')}}
+UNION ALL
+select * from {{ ref('intm_stab_arbeit_grenzgaenger')}}

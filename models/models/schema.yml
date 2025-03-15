@@ -18,6 +18,20 @@ sources:
       - name: swisstopo_zweitwohnungen
       - name: sss_bevoelkerung_wohnbevoelkerung
       - name: sss_bevoelkerung_geschlecht_zivilstand
+      - name: stat_tab_bev_demografisch_bilanz
+      - name: stat_tab_bev_zivilstand
+      - name: stat_tab_bev_heirat
+      - name: stat_tab_bev_scheidung
+      - name: stat_tab_bev_altersklasse
+      - name: stat_tab_bev_geburtsort
+      - name: stat_tab_bev_zuwegzug
+      - name: stat_tab_geb_bestand
+      - name: stat_tab_geb_flaeche
+      - name: stat_tab_geb_leerwhg
+      - name: stat_tab_bau_ausgaben
+      - name: stat_tab_raum_areal
+      - name: stat_tab_raum_noas
+      - name: stat_tab_arbeit_grenzgaenger
   - name: ktzh_gwr
     database: data
     schema: src

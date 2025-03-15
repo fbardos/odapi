@@ -1,23 +1,38 @@
 import datetime as dt
+from dataclasses import dataclass
+
 import pandas as pd
-from pytz import timezone
-from dagster import asset
-from dagster import RunRequest
 from dagster import AssetExecutionContext
-from dagster import SensorDefinition
-from dagster import AssetsDefinition
 from dagster import AssetIn
+from dagster import AssetsDefinition
 from dagster import MetadataValue
+from dagster import RunRequest
+from dagster import SensorDefinition
+from dagster import asset
 from dagster import define_asset_job
 from dagster import sensor
+from pytz import timezone
 
-from odapi.resources.url.csv import CkanResource
-from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.ckan.ckan import OpenDataSwiss
+from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
-from odapi.resources.extract.extract_handler import ExtractHandler
+from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.utils import calculate_bytes_compression
+
+
+@dataclass
+class CkanResource:
+    model_name: str
+    ckan_resource_id: str
+
+
+CKAN_RESOURCES = [
+    CkanResource(model_name='bfe_minergie',                     ckan_resource_id='3ae6d523-748c-466b-8368-04569473338e'),
+    CkanResource(model_name='ktzh_gp_bevoelkerung',             ckan_resource_id='132b6fed-d7ea-48e3-b5dc-9e63ac16b21e'),
+    CkanResource(model_name='ktzh_gp_auslaenderanteil',         ckan_resource_id='23cc674b-2eb6-4ad5-9ddf-87e86f0fb06f'),
+    CkanResource(model_name='ktzh_gp_avg_haushaltsgroesse',     ckan_resource_id='ae3cc772-38e7-4d5f-87f2-73ad8e5d07c1'),
+]
 
 
 def opendataswiss_extract_factory(ckan_resource: CkanResource) -> AssetsDefinition:
@@ -85,11 +100,11 @@ def opendataswiss_load_extract_factory(asset_name: str) -> AssetsDefinition:
 # Assets
 assets_opendataswiss_extract = [
     opendataswiss_extract_factory(asset)
-    for asset in OpendataswissUrlResource._URL_RESOURCES
+    for asset in CKAN_RESOURCES
 ]
 assets_opendataswiss_load_extract = [
     opendataswiss_load_extract_factory(asset.model_name)
-    for asset in OpendataswissUrlResource._URL_RESOURCES
+    for asset in CKAN_RESOURCES
 ]
 
 # Jobs
@@ -101,7 +116,7 @@ jobs_opendataswiss = [
             f'src/{asset.model_name}*',
         ],
     )
-    for asset in OpendataswissUrlResource._URL_RESOURCES
+    for asset in CKAN_RESOURCES
 ]
 
 
@@ -139,5 +154,5 @@ sensors_opendataswiss = [
         asset_name=asset.model_name,
         resource_id=asset.ckan_resource_id
     )
-    for asset in OpendataswissUrlResource._URL_RESOURCES
+    for asset in CKAN_RESOURCES
 ]

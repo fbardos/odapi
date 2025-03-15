@@ -87,6 +87,14 @@ with src as (
         {% else %}
             , period_ref::DATE as period_ref
         {% endif %}
+            , NULL::TEXT as group_1_name
+            , NULL::TEXT as group_1_value
+            , NULL::TEXT as group_2_name
+            , NULL::TEXT as group_2_value
+            , NULL::TEXT as group_3_name
+            , NULL::TEXT as group_3_value
+            , NULL::TEXT as group_4_name
+            , NULL::TEXT as group_4_value
         {% if value_col_is_text %}
             , NULL::NUMERIC as indicator_value_numeric
             , {{ value_col }}::TEXT as indicator_value_text
