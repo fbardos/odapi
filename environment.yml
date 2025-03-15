@@ -9,7 +9,7 @@ dependencies:
   - pip
   - pytest
   - numpy
-  - pandas
+  - pandas==2.1
   - plotly
   - pymongo
   - requests
