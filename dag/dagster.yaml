@@ -3,14 +3,6 @@ telemetry:
 run_coordinator:
   module: dagster.core.run_coordinator
   class: QueuedRunCoordinator
-  config:
-    tag_concurrency_limits:
-      - key: 'single_run_per_value'
-        value:
-          applyLimitPerUniqueValue: true
-        limit: 1
-      - key: 'high_memory'
-        value: 1
 
 concurrency:
   pools:
