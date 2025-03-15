@@ -38,7 +38,7 @@ with src as (
     select *
     from add_row_for_latest
 )
-select 
+select
     *
     , EXTRACT(YEAR FROM snapshot_date) as snapshot_year
     -- GeoJSON uses WGS 84 (EPSG:4326) as standard

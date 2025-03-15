@@ -127,3 +127,26 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 126,Median steuerbares Äquivalenzeinkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Äquivalenzeinkommen natürliche Personen
 127,Median steuerbares Einkommen,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median steuerbares Einkommen natürliche Personen
 128,Median Steuerbetrag,18 Öffentliche Finanzen,18.01 Steuern,Direkte Bundessteuer,Natürliche Personen,CHF,Median Steuerbetrag natürliche Personen
+129,"Lebendgeburten, nach Geschlecht und Staatsangehörigkeit",01 Bevölkerung,01.02 Bewegungen,Geburten,,Anzahl,Anzahl Geburten
+130,"Todesfälle, nach Geschlecht und Staatsangehörigkeit",01 Bevölkerung,01.02 Bewegungen,Todesfall,,Anzahl,Anzahl Todesfälle
+131,"Ständige Wohnbevölkerung, nach Zivilstand, Geburtsort und Geschlecht",01 Bevölkerung,01.01 Bestand,ständig,,Anzahl,Anzahl Personen
+132,"Heiraten, nach Staatsangehörigkeit Partner:in 1 und Staatsangehörigkeit Partner:in 2",01 Bevölkerung,01.02 Bewegungen,Heiraten,,Anzahl,Anzahl Heiraten
+133,"Scheidungen, nach Ehedauer, Staatsangehörigkeit Partner:in 1 und Staatsangehörigkeit Partner:in 2",01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Anzahl,Anzahl Scheidungen
+134,"Ständige Wohnbevölkerung, nach Altersklasse, Geschlecht und Zivilstand",01 Bevölkerung,01.01 Bestand,ständig,,Anzahl,Anzahl Personen
+135,"Ständige Wohnbevölkerung, nach Geburtsort, Geschlecht und Zivilstand",01 Bevölkerung,01.01 Bestand,ständig,,Anzahl,Anzahl Personen
+136,"Einwanderung, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Einwanderungen (inkl. Änderung des Bevölkerungstyps zu ständig)
+137,"Auswanderung, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Auswanderungen
+138,"Interkantonaler Zuzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+139,"Interkantonaler Wegzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+140,"Intrakantonaler Zuzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Zuzug
+141,"Intrakantonaler Wegzug, nach Staatsangehörigkeit und Geschlecht",01 Bevölkerung,01.02 Bewegungen,Zuzug/Wegzug,ständig,Anzahl,Anzahl Interkantonaler Wegzug
+142,"Gebäude, nach Gebäudekategorie, Anzahl Zimmer und Bauperiode",09 Bauen & Wohnen,09.01 Bauen,Bestand,,Anzahl,Anzahl Gebäude
+143,"Gebäude, nach Gebäudekategorie, Wohnungsfläche und Bauperiode",09 Bauen & Wohnen,09.01 Bauen,Bestand,,Anzahl,Anzahl Gebäude
+144,"Leerwohnungen, nach Anzahl Wohnräume und Leerwohnungstyp",09 Bauen & Wohnen,09.02 Wohnen,Leerwohnungen,,Anzahl,Anzahl Leerwohnungen
+145,"Bauausgaben absolut, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Bauausgaben,,CHF,Bauausgaben (absolute Werte)
+146,"Bauausgaben Veränderung, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Bauausgaben,,Prozent,Bauausgaben (Veränderung in %)
+147,"Arbeitsvorrat (Folgejahr) absolut, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Arbeitsvorrat (Folgejahr),,CHF,Arbeitsvorrat (Folgejahr) (absolute Werte)
+148,"Arbeitsvorrat (Folgejahr) Veränderung, nach Art der Auftraggeber, Art der Bauwerke und Art der Arbeiten",09 Bauen & Wohnen,09.01 Bauen,Arbeitsvorrat (Folgejahr),,Prozent,Arbeitsvorrat (Folgejahr) (Veränderung in %)
+149,"Bodenbedeckung, nach NOLC04",02 Raum & Umwelt,02.02 Bodenbedeckung,,,Hektar,Fläche in Hektar
+150,"Bodenbedeckung, nach NOAS04",02 Raum & Umwelt,02.02 Bodenbedeckung,,,Hektar,Fläche in Hektar
+151,"Grenzgänger, nach Geschlecht",03 Arbeit & Erwerb,03.01 Grenzgänger,,,Anzahl,Anzahl Grenzgänger

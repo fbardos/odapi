@@ -168,14 +168,14 @@ services:
       odapi_private:
     depends_on:
       - data-postgis
-  
+
   # #######################################################################
   # API
   # #######################################################################
   api:
     build:
-      context: api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api/Dockerfile
     restart: *restart-policy
     profiles:
       - dev

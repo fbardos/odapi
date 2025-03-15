@@ -1,10 +1,13 @@
+import datetime
+import json
 import re
-import requests
+from typing import Generator
 from typing import List
 from typing import Optional
-import json
-import datetime
+
+import requests
 from dagster import ConfigurableResource
+from dagster import get_dagster_logger
 
 
 class CkanApi(ConfigurableResource):
@@ -12,27 +15,56 @@ class CkanApi(ConfigurableResource):
 
     def get_package_by_id(self, id: str) -> dict:
         response = requests.get(
-            '/'.join([self._BASE_URL, 'package_show']),
-            params={
-                'id': id
-            }
+            '/'.join([self._BASE_URL, 'package_show']), params={'id': id}
         )
         return response.json()
 
+    def get_packages_by_organization_id(self, id: str) -> List[dict]:
+        _page_size = 50
+        _packages = []
+
+        # Get first response
+        response = requests.get(
+            '/'.join([self._BASE_URL, 'package_search']),
+            params={
+                'fq': f'organization:{id}',
+                'facet.limit': _page_size,
+            },
+        ).json()
+        _packages.extend(response.get('result', {}).get('results', []))
+
+        # If more than one page, repeat
+        _count = response.get('result', {}).get('count', 0)
+        if _count > _page_size:
+            _pages = _count // _page_size
+            for page in range(1, _pages):
+                response = requests.get(
+                    '/'.join([self._BASE_URL, 'package_search']),
+                    params={
+                        'fq': f'organization:{id}',
+                        'facet.limit': _page_size,
+                        'start': page * _page_size,
+                    },
+                ).json()
+                _packages.extend(response.get('result', {}).get('results', []))
+
+        return _packages
+
     def get_resource_by_id(self, id: str) -> dict:
         response = requests.get(
-            '/'.join([self._BASE_URL, 'resource_show']),
-            params={
-                'id': id
-            }
+            '/'.join([self._BASE_URL, 'resource_show']), params={'id': id}
         )
         return response.json()
 
     def get_resource_modified(self, id: str) -> datetime.datetime:
         resource = self.get_resource_by_id(id)
-        modified = datetime.datetime.fromisoformat(resource.get('result', {}).get('modified'))
+        modified = datetime.datetime.fromisoformat(
+            resource.get('result', {}).get('modified')
+        )
         if modified.tzinfo is None:
-            modified = modified.replace(tzinfo=datetime.timezone.utc)  # Could be problematic
+            modified = modified.replace(
+                tzinfo=datetime.timezone.utc
+            )  # Could be problematic
         return modified
 
     def get_resource_url(self, id: str) -> str:
@@ -46,10 +78,34 @@ class CkanApi(ConfigurableResource):
         assert isinstance(byte_size, int), 'Byte size is not an integer'
         return byte_size
 
+    def get_organization_ids(self) -> List[str]:
+        response = requests.get('/'.join([self._BASE_URL, 'organization_list']))
+        return response.json().get('result', [])
+
+    def get_organization_by_id(self, id: str) -> dict:
+        response = requests.get(
+            '/'.join([self._BASE_URL, 'organization_show']), params={'id': id}
+        )
+        return response.json()
+
+    def get_federal_organization_ids(self) -> Generator[str, None, None]:
+        logger = get_dagster_logger()
+        all_orgs = self.get_organization_ids()
+        for org in all_orgs:
+            logger.debug(f'Checking organization {org}')
+            if (
+                self.get_organization_by_id(org)
+                .get('result', {})
+                .get('political_level', None)
+                == 'confederation'
+            ):
+                yield org
+
 
 class OpenTransportDataCkanApi(CkanApi):
     api_key: str
     _BASE_URL: str = 'https://api.opentransportdata.swiss/ckan-api'
+
 
 class OpenDataSwiss(CkanApi):
     _BASE_URL: str = 'https://opendata.swiss/api/3/action/'
@@ -71,7 +127,7 @@ class GtfsOpenTransportDataCkanApi(OpenTransportDataCkanApi):
             self._list_package_url,
             headers={
                 'Authorization': self.api_key,
-            }
+            },
         )
         _data = response.json()
         assert _data.get('success', False), 'Request failed'
@@ -92,9 +148,7 @@ class GtfsOpenTransportDataCkanApi(OpenTransportDataCkanApi):
             headers={
                 'Authorization': self.api_key,
             },
-            params={
-                'id': slug
-            }
+            params={'id': slug},
         )
         _data = response.json()
         assert _data.get('success', False), 'Request failed'
@@ -115,34 +169,18 @@ class GtfsOpenTransportDataCkanApi(OpenTransportDataCkanApi):
                     _filtered_resource.append(resource)
         return _filtered_resource
 
-    def oldest_resource_from_list_of_resources(self, resources: List[dict]) -> Optional[dict]:
+    def oldest_resource_from_list_of_resources(
+        self, resources: List[dict]
+    ) -> Optional[dict]:
         _resources = resources.copy()
         if len(_resources) > 0:
             _resources.sort(
-                key=lambda x: re.match(self._RESOURCE_ID_REGEX, x.get('identifier', 'GTFS_FP1970_1970-01-01.zip')).group(1),
-                reverse=False
+                key=lambda x: re.match(
+                    self._RESOURCE_ID_REGEX,
+                    x.get('identifier', 'GTFS_FP1970_1970-01-01.zip'),
+                ).group(1),
+                reverse=False,
             )
             return _resources[0]
         else:
             return None
-
-
-    # # TODO: this should be in GTFS class
-    # @property
-    # def latest_resource(self) -> dict:
-        # """Returns a URL for the latest GTFS data."""
-
-        # # Extract all resources from the packages
-        # # Filter out with two regexes (package and resource identifier)
-        # _filtered_resource = self.list_resources_from_packages_matching_regex
-
-        # # Extract timestamp and sort by date
-        # _filtered_resource.sort(
-            # key=lambda x: re.match(self._RESOURCE_ID_REGEX, x.get('identifier', 'GTFS_FP1970_1970-01-01.zip')).group(1),
-            # reverse=True
-        # )
-        # return _filtered_resource[0]
-
-    # @property
-    # def latest_resource_url(self) -> str:
-        # return self.latest_resource.get('url', None)

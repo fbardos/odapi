@@ -8,6 +8,14 @@ with src as (
         , 'day' as period_code
         , NULL::DATE as period_ref_from
         , stichtag as period_ref
+        , NULL::TEXT as group_1_name
+        , NULL::TEXT as group_1_value
+        , NULL::TEXT as group_2_name
+        , NULL::TEXT as group_2_value
+        , NULL::TEXT as group_3_name
+        , NULL::TEXT as group_3_value
+        , NULL::TEXT as group_4_name
+        , NULL::TEXT as group_4_value
         , NULL::TEXT as indicator_value_text
         , 'Wohnungsinventar - Bundesamt für Raumentwicklung' as source
         , wohnungen
@@ -28,6 +36,14 @@ with src as (
         , period_code
         , period_ref_from
         , period_ref
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
         , anteil_erstwohnung as indicator_value_numeric
         , NULL::TEXT as indicator_value_text
         , source
@@ -43,6 +59,14 @@ with src as (
         , period_code
         , period_ref_from
         , period_ref
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
         , anteil_zweitwohnung as indicator_value_numeric
         , NULL::TEXT as indicator_value_text
         , source
@@ -58,6 +82,14 @@ with src as (
         , period_code
         , period_ref_from
         , period_ref
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
         , erstwohnungen as indicator_value_numeric
         , NULL::TEXT as indicator_value_text
         , source
@@ -73,6 +105,14 @@ with src as (
         , period_code
         , period_ref_from
         , period_ref
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
         , erstwohnung_gleichgestellt as indicator_value_numeric
         , NULL::TEXT as indicator_value_text
         , source
@@ -88,6 +128,14 @@ with src as (
         , period_code
         , period_ref_from
         , period_ref
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
         , wohnungen as indicator_value_numeric
         , NULL::TEXT as indicator_value_text
         , source
