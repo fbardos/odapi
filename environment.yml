@@ -28,8 +28,7 @@ dependencies:
   #- pyproj==3.6.0  # there was a bug in 3.6.1
   - pyproj
   - geoalchemy2
-  #- sqlalchemy==1.4.51
-  - sqlalchemy
+  - sqlalchemy==1.4.54
   - sqlmodel
   - pydantic<2  # Sqlmodel is currently not compatible with pydantic V2
   - great-expectations
