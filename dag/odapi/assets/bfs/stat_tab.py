@@ -76,7 +76,7 @@ class StatTabCube:
             df[unstructured_geo_column].str.contains(r'^\.\.\.\.\.\.'),
         ]
         _results = ['kant', 'bezk', 'polg']
-        df['geo_code'] = np.select(_conditions, _results, default=np.NaN)
+        df['geo_code'] = np.select(_conditions, _results, default=np.nan)
 
         df['geo_value'] = df[unstructured_geo_column].str.extract(
             r'^\.\.\.\.\.\.(\d+)', expand=True
