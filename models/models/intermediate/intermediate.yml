@@ -2270,3 +2270,60 @@ models:
             filter_and:
               - column: indikator
                 exact_match: 'Folgejahr (Arbeitsvorrat) - Veränderungsraten'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_raum_areal
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 149
+            is_numeric: True
+            period_type: period
+            period_code: year
+            grouping:
+              - column: nolc04
+                name: 'Bodenbedeckung (NOLC04)'
+                total_value: 'Fläche Total'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_raum_noas
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 150
+            is_numeric: True
+            period_type: period
+            period_code: year
+            grouping:
+              - column: noas04
+                name: 'Standardnomenklatur (NOAS04)'
+                total_value: 'Fläche Total'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_arbeit_grenzgaenger
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 151
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: geschlecht
+                name: 'Geschlecht (Mann/Frau)'
+                total_value: 'Geschlecht - Total'

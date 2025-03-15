@@ -27,8 +27,15 @@
 				, dbt_valid_to as knowledge_date_to
 				, '{{ period_type }}' as period_type
 				, '{{ period_code }}' as period_code
-				, NULL::DATE as period_ref_from  -- can be set to start of year later if correct type is set
-				, make_date(year, 12, 31) as period_ref
+				, case
+                    {% if period_type == 'period' %}
+                        when 1=1 then make_date(year_from, 1, 1)
+                    {% else %}
+                        when year_from = year_to then NULL::DATE 
+                        else make_date(year_from, 1, 1)
+                    {% endif %}
+                end as period_ref_from  -- can be set to start of year later if correct type is set
+				, make_date(year_to, 12, 31) as period_ref
 				{% for n in range(1, 5) %}
 					{% if grouping|length >= n %}
 						{% set group_elem = grouping[n-1] %}
@@ -76,7 +83,6 @@
 	)
 
     
-    {{ print("XXXXXXXXXXXXXXXXXX count_build_total_value: " ~ count_build_total_value.value) }}
 	{% if count_build_total_value.value > 0 %}
         , intm_build_total as (
             {% for indicator in indicators %}
@@ -229,7 +235,7 @@
 	where 
 		1=1
 		-- global filters
-		AND geo_code = 'polg'  -- can be extended later
+		AND geo_code = 'polg' AND geo_value is not NULL -- can be extended later
 		AND (indicator_value_numeric is not NULL or indicator_value_text is not NULL)
 
     {% endif %}
