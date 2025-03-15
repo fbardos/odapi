@@ -4,6 +4,8 @@ ARG GIT_CLONE_ROOT=/tmp/odapi
 ARG GIT_CLONE_USER=fbardos
 ARG DBT__ABSOLUTE_PATH=/opt/dbt
 ENV DBT__ABSOLUTE_PATH=${DBT__ABSOLUTE_PATH}
+ARG DBT__PROFILES_PATH=/root/.dbt
+ENV DBT__PROFILES_PATH=${DBT__PROFILES_PATH}
 ENV DAGSTER_HOME=/opt/dagster/app
 
 RUN mkdir -p /opt/dagster/dagster_home /opt/dagster/app /root/.dbt
