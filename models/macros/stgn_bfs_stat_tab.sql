@@ -22,7 +22,7 @@
                     when indicator_value = '' then NULL
                     else indicator_value::NUMERIC
                 end as indicator_value
-                , NULLIF(geo_code, 'nan') as geo_code
+                , NULLIF(geo_code, '') as geo_code
                 , geo_value::INTEGER
                 , geo_value_name
                 , source
