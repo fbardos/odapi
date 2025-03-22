@@ -6,5 +6,5 @@ run_coordinator:
 
 concurrency:
   pools:
-    granularity: "run"
+    granularity: "op"
     default_limit: 1
