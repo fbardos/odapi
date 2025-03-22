@@ -32,6 +32,8 @@ sources:
       - name: stat_tab_raum_areal
       - name: stat_tab_raum_noas
       - name: stat_tab_arbeit_grenzgaenger
+      - name: stat_tab_wirtschaft_unternehmen
+      - name: stat_tab_wirtschaft_beschaeftigte
   - name: ktzh_gwr
     database: data
     schema: src

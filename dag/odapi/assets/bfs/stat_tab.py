@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import Callable
 from typing import List
 from typing import Optional
@@ -6,6 +7,7 @@ from typing import Optional
 import numpy as np
 from dagster import AssetExecutionContext
 from dagster import AssetsDefinition
+from dagster import DagsterError
 from dagster import MetadataValue
 from dagster import ScheduleDefinition
 from dagster import asset
@@ -15,6 +17,11 @@ from pandas import DataFrame
 
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.url.stat_tab import StatTabResource
+
+
+class GeoValueStructure(Enum):
+    DOT_NOTATION = r'^(?:Schweiz|-|>>|<<|(?:\.\.\.\.\.\.\d*))(?:.*)'
+    LEADING_NUMBER = r'^(?:(?:\d+)(?:\s\w+).*|Schweiz)$'
 
 
 @dataclass
@@ -53,7 +60,7 @@ class StatTabCube:
 
         return df
 
-    def _restructure_until_municipality_geo_value(
+    def _restructure_dot_notation(
         self, df: DataFrame, unstructured_geo_column: str
     ) -> DataFrame:
         """Splits the geo_value from the source in geo_code and geo_value
@@ -87,6 +94,47 @@ class StatTabCube:
         df['geo_value_name'] = df['geo_value_name'].str.strip()
         return df
 
+    def _restructure_leading_number(
+        self, df: DataFrame, unstructured_geo_column: str
+    ) -> DataFrame:
+        get_dagster_logger().info(
+            f"Extract geo info from column {unstructured_geo_column}"
+        )
+        df['geo_code'] = 'polg'
+        df['geo_value'] = df[unstructured_geo_column].str.extract(
+            r'^(\d+)(?:\s\w+).*', expand=True
+        )
+        df['geo_value_name'] = df[unstructured_geo_column].str.extract(
+            r'^\d+\s(.*)', expand=True
+        )
+        return df
+
+    def _count_rows_matching_regex(self, df: DataFrame, column: str, regex: str) -> int:
+        return len(df[df[column].str.match(regex)].index)
+
+    def _decide_restructure_geo_value(self, df: DataFrame, column: str) -> DataFrame:
+        """Decides how to restructure the geo_value column based on the structure of the data.
+
+        Methods called for restructuring must create these columns inside the DataFrame object:
+          - geo_code
+          - geo_value
+          - geo_value_name
+
+        """
+        _df_len = len(df.index)
+        if self._count_rows_matching_regex(df, column, GeoValueStructure.DOT_NOTATION.value) == _df_len:
+            return self._restructure_dot_notation(df, column)
+        elif self._count_rows_matching_regex(df, column, GeoValueStructure.LEADING_NUMBER.value) == _df_len:
+            return self._restructure_leading_number(df, column)
+        else:
+            _error_msg = 'Could not decide how to restructure geo_value'
+            for enum in GeoValueStructure:
+                _unmatched = df[~df[column].str.match(enum.value)]
+                _error_msg += f"\n{enum.name} ================================================="
+                _error_msg += f"\n{enum.name}: {len(_unmatched.index)} rows unmatched"
+                _error_msg += f"\n{enum.name}: Data sample\n{_unmatched[column].value_counts().head(20)}"
+            raise DagsterError(_error_msg)
+
     def _add_source(self, df: DataFrame, meta: dict) -> DataFrame:
         get_dagster_logger().info(f"Add source from metadata")
         df['source'] = ', '.join(meta.get('SOURCE', ['unknown']))
@@ -114,7 +162,7 @@ class StatTabCube:
         df = self._rename_columns(df)
         if self.custom_transform:
             df = self.custom_transform(df)
-        df = self._restructure_until_municipality_geo_value(df, 'geo_value_unstructured')
+        df = self._decide_restructure_geo_value(df, 'geo_value_unstructured')
         df = self._restructure_year_column(df, year_column)
         df = self._add_source(df, meta)
         # self._add_column_grouped_indicator(df)  # disabled, needs a lot of memory
@@ -314,6 +362,32 @@ CUBES = [
         ],
         encoding='latin1',
         custom_transform=_custom_transform_quarter,
+    ),
+    StatTabCube(
+        name='wirtschaft_unternehmen',
+        bfs_id='px-x-0602030000_205',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32846430/master',
+        columns=[
+            ColumnDefinition('indikator', is_indicator_group=True),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('wirtschaftssektor', is_indicator_group=True),
+            ColumnDefinition('year', is_year=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
+    ),
+    StatTabCube(
+        name='wirtschaft_beschaeftigte',
+        bfs_id='px-x-0602010000_102',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/32159099/master',
+        columns=[
+            ColumnDefinition('year', is_year=True),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('wirtschaftssektor', is_indicator_group=True),
+            ColumnDefinition('indikator', is_indicator_group=True),
+            ColumnDefinition('indicator_value'),
+        ],
+        encoding='latin1',
     ),
 ]
 
