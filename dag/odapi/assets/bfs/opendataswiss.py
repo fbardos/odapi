@@ -5,11 +5,13 @@ import pandas as pd
 from dagster import AssetExecutionContext
 from dagster import AssetIn
 from dagster import AssetsDefinition
+from dagster import HookContext
 from dagster import MetadataValue
 from dagster import RunRequest
 from dagster import SensorDefinition
 from dagster import asset
 from dagster import define_asset_job
+from dagster import failure_hook
 from dagster import sensor
 from pytz import timezone
 
@@ -107,6 +109,11 @@ assets_opendataswiss_load_extract = [
     for asset in CKAN_RESOURCES
 ]
 
+
+@failure_hook(required_resource_keys={'pushover'})
+def pushover_on_failure(context: HookContext):
+    context.resources.pushover.send_failure_message(context)
+
 # Jobs
 jobs_opendataswiss = [
     define_asset_job(
@@ -115,6 +122,7 @@ jobs_opendataswiss = [
             f'extract_{asset.model_name}',
             f'src/{asset.model_name}*',
         ],
+        hooks={pushover_on_failure},
     )
     for asset in CKAN_RESOURCES
 ]

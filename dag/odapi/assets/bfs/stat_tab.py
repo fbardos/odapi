@@ -8,11 +8,14 @@ import numpy as np
 from dagster import AssetExecutionContext
 from dagster import AssetsDefinition
 from dagster import DagsterError
+from dagster import HookContext
 from dagster import MetadataValue
 from dagster import ScheduleDefinition
 from dagster import asset
 from dagster import define_asset_job
+from dagster import failure_hook
 from dagster import get_dagster_logger
+from dagster import success_hook
 from pandas import DataFrame
 
 from odapi.resources.postgres.postgres import PostgresResource
@@ -432,13 +435,27 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
 
 assets_stat_tab = [stat_tab_factory(cube) for cube in CUBES]
 
+
+@failure_hook(required_resource_keys={'pushover'})
+def pushover_on_failure(context: HookContext):
+    context.resources.pushover.send_failure_message(context)
+
+
+@success_hook(required_resource_keys={'healthcheck'})
+def ping_healthchecks(context: HookContext):
+    """
+    Pings healthchecks.io to notify that the pipeline is running.
+    """
+    context.resources.healthcheck.ping_by_env('HC__BFS_STAT_TAB')
+
+
 job_bfs_stat_tab = define_asset_job(
     name='bfs_stat_tab',
     selection=[
         'seed_indicator*',
         *[f'src/stat_tab_{cube.name}*' for cube in CUBES],
     ],
-    # TODO: Add on success hook
+    hooks={ping_healthchecks, pushover_on_failure},
 )
 
 schedule_stat_tab = ScheduleDefinition(
