@@ -138,9 +138,6 @@ def opendataswiss_sensor_factory(job_name: str, asset_name: str, resource_id: st
 
         last_modified = opendata_swiss.get_resource_modified(resource_id)
         assert isinstance(last_modified, dt.datetime)
-        
-        print('last_modified', last_modified)  # XXX: REMOVE
-        print('last_execution', last_execution)  # XXX: REOMVE
 
         if last_modified > last_execution:
             yield RunRequest(run_key=job_name)
