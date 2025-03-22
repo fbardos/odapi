@@ -233,3 +233,26 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['_surr_key']
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_wirtschaft_unternehmen
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - indikator
+          - wirtschaftssektor
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']
+  # ---------------------------------------------------------------------------
+  - name: stgn_stab_wirtschaft_beschaeftigte
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        grouping_columns:
+          - indikator
+          - wirtschaftssektor
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['_surr_key']

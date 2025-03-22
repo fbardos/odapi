@@ -19,6 +19,7 @@
                 , case
                     when indicator_value = '"..."' then NULL
                     when indicator_value = '"...."' then NULL
+                    when indicator_value = '"......"' then NULL
                     when indicator_value = '' then NULL
                     else indicator_value::NUMERIC
                 end as indicator_value
@@ -40,7 +41,7 @@
                 , src.indicator_value
                 , src.geo_code
                 , coalesce(src.geo_value, gem.gemeinde_bfs_id) as geo_value
-                , src.geo_value_name
+                , coalesce(src.geo_value_name, gemeinde_name) as geo_value_name
                 , src.source
                 , src._surr_key
             from src
@@ -55,8 +56,7 @@
             where
                 -- one of these columns has to be non-empty
                 (
-                    geo_code is not NULL
-                    OR geo_value is not NULL
+                    geo_value is not NULL
                     OR geo_value_name is not NULL
                 )
                 AND indicator_value is not NULL

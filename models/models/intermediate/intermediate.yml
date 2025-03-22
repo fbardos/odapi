@@ -2327,3 +2327,152 @@ models:
               - column: geschlecht
                 name: 'Geschlecht (Mann/Frau)'
                 total_value: 'Geschlecht - Total'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_wirtschaft_unternehmen
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 152
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Unternehmensneugründungen'
+          - indicator_id: 153
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Unternehmensschliessungen'
+          - indicator_id: 154
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Bestand aktiver Unternehmen'
+          - indicator_id: 155
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Beschäftigte von neugegründeten Unternehmen'
+          - indicator_id: 156
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Beschäftigte von endgültig geschlossenen Unternehmen'
+          - indicator_id: 157
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                # here no total value, build on the fly with build_total_value
+            filter_and:
+              - column: indikator
+                exact_match: 'Beschäftigte von aktiven Unternehmen'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_wirtschaft_beschaeftigte
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 158
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                total_value: 'Wirtschaftssektor - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Beschäftigte Frauen'
+          - indicator_id: 159
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                total_value: 'Wirtschaftssektor - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Beschäftigte Männer'
+          - indicator_id: 160
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                total_value: 'Wirtschaftssektor - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Vollzeitäquivalente'
+          - indicator_id: 161
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                total_value: 'Wirtschaftssektor - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Vollzeitäquivalente Frauen'
+          - indicator_id: 162
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: wirtschaftssektor
+                name: 'Wirtschaftssektor'
+                total_value: 'Wirtschaftssektor - Total'
+            filter_and:
+              - column: indikator
+                exact_match: 'Vollzeitäquivalente Männer'
