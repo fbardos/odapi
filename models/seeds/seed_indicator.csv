@@ -150,3 +150,14 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 149,"Bodenbedeckung, nach NOLC04",02 Raum & Umwelt,02.02 Bodenbedeckung,,,Hektar,Fläche in Hektar
 150,"Bodenbedeckung, nach NOAS04",02 Raum & Umwelt,02.02 Bodenbedeckung,,,Hektar,Fläche in Hektar
 151,"Grenzgänger, nach Geschlecht",03 Arbeit & Erwerb,03.01 Grenzgänger,,,Anzahl,Anzahl Grenzgänger
+152,"Neugründungen Unternehmen, nach Sektor",06 Industrie & Dienstleistungen,06.04 Neugründungen,Unternehmen,,Anzahl,Anzahl der im Referenzjahr neu gegründeten Unternehmen
+153,"Schliessungen Unternehmen, nach Sektor",06 Industrie & Dienstleistungen,06.05 Schliessungen,Unternehmen,,Anzahl,Anzahl geschlossener Unternehmen im Referenzjahr
+154,"Bestand Unternehmen, nach Sektor",06 Industrie & Dienstleistungen,06.03 Bestand,Unternehmen,,Anzahl,Anzahl aktiver Unternehmen im Referenzjahr
+155,"Neugründungen Arbeitsplätze, nach Sektor",06 Industrie & Dienstleistungen,06.04 Neugründungen,Arbeitsplätze,,Anzahl,Anzahl der im Referenzjahr in neuen Unternehmen entstandenen Arbeitsplätze
+156,"Schliessungen Arbeitsplätze, nach Sektor",06 Industrie & Dienstleistungen,06.05 Schliessungen,Arbeitsplätze,,Anzahl,Anzahl verlorene Stellen durch Unternehmensschliessungen im Referenzjahr
+157,"Bestand Arbeitsplätze, nach Sektor",06 Industrie & Dienstleistungen,06.03 Bestand,Arbeitsplätze,,Anzahl,Anzahl Beschäftigte in aktiven Unternehmen im Referenzjahr
+158,"Beschäftigte Frauen, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Anzahl,Zahl der Beschäftigten
+159,"Beschäftigte Männer, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Anzahl,Zahl der Beschäftigten
+160,"Vollzeitäquivalente, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Vollzeitäquivalente,Zahl der Vollzeitäquivalente der Beschäftigten
+161,"Vollzeitäquivalente Frauen, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Vollzeitäquivalente,Zahl der Vollzeitäquivalente der Beschäftigten
+162,"Vollzeitäquivalente Männer, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Vollzeitäquivalente,Zahl der Vollzeitäquivalente der Beschäftigten

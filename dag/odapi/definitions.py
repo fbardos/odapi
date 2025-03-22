@@ -20,6 +20,7 @@ from odapi.resources.url.geoadmin import GeoAdminResource
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
 from odapi.resources.url.healthcheck import HealthCheckResource
+from odapi.resources.url.pushover import PushoverResource
 from odapi.resources.url.stat_tab import StatTabResource
 
 ################################################################################
@@ -66,6 +67,7 @@ defs = Definitions(
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
         'healthcheck': HealthCheckResource(),
+        'pushover': PushoverResource(user_key=EnvVar('PUSHOVER__USER_KEY'), api_token=EnvVar('PUSHOVER__API_TOKEN')),
         'stat_tab': StatTabResource(),
     },
     jobs=[

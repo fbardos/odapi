@@ -218,3 +218,7 @@ UNION ALL
 select * from {{ ref('intm_stab_raum_noas')}}
 UNION ALL
 select * from {{ ref('intm_stab_arbeit_grenzgaenger')}}
+UNION ALL
+select * from {{ ref('intm_stab_wirtschaft_unternehmen')}}
+UNION ALL
+select * from {{ ref('intm_stab_wirtschaft_beschaeftigte')}}
