@@ -72,5 +72,5 @@ event_log_storage:
 
 concurrency:
   pools:
-    granularity: "run"
+    granularity: "op"
     default_limit: 1
