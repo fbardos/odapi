@@ -23,7 +23,7 @@ from odapi.resources.url.stat_tab import StatTabResource
 
 
 class GeoValueStructure(Enum):
-    DOT_NOTATION = r'^(?:Schweiz|-|>>|<<|(?:\.\.\.\.\.\.\d*))(?:.*)'
+    DOT_NOTATION = r'^(?:Schweiz|Ohne Angabe|-|>>|<<|(?:\.\.\.\.\.\.\d*))(?:.*)'
     LEADING_NUMBER = r'^(?:(?:\d+)(?:\s\w+).*|Schweiz)$'
 
 
@@ -124,17 +124,24 @@ class StatTabCube:
           - geo_value_name
 
         """
+        MATCH_THRESHOLD = 0.8
         _df_len = len(df.index)
-        if self._count_rows_matching_regex(df, column, GeoValueStructure.DOT_NOTATION.value) == _df_len:
+        _rows_dot_notation = self._count_rows_matching_regex(
+            df, column, GeoValueStructure.DOT_NOTATION.value
+        )
+        _rows_leading_number = self._count_rows_matching_regex(
+            df, column, GeoValueStructure.LEADING_NUMBER.value
+        )
+        if _rows_dot_notation > _df_len * MATCH_THRESHOLD:
             return self._restructure_dot_notation(df, column)
-        elif self._count_rows_matching_regex(df, column, GeoValueStructure.LEADING_NUMBER.value) == _df_len:
+        elif _rows_leading_number > _df_len * MATCH_THRESHOLD:
             return self._restructure_leading_number(df, column)
         else:
             _error_msg = 'Could not decide how to restructure geo_value'
             for enum in GeoValueStructure:
                 _unmatched = df[~df[column].str.match(enum.value)]
                 _error_msg += f"\n{enum.name} ================================================="
-                _error_msg += f"\n{enum.name}: {len(_unmatched.index)} rows unmatched"
+                _error_msg += f"\n{enum.name}: {len(_unmatched.index)} of {len(df.index)} rows unmatched"
                 _error_msg += f"\n{enum.name}: Data sample\n{_unmatched[column].value_counts().head(20)}"
             raise DagsterError(_error_msg)
 
