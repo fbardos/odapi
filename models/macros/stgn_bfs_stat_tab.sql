@@ -19,6 +19,7 @@
                 , case
                     when indicator_value = '"..."' then NULL
                     when indicator_value = '"...."' then NULL
+                    when indicator_value = '"....."' then NULL
                     when indicator_value = '"......"' then NULL
                     when indicator_value = '' then NULL
                     else indicator_value::NUMERIC

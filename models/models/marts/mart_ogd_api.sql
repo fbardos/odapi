@@ -222,3 +222,5 @@ UNION ALL
 select * from {{ ref('intm_stab_wirtschaft_unternehmen')}}
 UNION ALL
 select * from {{ ref('intm_stab_wirtschaft_beschaeftigte')}}
+UNION ALL
+select * from {{ ref('intm_stab_lw_beschaeftigte')}}
