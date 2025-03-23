@@ -161,3 +161,7 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 160,"Vollzeitäquivalente, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Vollzeitäquivalente,Zahl der Vollzeitäquivalente der Beschäftigten
 161,"Vollzeitäquivalente Frauen, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Vollzeitäquivalente,Zahl der Vollzeitäquivalente der Beschäftigten
 162,"Vollzeitäquivalente Männer, nach Sektor",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Vollzeitäquivalente,Zahl der Vollzeitäquivalente der Beschäftigten
+163,"Landwirtschaftliche Betriebe, nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.01 Betriebe,,,Anzahl,Anzahl der landwirtschaftlichen Betriebe
+164,"Tiere in landwirtschaftlichen Betrieben, nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.02 Tiere,,,Anzahl,Anzahl der Tiere
+165,"Landwirtschaftliche Nutzfläche (LN), nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.03 Landwirtschaftliche Nutzfläche,,,Hektar,Landwirtschaftliche Nutzfläche in Hektar
+166,"Beschäftigte in landwirtschaftlichen Betrieben, nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.04 Beschäftigte,,,Anzahl,Anzahl Beschäftigte in landwirtschaftlichen Betrieben

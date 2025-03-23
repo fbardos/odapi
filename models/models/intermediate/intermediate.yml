@@ -2476,3 +2476,74 @@ models:
             filter_and:
               - column: indikator
                 exact_match: 'Vollzeitäquivalente Männer'
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stab_lw_beschaeftigte
+  # ---------------------------------------------------------------------------
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        indicators:
+          - indicator_id: 163
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: beobachtungseinheit
+                name: 'Art'
+                total_value: 'Betriebe'
+              - column: betriebssystem
+                name: 'Betriebssystem'
+                total_value: 'Betriebssystem - Total'
+            filter_and:
+              - column: beobachtungseinheit
+                regex: '^Betriebe.*'
+          - indicator_id: 164
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            build_total_value: sum(indicator_value_numeric)  # set for all groupings
+            grouping:
+              - column: beobachtungseinheit
+                name: 'Art'
+                total_value: ''
+              - column: betriebssystem
+                name: 'Betriebssystem'
+            filter_and:
+              - column: beobachtungseinheit
+                regex: '^Tiere - .*'
+              - column: betriebssystem
+                # must exclude Betriebssystem - Total, because build_total_values
+                # gets calculated for all groups
+                regex: '^(?!(Betriebssystem - Total)$)'
+          - indicator_id: 165
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: beobachtungseinheit
+                name: 'Art'
+                total_value: 'LN - Landwirtschaftliche Nutzfläche Total (in ha)'
+              - column: betriebssystem
+                name: 'Betriebssystem'
+                total_value: 'Betriebssystem - Total'
+            filter_and:
+              - column: beobachtungseinheit
+                regex: '^LN - .*'
+          - indicator_id: 166
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: beobachtungseinheit
+                name: 'Art'
+                total_value: 'Beschäftigte Total'
+              - column: betriebssystem
+                name: 'Betriebssystem'
+                total_value: 'Betriebssystem - Total'
+            filter_and:
+              - column: beobachtungseinheit
+                regex: '^Beschäftigte.*'

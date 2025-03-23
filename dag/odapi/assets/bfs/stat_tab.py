@@ -49,14 +49,18 @@ class StatTabCube:
         df.columns = [col.name for col in self.columns]
         return df
 
-    def _restructure_year_column(self, df: DataFrame, unstructured_year_column: str) -> DataFrame:
+    def _restructure_year_column(
+        self, df: DataFrame, unstructured_year_column: str
+    ) -> DataFrame:
         get_dagster_logger().info(f"Restructure year column")
 
         _col = unstructured_year_column
 
         # Convert to a unified format from/to, e.g. '2024/2024'
         df[_col] = df[_col].str.replace(r'^(\d{4})$', r'\1-\1', regex=True)
-        df[_col] = df[_col].str.replace(r'^(\d{2})(\d{2})\/(\d{2})$', r'\1\2-\1\3', regex=True)
+        df[_col] = df[_col].str.replace(
+            r'^(\d{2})(\d{2})\/(\d{2})$', r'\1\2-\1\3', regex=True
+        )
 
         # Split column
         df[['year_from', 'year_to']] = df[_col].str.split('-', n=1, expand=True)
@@ -140,7 +144,9 @@ class StatTabCube:
             _error_msg = 'Could not decide how to restructure geo_value'
             for enum in GeoValueStructure:
                 _unmatched = df[~df[column].str.match(enum.value)]
-                _error_msg += f"\n{enum.name} ================================================="
+                _error_msg += (
+                    f"\n{enum.name} ================================================="
+                )
                 _error_msg += f"\n{enum.name}: {len(_unmatched.index)} of {len(df.index)} rows unmatched"
                 _error_msg += f"\n{enum.name}: Data sample\n{_unmatched[column].value_counts().head(20)}"
             raise DagsterError(_error_msg)
@@ -178,6 +184,7 @@ class StatTabCube:
         # self._add_column_grouped_indicator(df)  # disabled, needs a lot of memory
         df = self._do_drop_columns_before_upload(df)
         return df
+
 
 def _custom_transform_quarter(df: DataFrame) -> DataFrame:
     get_dagster_logger().info(f"Apply custom transform for quarters")
@@ -399,6 +406,18 @@ CUBES = [
         ],
         encoding='latin1',
     ),
+    StatTabCube(
+        name='lw_beschaeftigte',
+        bfs_id='px-x-0702000000_104',
+        url='https://dam-api.bfs.admin.ch/hub/api/dam/assets/31846452/master',
+        columns=[
+            ColumnDefinition('beobachtungseinheit', is_indicator_group=True),
+            ColumnDefinition('geo_value_unstructured', do_drop_before_upload=True),
+            ColumnDefinition('betriebssystem', is_indicator_group=True),
+            ColumnDefinition('year', is_year=True),
+            ColumnDefinition('indicator_value'),
+        ],
+    ),
 ]
 
 
@@ -409,6 +428,7 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
         group_name='src_bfs',
         key=['src', f'stat_tab_{stat_tab_cube.name}'],
         pool='stat_tab_extract',
+        description=f"Extracts data from STAT-TAB ID {stat_tab_cube.bfs_id}",
     )
     def _asset(
         context: AssetExecutionContext,
