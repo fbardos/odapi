@@ -5,7 +5,6 @@
     */
 
     -- must be set with a global namespace, will otherwise be reset after exiting each loop
-	{% set count_build_total_value = namespace(value=0) %}
 
     {% if execute %}
 	with src as (
@@ -46,7 +45,6 @@
                                 ELSE {{ group_elem["column"]}}::TEXT
                             END as group_{{ n }}_value
                         {% elif indicator.get('build_total_value', none) %}
-	                        {% set count_build_total_value.value = count_build_total_value.value + 1 %}
                             , '{{ group_elem.get("name", "") }}'::TEXT as group_{{ n }}_name
                             , {{ group_elem["column"]}}::TEXT as group_{{ n }}_value
                         {% else %}
@@ -83,13 +81,13 @@
 	)
 
     
-	{% if count_build_total_value.value > 0 %}
-        , intm_build_total as (
-            {% for indicator in indicators %}
-			    {% set grouping = indicator.get('grouping', []) %}
-                {% if loop.index0 > 0 %}
-                    UNION ALL
-                {% endif %}
+    , intm_build_total as (
+        {% for indicator in indicators %}
+            {% set grouping = indicator.get('grouping', []) %}
+            {% if loop.index0 > 0 %}
+                UNION ALL
+            {% endif %}
+            {% if indicator.get('build_total_value', none) %}
                 select
                     indicator_id
                     , geo_code
@@ -173,15 +171,19 @@
                             , group_4_value
                         )
                     {% endif %}
-            {% endfor %}
-        )
+            {% else %}
+                select * from src where indicator_id = {{ indicator.get('indicator_id', -1) }}
+            {% endif %}
+        {% endfor %}
+    )
 
-        , set_names_for_group_totals as (
-            {% for indicator in indicators %}
-			    {% set grouping = indicator.get('grouping', []) %}
-                {% if loop.index0 > 0 %}
-                    UNION ALL
-                {% endif %}
+    , set_names_for_group_totals as (
+        {% for indicator in indicators %}
+            {% set grouping = indicator.get('grouping', []) %}
+            {% if loop.index0 > 0 %}
+                UNION ALL
+            {% endif %}
+            {% if indicator.get('build_total_value', none) %}
                 select
                     indicator_id
                     , geo_code
@@ -222,16 +224,14 @@
                 from intm_build_total
                 where
                     indicator_id = {{ indicator.get('indicator_id', -1) }}
-            {% endfor %}
-        )
-    {% endif %}
+            {% else %}
+                select * from intm_build_total where indicator_id = {{ indicator.get('indicator_id', -1) }}
+            {% endif %}
+        {% endfor %}
+    )
 	
 	select *
-	{% if count_build_total_value.value > 0 %}
-        from set_names_for_group_totals
-    {% else %}
-        from src
-    {% endif %}
+    from set_names_for_group_totals
 	where 
 		1=1
 		-- global filters
