@@ -42,10 +42,13 @@ with src as (
     select *
     from add_row_for_latest
 )
-select 
+select
     *
     , EXTRACT(YEAR FROM snapshot_date) as snapshot_year
     -- GeoJSON uses WGS 84 (EPSG:4326) as standard
     , ST_Transform(geometry, 4326) as geom_border
+    , ST_Transform(ST_Simplify(geometry, 50), 4326) as geom_border_simple_50m
+    , ST_Transform(ST_Simplify(geometry, 100), 4326) as geom_border_simple_100m
+    , ST_Transform(ST_Simplify(geometry, 500), 4326) as geom_border_simple_500m
     , ST_Transform(ST_Centroid(geometry), 4326) as geom_center
 from union_tables
