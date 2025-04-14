@@ -42,10 +42,38 @@ with src as (
     select *
     from add_row_for_latest
 )
-select 
-    *
-    , EXTRACT(YEAR FROM snapshot_date) as snapshot_year
-    -- GeoJSON uses WGS 84 (EPSG:4326) as standard
-    , ST_Transform(geometry, 4326) as geom_border
-    , ST_Transform(ST_Centroid(geometry), 4326) as geom_center
-from union_tables
+select
+    src.snapshot_code
+    , src.snapshot_date
+    , src.gemeinde_bfs_id
+    , src.gemeinde_hist_bfs_id
+    , src.gemeinde_name
+    , src.bezirk_bfs_id
+    , src.kanton_bfs_id
+    , src.geometry
+    , EXTRACT(YEAR FROM src.snapshot_date) as snapshot_year
+    , ST_Transform(src.geometry, 4326) as geom_border
+    , ST_Transform(
+        ST_SetSRID(
+            ST_CoverageSimplify(src.geometry, 50, TRUE) OVER (PARTITION BY src.snapshot_code),
+            2056
+        ),
+        4326
+    ) as geom_border_simple_50m
+    , ST_Transform(
+        ST_SetSRID(
+            ST_CoverageSimplify(src.geometry, 100, TRUE) OVER (PARTITION BY src.snapshot_code),
+            2056
+        ),
+        4326
+    ) as geom_border_simple_100m
+    , ST_Transform(
+        ST_SetSRID(
+            ST_CoverageSimplify(src.geometry, 500, TRUE) OVER (PARTITION BY src.snapshot_code),
+            2056
+        ),
+        4326
+    ) as geom_border_simple_500m
+    , ST_Transform(ST_Centroid(src.geometry), 4326) as geom_center
+from union_tables src
+
