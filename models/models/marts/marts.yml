@@ -27,6 +27,8 @@ models:
           unique: false
         - columns: [geo_code, geo_value]
           unique: false
+        - columns: [geo_code, indicator_id]
+          unique: false
         - columns: [geo_code, indicator_id, period_ref]
           unique: false
         - columns: [geo_code, indicator_id, group_1_value]
