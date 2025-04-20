@@ -67,7 +67,10 @@ defs = Definitions(
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
         'healthcheck': HealthCheckResource(),
-        'pushover': PushoverResource(user_key=EnvVar('PUSHOVER__USER_KEY'), api_token=EnvVar('PUSHOVER__API_TOKEN')),
+        'pushover': PushoverResource(
+            user_key=EnvVar('PUSHOVER__USER_KEY'),
+            api_token=EnvVar('PUSHOVER__API_TOKEN'),
+        ),
         'stat_tab': StatTabResource(),
     },
     jobs=[
