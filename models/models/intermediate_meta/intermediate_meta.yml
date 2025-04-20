@@ -1,0 +1,24 @@
+# The DBT group `intermediate_meta` contains intermediate models,
+# which will later used to enrich the API. A typical example are
+# dimensional tables which later can be joined.
+
+models:
+
+  # ---------------------------------------------------------------------------
+  - name: intm_swissboundaries_gemeinde
+  # ---------------------------------------------------------------------------
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['snapshot_date', 'gemeinde_bfs_id']
+  # ---------------------------------------------------------------------------
+  - name: intm_swissboundaries_bezirk
+  # ---------------------------------------------------------------------------
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['snapshot_date', 'bezirk_bfs_id']
+  # ---------------------------------------------------------------------------
+  - name: intm_swissboundaries_kanton
+  # ---------------------------------------------------------------------------
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['snapshot_date', 'kanton_bfs_id']

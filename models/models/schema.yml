@@ -62,6 +62,10 @@ groups:
     owner:
       name: fbardos
       github: fbardos
+  - name: intermediate_meta
+    owner:
+      name: fbardos
+      github: fbardos
   - name: marts
     owner:
       name: fbardos
