@@ -48,6 +48,11 @@ sources:
     tables:
       - name: ktzh_ogd_metadata
       - name: ktzh_downloads_dataset
+  - name: py_intermediate
+    database: data
+    schema: py_intermediate
+    tables:
+      - name: intm_meta_source
 
 groups:
   - name: staging

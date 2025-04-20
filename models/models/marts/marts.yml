@@ -115,3 +115,15 @@ models:
           unique: true
       grants:
         select: ['odapi_public']
+
+  # ---------------------------------------------------------------------------
+  - name: dim_source
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [id]
+          unique: false
+      grants:
+        select: ['odapi_public']
+
