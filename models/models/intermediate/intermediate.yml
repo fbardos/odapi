@@ -1,10 +1,9 @@
+# The DBT group `intermediate` contains only data tables,
+# which will be later presented as indicators in the API.
+# Other assets/models depend on the structure of the tables in this group.
+# Models starting with the prefix `intm_` do return the same table structure.
+
 models:
-  # ---------------------------------------------------------------------------
-  - name: intm_swissboundaries_kanton
-  # ---------------------------------------------------------------------------
-    data_tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['snapshot_date', 'kanton_bfs_id']
   # ---------------------------------------------------------------------------
   - name: intm_ktzh_gp_bevoelkerung
   # ---------------------------------------------------------------------------

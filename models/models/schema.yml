@@ -48,6 +48,13 @@ sources:
     tables:
       - name: ktzh_ogd_metadata
       - name: ktzh_downloads_dataset
+  - name: py_intermediate
+    database: data
+    schema: py_intermediate
+    tables:
+      - name: intm_meta_source
+      - name: intm_meta_group
+      - name: intm_meta_group_value
 
 groups:
   - name: staging
@@ -59,6 +66,10 @@ groups:
       name: fbardos
       github: fbardos
   - name: intermediate
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: intermediate_meta
     owner:
       name: fbardos
       github: fbardos

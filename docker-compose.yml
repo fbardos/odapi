@@ -20,11 +20,7 @@ services:
   # Data services
   # #######################################################################
   data-postgis:
-    build:
-      context: docker/postgis/
-      args:
-          PG_MAJOR: "${STORAGE__PSQL__MAJOR}"
-          POSTGIS_MAJOR: "${STORAGE__POSTGIS__MAJOR}"
+    image: postgis/postgis:16-3.5-alpine
     restart: *restart-policy
     profiles:
       - dev
@@ -47,6 +43,19 @@ services:
       test: pg_isready -U ${STORAGE__PSQL__USER} || exit 1
       interval: 5s
       retries: 5
+    command: >
+      -c shared_buffers=16GB
+      -c effective_cache_size=48GB
+      -c work_mem=256MB
+      -c maintenance_work_mem=2GB
+      -c max_parallel_workers_per_gather=8
+      -c max_worker_processes=16
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=256
+      -c checkpoint_timeout=30min
+      -c max_wal_size=8GB
+      -c min_wal_size=2GB
+      -c wal_compression=on
 
 
   data-minio:

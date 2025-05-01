@@ -45,6 +45,12 @@ models:
       # Because of dependency on source table.
       +materialized: table
       +schema: staging
+    intermediate_meta:
+      +materialized: table
+      +schema: intermediate_meta
+      +group: intermediate_meta
+    # TODO: Make view (with exception of heavy calculation models like dim_gemiende)
+    # to save storage.
     intermediate:
       +materialized: table
       +schema: intermediate

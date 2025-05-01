@@ -45,10 +45,10 @@ with src as (
 select
     src.snapshot_code
     , src.snapshot_date
-    , src.gemeinde_bfs_id
+    , src.gemeinde_bfs_id::SMALLINT
     , src.gemeinde_hist_bfs_id
     , src.gemeinde_name
-    , src.bezirk_bfs_id
+    , src.bezirk_bfs_id::SMALLINT
     , src.kanton_bfs_id
     , src.geometry
     , EXTRACT(YEAR FROM src.snapshot_date) as snapshot_year
