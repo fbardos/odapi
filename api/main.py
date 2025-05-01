@@ -43,7 +43,7 @@ GROUP_TOTAL_ID = 1
 EXCEL_MAX_ROWS = 1_048_575
 
 DOC__GEOMETRY_MODE = textwrap.dedent("""
-    Optional. Will join the coordinates of the geometries.
+    Optional. Will join the coordinates of the geometries. Default is `border_simple_100m`.
     **Be careful, this can create a big response and may take some time**.
     Especially, when no limit is set.
 
@@ -530,19 +530,19 @@ def get_indicator(
     geo_value: Optional[int] = Query(None, description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
     knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
-    join_indicator: bool = Query(False, description='Optional. Joins information about the indicator.'),
-    join_geo: bool = Query(False, description='Optional. Joins information about the geometry like its name or its parents.'),
-    geometry_mode: GeometryMode = Query(
-        GeometryMode.border_simple_100m,
+    join_indicator: Optional[bool] = Query(None, description='Optional. Joins information about the indicator.'),
+    join_geo: Optional[bool] = Query(None, description='Optional. Joins information about the geometry like its name or its parents.'),
+    geometry_mode: Optional[GeometryMode] = Query(
+        None,
         description=DOC__GEOMETRY_MODE,
     ),
     skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
-    expand_all_groups: Optional[bool] = Query(False, description='Optional. Expand all groups in the response.'),
-    expand_group_1: Optional[bool] = Query(False, description='Optional. Expand group 1 in the response.'),
-    expand_group_2: Optional[bool] = Query(False, description='Optional. Expand group 2 in the response.'),
-    expand_group_3: Optional[bool] = Query(False, description='Optional. Expand group 3 in the response.'),
-    expand_group_4: Optional[bool] = Query(False, description='Optional. Expand group 4 in the response.'),
+    expand_all_groups: Optional[bool] = Query(None, description='Optional. Expand all groups in the response.'),
+    expand_group_1: Optional[bool] = Query(None, description='Optional. Expand group 1 in the response.'),
+    expand_group_2: Optional[bool] = Query(None, description='Optional. Expand group 2 in the response.'),
+    expand_group_3: Optional[bool] = Query(None, description='Optional. Expand group 3 in the response.'),
+    expand_group_4: Optional[bool] = Query(None, description='Optional. Expand group 4 in the response.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
@@ -707,7 +707,7 @@ def get_indicator(
                 query = query.add_columns(tbl_bezirk.c.geom_border_simple_50m.label('geometry'))
             case GeoCode.kant:
                 query = query.add_columns(tbl_kanton.c.geom_border_simple_50m.label('geometry'))
-    elif geometry_mode == GeometryMode.border_simple_100m:
+    elif geometry_mode == GeometryMode.border_simple_100m or geometry_mode is None:  # Default
         match geo_code:
             case GeoCode.polg:
                 query = query.add_columns(tbl_gemeinde.c.geom_border_simple_100m.label('geometry'))
@@ -781,19 +781,19 @@ def list_all_indicators_for_one_geometry(
     geo_value: int = Path(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
     knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
-    join_indicator: bool = Query(False, description='Joins information about the indicator.'),
-    join_geo: bool = Query(False, description='Joins information about the geometry like its name.'),
-    geometry_mode: GeometryMode = Query(
-        GeometryMode.border_simple_100m,
+    join_indicator: Optional[bool] = Query(None, description='Joins information about the indicator.'),
+    join_geo: Optional[bool] = Query(None, description='Joins information about the geometry like its name.'),
+    geometry_mode: Optional[GeometryMode] = Query(
+        None,
         description=DOC__GEOMETRY_MODE,
     ),
     skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
-    expand_all_groups: Optional[bool] = Query(False, description='Optional. Expand all groups in the response.'),
-    expand_group_1: Optional[bool] = Query(False, description='Optional. Expand group 1 in the response.'),
-    expand_group_2: Optional[bool] = Query(False, description='Optional. Expand group 2 in the response.'),
-    expand_group_3: Optional[bool] = Query(False, description='Optional. Expand group 3 in the response.'),
-    expand_group_4: Optional[bool] = Query(False, description='Optional. Expand group 4 in the response.'),
+    expand_all_groups: Optional[bool] = Query(None, description='Optional. Expand all groups in the response.'),
+    expand_group_1: Optional[bool] = Query(None, description='Optional. Expand group 1 in the response.'),
+    expand_group_2: Optional[bool] = Query(None, description='Optional. Expand group 2 in the response.'),
+    expand_group_3: Optional[bool] = Query(None, description='Optional. Expand group 3 in the response.'),
+    expand_group_4: Optional[bool] = Query(None, description='Optional. Expand group 4 in the response.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
     tbl_indicator = TableIndicator().get_table(db_sync)
@@ -957,7 +957,7 @@ def list_all_indicators_for_one_geometry(
                 query = query.add_columns(tbl_bezirk.c.geom_border_simple_50m.label('geometry'))
             case GeoCode.kant:
                 query = query.add_columns(tbl_kanton.c.geom_border_simple_50m.label('geometry'))
-    elif geometry_mode == GeometryMode.border_simple_100m:
+    elif geometry_mode == GeometryMode.border_simple_100m or geometry_mode is None:  # Default
         match geo_code:
             case GeoCode.polg:
                 query = query.add_columns(tbl_gemeinde.c.geom_border_simple_100m.label('geometry'))
