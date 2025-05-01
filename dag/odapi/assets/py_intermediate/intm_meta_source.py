@@ -1,11 +1,16 @@
 import great_expectations as ge
+import great_expectations.expectations as gxe
 import pandas as pd
+from dagster import AssetCheckResult
+from dagster import AssetCheckSeverity
 from dagster import AssetExecutionContext
 from dagster import AssetKey
 from dagster import DagsterError
 from dagster import asset
+from dagster import asset_check
 
 from odapi.resources.postgres.postgres import PostgresResource
+from odapi.resources.qa.great_expectations import GreatExpectationsResource
 from odapi.utils.dbt_handling import load_intm_data_models
 
 
@@ -22,7 +27,7 @@ from odapi.utils.dbt_handling import load_intm_data_models
 def _asset(
     context: AssetExecutionContext,
     db: PostgresResource,
-) -> None:
+) -> pd.DataFrame:
 
     def build_query() -> str:
         selects = [
@@ -87,3 +92,25 @@ def _asset(
                 ON CONFLICT (source) DO NOTHING;
                 """
             )
+
+    return df
+
+
+@asset_check(asset=_asset, blocking=True)
+def ge_values_id_between_1_1000(
+    great_expectations: GreatExpectationsResource,
+    data: pd.DataFrame,
+) -> AssetCheckResult:
+    batch = great_expectations.get_batch(data)
+    expectation = gxe.ExpectColumnValuesToBeBetween(
+        column='id',
+        min_value=1,
+        max_value=1000,
+    )
+    result = batch.validate(expectation)
+
+    return AssetCheckResult(
+        passed=result.success,
+        severity=AssetCheckSeverity.ERROR,
+        metadata=result.result,
+    )
