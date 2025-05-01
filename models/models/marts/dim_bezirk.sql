@@ -41,9 +41,9 @@ with src as (
 select 
     snapshot_code
     , snapshot_date
-    , bezirk_bfs_id
+    , bezirk_bfs_id::SMALLINT
     , bezirk_name
-    , kanton_bfs_id
+    , kanton_bfs_id::SMALLINT
     , geometry
     , EXTRACT(YEAR FROM src.snapshot_date) as snapshot_year
     , ST_Transform(src.geometry, 4326) as geom_border

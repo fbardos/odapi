@@ -13,33 +13,27 @@ models:
       indexes:
         - columns: [geo_code, geo_value]
           unique: false
+        - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
+          unique: false
         - columns: [geo_code, geo_value, period_ref]
           unique: false
-        - columns: [geo_code, geo_value, group_1_value]
-          unique: false
-        - columns: [geo_code, geo_value, group_2_value]
-          unique: false
-        - columns: [geo_code, geo_value, group_3_value]
-          unique: false
-        - columns: [geo_code, geo_value, group_4_value]
-          unique: false
-        - columns: [geo_code, geo_value, group_1_value, group_2_value, group_3_value, group_4_value]
-          unique: false
         - columns: [geo_code, geo_value]
+          unique: false
+        - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
+          unique: false
+        - columns: [geo_code, geo_value, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total, 
+            _group_value_3_is_total, _group_value_4_is_total]
           unique: false
         - columns: [geo_code, indicator_id]
           unique: false
         - columns: [geo_code, indicator_id, period_ref]
           unique: false
-        - columns: [geo_code, indicator_id, group_1_value]
+        - columns: [geo_code, indicator_id, knowledge_date_to]
           unique: false
-        - columns: [geo_code, indicator_id, group_2_value]
+        - columns: [geo_code, indicator_id, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total, 
+            _group_value_3_is_total, _group_value_4_is_total]
           unique: false
-        - columns: [geo_code, indicator_id, group_3_value]
-          unique: false
-        - columns: [geo_code, indicator_id, group_4_value]
-          unique: false
-        - columns: [geo_code, indicator_id, group_1_value, group_2_value, group_3_value, group_4_value]
+        - columns: [geo_code, indicator_id, knowledge_date_from, knowledge_date_to]
           unique: false
 
   # ---------------------------------------------------------------------------
@@ -123,6 +117,28 @@ models:
       group: *default-group
       indexes:
         - columns: [id]
+          unique: true
+      grants:
+        select: ['odapi_public']
+
+  # ---------------------------------------------------------------------------
+  - name: dim_group
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [group_id]
+          unique: true
+      grants:
+        select: ['odapi_public']
+
+  # ---------------------------------------------------------------------------
+  - name: dim_group_value
+  # ---------------------------------------------------------------------------
+    config:
+      group: *default-group
+      indexes:
+        - columns: [group_value_id]
           unique: true
       grants:
         select: ['odapi_public']

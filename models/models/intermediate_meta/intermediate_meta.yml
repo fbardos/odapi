@@ -7,6 +7,11 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_swissboundaries_gemeinde
   # ---------------------------------------------------------------------------
+    config:
+      pre_hook:
+        - "SET LOCAL work_mem = '8GB'"
+      post_hook:
+        - "RESET work_mem"
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns: ['snapshot_date', 'gemeinde_bfs_id']

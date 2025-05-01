@@ -1,6 +1,5 @@
 import datetime as dt
 import io
-import logging
 import os
 import re
 import textwrap
@@ -12,8 +11,6 @@ from typing import Optional
 import geopandas as gpd
 import networkx as nx
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import pytest
 from dotenv import load_dotenv
 from fastapi import Depends
@@ -28,20 +25,21 @@ from fastapi.testclient import TestClient
 
 # from tabulate import tabulate
 from geoalchemy2 import Geometry
-from shapely.geometry import Point
+from sqlalchemy import SMALLINT
+from sqlalchemy import TEXT
 from sqlalchemy import Column
 from sqlalchemy import MetaData
 from sqlalchemy import Table
 from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql.functions import coalesce
 
 # DATABASE ###################################################################
 load_dotenv()
 
 
 GROUP_TOTAL_NAME = 'GROUP TOTAL'
+GROUP_TOTAL_ID = 1
 EXCEL_MAX_ROWS = 1_048_575
 
 DOC__GEOMETRY_MODE = textwrap.dedent("""
@@ -121,6 +119,9 @@ class TableDefinition(ABC):
         )
 
 
+metadata = MetaData()
+
+
 class TableIndicator(TableDefinition):
     SCHEMA = 'dbt'
     TABLE_NAME = 'seed_indicator'
@@ -189,6 +190,54 @@ class TableKantonLatest(TableDefinition):
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
     ]
+
+
+class TableDimSource(Table):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_source'
+    COLUMNS = [
+        Column('id', SMALLINT, primary_key=True),
+        Column('source', TEXT),
+    ]
+
+    TABLE = Table(
+        TABLE_NAME,
+        metadata,
+        *COLUMNS,
+        schema=SCHEMA,
+    )
+
+
+class TableDimGroup(Table):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_group'
+    COLUMNS = [
+        Column('group_id', SMALLINT, primary_key=True),
+        Column('group_name', TEXT),
+    ]
+
+    TABLE = Table(
+        TABLE_NAME,
+        metadata,
+        *COLUMNS,
+        schema=SCHEMA,
+    )
+
+
+class TableDimGroupValue(Table):
+    SCHEMA = 'dbt_marts'
+    TABLE_NAME = 'dim_group_value'
+    COLUMNS = [
+        Column('group_value_id', SMALLINT, primary_key=True),
+        Column('group_value_name', TEXT),
+    ]
+
+    TABLE = Table(
+        TABLE_NAME,
+        metadata,
+        *COLUMNS,
+        schema=SCHEMA,
+    )
 
 
 # CUSTOM CLASSES #############################################################
@@ -478,6 +527,7 @@ def get_indicator(
         description=DOC__GEO_CODE,
     ),
     indicator_id: int = Path(..., description='Select an indicator. If you want to check all possible indicators run path `/indicator` first.'),
+    geo_value: Optional[int] = Query(None, description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
     knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: bool = Query(False, description='Optional. Joins information about the indicator.'),
@@ -500,6 +550,15 @@ def get_indicator(
     tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
     tbl_bezirk =  TableBezirkLatest().get_table(db_sync)
     tbl_kanton = TableKantonLatest().get_table(db_sync)
+    tbl_dim_source = TableDimSource().TABLE
+    tbl_dim_group_1 = TableDimGroup().TABLE.alias('tbl_dim_group_1')
+    tbl_dim_group_2 = TableDimGroup().TABLE.alias('tbl_dim_group_2')
+    tbl_dim_group_3 = TableDimGroup().TABLE.alias('tbl_dim_group_3')
+    tbl_dim_group_4 = TableDimGroup().TABLE.alias('tbl_dim_group_4')
+    tbl_dim_group_value_1 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_1')
+    tbl_dim_group_value_2 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_2')
+    tbl_dim_group_value_3 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_3')
+    tbl_dim_group_value_4 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_4')
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -511,50 +570,60 @@ def get_indicator(
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
             tbl_api.c.period_ref,
-            tbl_api.c.group_1_name,
-            tbl_api.c.group_1_value,
-            tbl_api.c.group_2_name,
-            tbl_api.c.group_2_value,
-            tbl_api.c.group_3_name,
-            tbl_api.c.group_3_value,
-            tbl_api.c.group_4_name,
-            tbl_api.c.group_4_value,
+            tbl_dim_group_1.c.group_name.label('group_1_name'),
+            tbl_dim_group_value_1.c.group_value_name.label('group_1_value'),
+            tbl_dim_group_2.c.group_name.label('group_2_name'),
+            tbl_dim_group_value_2.c.group_value_name.label('group_2_value'),
+            tbl_dim_group_3.c.group_name.label('group_3_name'),
+            tbl_dim_group_value_3.c.group_value_name.label('group_3_value'),
+            tbl_dim_group_4.c.group_name.label('group_4_name'),
+            tbl_dim_group_value_4.c.group_value_name.label('group_4_value'),
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.indicator_value_text,
-            tbl_api.c.source,
+            tbl_api.c.source_id,
+            tbl_dim_source.c.source,
         )
+        .join(tbl_dim_source, tbl_api.c.source_id == tbl_dim_source.c.id)
+        .join(tbl_dim_group_1, tbl_api.c.group_1_id == tbl_dim_group_1.c.group_id, isouter=True)
+        .join(tbl_dim_group_2, tbl_api.c.group_2_id == tbl_dim_group_2.c.group_id, isouter=True)
+        .join(tbl_dim_group_3, tbl_api.c.group_3_id == tbl_dim_group_3.c.group_id, isouter=True)
+        .join(tbl_dim_group_4, tbl_api.c.group_4_id == tbl_dim_group_4.c.group_id, isouter=True)
+        .join(tbl_dim_group_value_1, tbl_api.c.group_value_1_id == tbl_dim_group_value_1.c.group_value_id, isouter=True)
+        .join(tbl_dim_group_value_2, tbl_api.c.group_value_2_id == tbl_dim_group_value_2.c.group_value_id, isouter=True)
+        .join(tbl_dim_group_value_3, tbl_api.c.group_value_3_id == tbl_dim_group_value_3.c.group_value_id, isouter=True)
+        .join(tbl_dim_group_value_4, tbl_api.c.group_value_4_id == tbl_dim_group_value_4.c.group_value_id, isouter=True)
         .where(tbl_api.c.indicator_id == indicator_id)
         .where(tbl_api.c.geo_code == geo_code)
     )
+    if geo_value:
+        query = query.where(tbl_api.c.geo_value == geo_value)
     if any([expand_all_groups, expand_group_1]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_1_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_1_is_total == True)
     if any([expand_all_groups, expand_group_2]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_2_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_2_is_total == True)
     if any([expand_all_groups, expand_group_3]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_3_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_3_is_total == True)
     if any([expand_all_groups, expand_group_4]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_4_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_4_is_total == True)
     if knowledge_date:
         _knowledge_date = dt.date.fromisoformat(knowledge_date)
         query = (
             query
             .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
-            .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > _knowledge_date)
+            .where(tbl_api.c.knowledge_date_to > _knowledge_date)
         )
     else:
-        _knowledge_date = dt.date.today() + dt.timedelta(days=1)
         query = (
             query
-            .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
-            .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > _knowledge_date)
+            .where(tbl_api.c.knowledge_date_to == None)
         )
     if join_indicator:
         query = (
@@ -715,7 +784,7 @@ def list_all_indicators_for_one_geometry(
     join_indicator: bool = Query(False, description='Joins information about the indicator.'),
     join_geo: bool = Query(False, description='Joins information about the geometry like its name.'),
     geometry_mode: GeometryMode = Query(
-        GeometryMode.point,
+        GeometryMode.border_simple_100m,
         description=DOC__GEOMETRY_MODE,
     ),
     skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
@@ -732,6 +801,15 @@ def list_all_indicators_for_one_geometry(
     tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
     tbl_bezirk =  TableBezirkLatest().get_table(db_sync)
     tbl_kanton = TableKantonLatest().get_table(db_sync)
+    tbl_dim_source = TableDimSource().TABLE
+    tbl_dim_group_1 = TableDimGroup().TABLE.alias('tbl_dim_group_1')
+    tbl_dim_group_2 = TableDimGroup().TABLE.alias('tbl_dim_group_2')
+    tbl_dim_group_3 = TableDimGroup().TABLE.alias('tbl_dim_group_3')
+    tbl_dim_group_4 = TableDimGroup().TABLE.alias('tbl_dim_group_4')
+    tbl_dim_group_value_1 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_1')
+    tbl_dim_group_value_2 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_2')
+    tbl_dim_group_value_3 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_3')
+    tbl_dim_group_value_4 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_4')
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -743,43 +821,58 @@ def list_all_indicators_for_one_geometry(
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
             tbl_api.c.period_ref,
-            tbl_api.c.group_1_name,
-            tbl_api.c.group_1_value,
-            tbl_api.c.group_2_name,
-            tbl_api.c.group_2_value,
-            tbl_api.c.group_3_name,
-            tbl_api.c.group_3_value,
-            tbl_api.c.group_4_name,
-            tbl_api.c.group_4_value,
+            tbl_dim_group_1.c.group_name.label('group_1_name'),
+            tbl_dim_group_value_1.c.group_value_name.label('group_1_value'),
+            tbl_dim_group_2.c.group_name.label('group_2_name'),
+            tbl_dim_group_value_2.c.group_value_name.label('group_2_value'),
+            tbl_dim_group_3.c.group_name.label('group_3_name'),
+            tbl_dim_group_value_3.c.group_value_name.label('group_3_value'),
+            tbl_dim_group_4.c.group_name.label('group_4_name'),
+            tbl_dim_group_value_4.c.group_value_name.label('group_4_value'),
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.indicator_value_text,
-            tbl_api.c.source,
+            tbl_api.c.source_id,
+            tbl_dim_source.c.source,
         )
+        .join(tbl_dim_source, tbl_api.c.source_id == tbl_dim_source.c.id)
+        .join(tbl_dim_group_1, tbl_api.c.group_1_id == tbl_dim_group_1.c.group_id, isouter=True)
+        .join(tbl_dim_group_2, tbl_api.c.group_2_id == tbl_dim_group_2.c.group_id, isouter=True)
+        .join(tbl_dim_group_3, tbl_api.c.group_3_id == tbl_dim_group_3.c.group_id, isouter=True)
+        .join(tbl_dim_group_4, tbl_api.c.group_4_id == tbl_dim_group_4.c.group_id, isouter=True)
+        .join(tbl_dim_group_value_1, tbl_api.c.group_value_1_id == tbl_dim_group_value_1.c.group_value_id, isouter=True)
+        .join(tbl_dim_group_value_2, tbl_api.c.group_value_2_id == tbl_dim_group_value_2.c.group_value_id, isouter=True)
+        .join(tbl_dim_group_value_3, tbl_api.c.group_value_3_id == tbl_dim_group_value_3.c.group_value_id, isouter=True)
+        .join(tbl_dim_group_value_4, tbl_api.c.group_value_4_id == tbl_dim_group_value_4.c.group_value_id, isouter=True)
         .where(tbl_api.c.geo_code == geo_code)
         .where(tbl_api.c.geo_value == geo_value)
     )
     if any([expand_all_groups, expand_group_1]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_1_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_1_is_total == True)
     if any([expand_all_groups, expand_group_2]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_2_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_2_is_total == True)
     if any([expand_all_groups, expand_group_3]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_3_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_3_is_total == True)
     if any([expand_all_groups, expand_group_4]):
         pass  # if any selection is made, do not filter the table
     else:
-        query = query.where(coalesce(tbl_api.c.group_4_value, GROUP_TOTAL_NAME) == GROUP_TOTAL_NAME)
+        query = query.where(tbl_api.c._group_value_4_is_total == True)
     if knowledge_date:
         _knowledge_date = dt.date.fromisoformat(knowledge_date)
         query = (
             query
             .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
-            .where(coalesce(tbl_api.c.knowledge_date_to, dt.date.fromisoformat('2999-12-31')) > _knowledge_date)
+            .where(tbl_api.c.knowledge_date_to > _knowledge_date)
+        )
+    else:
+        query = (
+            query
+            .where(tbl_api.c.knowledge_date_to == None)
         )
     if join_indicator:
         query = (

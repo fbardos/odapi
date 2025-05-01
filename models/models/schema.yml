@@ -53,6 +53,8 @@ sources:
     schema: py_intermediate
     tables:
       - name: intm_meta_source
+      - name: intm_meta_group
+      - name: intm_meta_group_value
 
 groups:
   - name: staging

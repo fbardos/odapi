@@ -41,7 +41,7 @@ with src as (
 select
     snapshot_code
     , snapshot_date
-    , kanton_bfs_id
+    , kanton_bfs_id::SMALLINT
     , kanton_name
     , icc
     , geometry
