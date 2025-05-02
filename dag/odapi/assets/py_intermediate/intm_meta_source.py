@@ -1,11 +1,15 @@
-import great_expectations as ge
 import pandas as pd
+from dagster import AssetCheckResult
+from dagster import AssetCheckSeverity
 from dagster import AssetExecutionContext
 from dagster import AssetKey
 from dagster import DagsterError
 from dagster import asset
+from dagster import asset_check
+from great_expectations import expectations as gxe
 
 from odapi.resources.postgres.postgres import PostgresResource
+from odapi.resources.qa.great_expectations import GreatExpectationsResource
 from odapi.utils.dbt_handling import load_intm_data_models
 
 
@@ -22,7 +26,7 @@ from odapi.utils.dbt_handling import load_intm_data_models
 def _asset(
     context: AssetExecutionContext,
     db: PostgresResource,
-) -> None:
+) -> pd.DataFrame:
 
     def build_query() -> str:
         selects = [
@@ -45,23 +49,6 @@ def _asset(
         build_query(),
         db.get_sqlalchemy_engine(),
     )
-
-    # Great Expectations
-    ge_context = ge.get_context()
-    ge_data_source = ge_context.data_sources.add_pandas('pd')
-    ge_data_asset = ge_data_source.add_dataframe_asset(name='intm_meta_source')
-    ge_batch_definition = ge_data_asset.add_batch_definition_whole_dataframe(
-        'batch definition'
-    )
-    batch = ge_batch_definition.get_batch(batch_parameters={'dataframe': df})
-    expectation = ge.expectations.ExpectColumnValuesToBeBetween(
-        column='id',
-        min_value=1,
-        max_value=1000,
-    )
-    validation_result = batch.validate(expectation)
-    if not validation_result.success:
-        raise DagsterError(f"Validation failed for expectation: {validation_result}")
 
     # First, create schema and table if not exists.
     # Ensure, that the ID for the sources do not change over time.
@@ -87,3 +74,25 @@ def _asset(
                 ON CONFLICT (source) DO NOTHING;
                 """
             )
+
+    return df
+
+
+@asset_check(asset=_asset, blocking=True)
+def ge_values_id_between_1_1000(
+    great_expectations: GreatExpectationsResource,
+    data: pd.DataFrame,
+) -> AssetCheckResult:
+    expectation = gxe.ExpectColumnValuesToBeBetween(
+        column='id',
+        min_value=1,
+        max_value=1000,
+    )
+    result = great_expectations.get_batch(data).validate(expectation)
+    assert isinstance(result.success, bool)
+
+    return AssetCheckResult(
+        passed=result.success,
+        severity=AssetCheckSeverity.ERROR,
+        metadata=result.result,
+    )

@@ -1,5 +1,6 @@
 from dagster import Definitions
 from dagster import EnvVar
+from dagster import load_asset_checks_from_package_module
 from dagster import load_assets_from_package_module
 
 import odapi.assets as assets
@@ -15,6 +16,7 @@ from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.minio.minio import Minio
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
+from odapi.resources.qa.great_expectations import GreatExpectationsResource
 from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.url.geoadmin import GeoAdminResource
 from odapi.resources.url.geojson import SwissboundariesTill2015
@@ -35,6 +37,7 @@ from odapi.resources.url.stat_tab import StatTabResource
 # For now, define all definitions here.
 defs = Definitions(
     assets=load_assets_from_package_module(assets),
+    asset_checks=load_asset_checks_from_package_module(assets),
     resources={
         # Global resources
         'dbt': dbt,
@@ -72,6 +75,7 @@ defs = Definitions(
             api_token=EnvVar('PUSHOVER__API_TOKEN'),
         ),
         'stat_tab': StatTabResource(),
+        'great_expectations': GreatExpectationsResource(),
     },
     jobs=[
         *assets_opendataswiss.jobs_opendataswiss,
