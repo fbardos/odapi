@@ -1,0 +1,55 @@
+ARG POSTGRES_MAJOR=16
+
+# Use the bullseye based image
+FROM postgis/postgis:${POSTGRES_MAJOR}-3.5
+
+# Re‐declare ARG inside this stage so $POSTGRES_MAJOR is available in RUN commands
+ARG POSTGRES_MAJOR
+
+ENV DEBIAN_FRONTEND noninteractive
+
+##############################################################################
+# pg_parquet
+##############################################################################
+
+# Install system packages required for building Rust & pg_parquet
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      curl \
+      ca-certificates \
+      git \
+      libpq-dev \
+      pkg-config \
+      llvm \
+      clang \
+      postgresql-server-dev-${POSTGRES_MAJOR} \
+      make && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Rust + cargo-pgrx
+#  Note: rustup-init script will place ~/.cargo/bin in PATH for root;
+#  pgrx expects 'cargo' and 'rustup' on PATH.
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
+ && /root/.cargo/bin/rustup default stable \
+ && /root/.cargo/bin/cargo install cargo-pgrx --version 0.14.1 --locked
+
+# Put pgrx bin directory on PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+
+# Prepare pgrx for Postgres
+RUN cargo pgrx init --pg${POSTGRES_MAJOR} $(which pg_config)
+
+# Clone the pg_parquet repository from Crunchy Data
+WORKDIR /usr/src
+RUN git clone https://github.com/CrunchyData/pg_parquet.git
+
+# Build & install pg_parquet via pgrx
+WORKDIR /usr/src/pg_parquet
+
+# Build & install into the Postgres installation specified by pg_config
+RUN cargo pgrx install --release
+
+# Append the pg_parquet preload line into the “postgresql.conf.sample” under the PG sharedir
+RUN printf "shared_preload_libraries = 'pg_parquet'\n" >> "$(pg_config --sharedir)/postgresql.conf.sample"

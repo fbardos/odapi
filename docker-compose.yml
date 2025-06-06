@@ -20,7 +20,9 @@ services:
   # Data services
   # #######################################################################
   data-postgis:
-    image: postgis/postgis:16-3.5-alpine
+    build:
+      context: .
+      dockerfile: docker/postgis/Dockerfile.pg_parquet
     restart: *restart-policy
     profiles:
       - dev
@@ -43,10 +45,12 @@ services:
       test: pg_isready -U ${STORAGE__PSQL__USER} || exit 1
       interval: 5s
       retries: 5
+    shm_size: 24gb
+    # For debugging queries, log all statements (only for DEV)
     command: >
       -c shared_buffers=16GB
       -c effective_cache_size=48GB
-      -c work_mem=256MB
+      -c work_mem=1GB
       -c maintenance_work_mem=2GB
       -c max_parallel_workers_per_gather=8
       -c max_worker_processes=16
@@ -56,6 +60,8 @@ services:
       -c max_wal_size=8GB
       -c min_wal_size=2GB
       -c wal_compression=on
+      -c log_statement=all
+      -c log_min_duration_statement=1000
 
 
   data-minio:

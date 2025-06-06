@@ -11,6 +11,7 @@ from typing import Optional
 import geopandas as gpd
 import networkx as nx
 import pandas as pd
+import pyarrow.parquet as pq
 import pytest
 from dotenv import load_dotenv
 from fastapi import Depends
@@ -25,6 +26,7 @@ from fastapi.testclient import TestClient
 
 # from tabulate import tabulate
 from geoalchemy2 import Geometry
+from shapely import wkb
 from sqlalchemy import SMALLINT
 from sqlalchemy import TEXT
 from sqlalchemy import Column
@@ -316,19 +318,27 @@ class TxtResponose(Response):
 
 
 # HELPER FUNC ################################################################
-def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDataFrame):
-    if re.search(f'^/{first_path_element}.*/csv$', request.url.path):
-        buffer = io.BytesIO()
-        gdf.to_csv(buffer, index=False)
-        return CsvResponse(content=buffer)
-    elif re.search(f'^/{first_path_element}.*/parquet$', request.url.path):
-        buffer = io.BytesIO()
-        gdf.to_parquet(buffer, geometry_encoding='WKB', index=False)
-        return GeoparquetResponse(content=buffer)
-    elif re.search(f'^/{first_path_element}.*/xlsx$', request.url.path):
-        buffer = io.BytesIO()
+def response_decision(first_path_element: str, request: Request, buffer: io.BytesIO):
 
-        if len(gdf.index) > EXCEL_MAX_ROWS:
+    def _transform_geometry_to_wkt(gdf: gpd.GeoDataFrame):
+        """Transform geometry column to WKT."""
+        gdf['geometry'] = gdf['geometry'].apply(lambda b: wkb.loads(bytes(b)).wkt)
+        return gdf
+
+    if re.search(f'^/{first_path_element}.*/parquet$', request.url.path):
+        return GeoparquetResponse(content=buffer)
+    elif re.search(f'^/{first_path_element}.*/csv$', request.url.path):
+        table = pq.read_table(buffer)
+        df = table.to_pandas()
+        df = _transform_geometry_to_wkt(df)
+        buffer_out = io.BytesIO()
+        df.to_csv(buffer_out, index=False)
+        return CsvResponse(content=buffer_out)
+    elif re.search(f'^/{first_path_element}.*/xlsx$', request.url.path):
+        table = pq.read_table(buffer)
+        df = table.to_pandas()
+        df = _transform_geometry_to_wkt(df)
+        if len(df.index) > EXCEL_MAX_ROWS:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 detail=(
@@ -339,29 +349,25 @@ def response_decision(first_path_element: str, request: Request, gdf: gpd.GeoDat
             )
 
         # XlsxWriter seems to be slightly more performant than openpyxl.
-        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-            gdf.to_excel(writer, index=False, sheet_name='odapi_data', merge_cells=False)
-        return XlsxResponse(content=buffer)
-    # Currently, TXT output is not needed.
-    # The table would be too wide and not readable.
-    # elif re.search(f'^/{first_path_element}.*/txt$', request.url.path):
-        # buffer = io.BytesIO()
-        # gdf.to_excel(buffer, index=False, sheet_name='data')
-        # buffer = io.StringIO()
-        # buffer.write(tabulate(gdf, headers='keys', showindex='never', tablefmt='pipe'))
-        # return TxtResponose(content=buffer.getvalue())
-    # Must stand last, otherwise will match for every path.
+        buffer_out = io.BytesIO()
+        with pd.ExcelWriter(buffer_out, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='odapi_data', merge_cells=False)
+        return XlsxResponse(content=buffer_out)
     elif request.url.path.startswith(f'/{first_path_element}'):
+        table = pq.read_table(buffer)
+        df = table.to_pandas()
+        df['geometry'] = df['geometry'].apply(lambda b: wkb.loads(b))
         columns_to_convert = [
             'snapshot_date', 'knowledge_date_from', 'knowledge_date_to', 'period_ref_from', 'period_ref'
         ]
-        convert_columns = {col: 'str' for col in gdf.columns if col in columns_to_convert}
-        gdf = gdf.astype(convert_columns)
+        convert_columns = {col: 'str' for col in df.columns if col in columns_to_convert}
+        df = df.astype(convert_columns)
 
         # After some performance testing, it seems, that the solution with
         # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
         # GeoJSON directly and pass the raw string as custom FastAPI response.
-        assert isinstance(gdf, gpd.GeoDataFrame)
+        assert isinstance(df, pd.DataFrame)
+        gdf = gpd.GeoDataFrame(df, geometry='geometry', crs='EPSG:4326')
         return GeoJsonResponse(content=gdf.to_json())
 
 def generate_indicator_tree(data: pd.DataFrame) -> Optional[str]:
@@ -409,25 +415,7 @@ app = FastAPI(
         * This API is under heavy development. Endpoints and responses **can and will change in the future**.
         * This is **not** an official API from the Swiss Government, but just a private iniative from [myself](https://bardos.dev).
 
-        ## Roadmap
-
-        Next:
-
-        * `DONE` Add indicators from BFS STATATLAS
-        * `DONE` Provide historized municipal reference
-        * `WONT` Make API async.
-        * `DONE` Add other geographic levels like cantons and districts
-        * `DONE` Add possibility to filter by knowledge date other than latest
-        * `DONE` Add indicator for [Minergie Houses](https://opendata.swiss/de/dataset/anzahl-minergie-gebaude-in-gemeinden/resource/3ae6d523-748c-466b-8368-04569473338e)
-        * `DONE` Add indicator for [Zweitwohnungsanteil](https://opendata.swiss/de/dataset/wohnungsinventar-und-zweitwohnungsanteil)
-        * `DONE` Return geojson with json instead of WKT
-        * `DONE` Add possibility to get Excel file as response
-        * `DONE` ESTV Direkte Bundessteuer
-        * `TODO` [Statistik der Schweizer Städte](https://opendata.swiss/de/dataset/statistics-on-swiss-cities-and-towns-2020)
-
-        Later:
-        * `TODO` Add more indicators only available for districts or cantons
-        * `TODO` Add other indicators from Swisstopo API
+        The source code of the API as well as the data transformation can be found [on Github](https://github.com/fbardos/odapi).
     """)
 )
 
@@ -490,7 +478,7 @@ def get_all_available_indicators(
 
 @app.get(
     '/indicator/{geo_code}/{indicator_id}/parquet',
-    tags=['Indicators'],
+    tags=['Indicator'],
     description=textwrap.dedent("""
         Returns as Parquet file for a selected indicator. This is the fastes way to read/write.
         Geometry is stored as serialized WKT in column `geometry`.
@@ -499,7 +487,7 @@ def get_all_available_indicators(
 )
 @app.get(
     '/indicator/{geo_code}/{indicator_id}/xlsx',
-    tags=['Indicators'],
+    tags=['Indicator'],
     description=textwrap.dedent("""
         Returns as Excel file for a selected indicator.
 
@@ -510,13 +498,13 @@ def get_all_available_indicators(
 )
 @app.get(
     '/indicator/{geo_code}/{indicator_id}/csv',
-    tags=['Indicators'],
+    tags=['Indicator'],
     description='Returns as CSV for a selected indicator. Can be easily parsed by frameworks like pandas or dplyr.',
     response_class=CsvResponse,
 )
 @app.get(
     '/indicator/{geo_code}/{indicator_id}',
-    tags=['Indicators'],
+    tags=['Indicator'],
     description='Returns a GeoJSON for a selected indicator.',
     response_class=GeoJsonResponse,
 )
@@ -545,6 +533,7 @@ def get_indicator(
     expand_group_4: Optional[bool] = Query(None, description='Optional. Expand group 4 in the response.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
+    FIRST_PATH_ELEMENT = 'indicator'
     tbl_indicator = TableIndicator().get_table(db_sync)
     tbl_api = TableApi().get_table(db_sync)
     tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
@@ -729,21 +718,27 @@ def get_indicator(
         query = query.offset(skip)
     if limit:
         query = query.limit(limit)
-    with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:4326',
-        )
-        assert isinstance(gdf, gpd.GeoDataFrame)
 
-    return response_decision('indicator', request, gdf)
+    # Use a new approach with COPY TO STDOUT, which is much (8x) faster than
+    # gathering row by row. With the newly installed pg_parquet extension,
+    # STDOUT can transfer a prebuilt parquet file, including geometry as WKB.
+    with db_sync.connect() as conn:
+        psycopg2_connection = conn.connection
+        curs = psycopg2_connection.cursor()
+        buffer = io.BytesIO()
+        copy_sql = f"""
+            COPY (
+                {query.compile(dialect=db_sync.dialect, compile_kwargs={'literal_binds': True})}
+            ) TO STDOUT WITH (FORMAT PARQUET);
+        """
+        curs.copy_expert(copy_sql, buffer)
+        curs.close()
+        return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
 @app.get(
     '/portrait/{geo_code}/{geo_value}/parquet',
-    tags=['Indicators'],
+    tags=['Portrait'],
     description=textwrap.dedent("""
         Returns as Parquet file for the selected geometry.
         Geometry is stored as serialized WKT in column `geometry`.
@@ -752,7 +747,7 @@ def get_indicator(
 )
 @app.get(
     '/portrait/{geo_code}/{geo_value}/xlsx',
-    tags=['Indicators'],
+    tags=['Portrait'],
     description=textwrap.dedent("""
         Returns as Excel file for the selected geometry.
 
@@ -763,13 +758,13 @@ def get_indicator(
 )
 @app.get(
     '/portrait/{geo_code}/{geo_value}/csv',
-    tags=['Indicators'],
+    tags=['Portrait'],
     description='Returns a CSV for the selected geometry. Can be easily parsed by frameworks like pandas or dplyr.',
     response_class=CsvResponse,
 )
 @app.get(
     '/portrait/{geo_code}/{geo_value}',
-    tags=['Indicators'],
+    tags=['Portrait'],
     description='Returns a GeoJSON for a selected geometry.',
 )
 def list_all_indicators_for_one_geometry(
@@ -796,6 +791,7 @@ def list_all_indicators_for_one_geometry(
     expand_group_4: Optional[bool] = Query(None, description='Optional. Expand group 4 in the response.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
+    FIRST_PATH_ELEMENT = 'portrait'
     tbl_indicator = TableIndicator().get_table(db_sync)
     tbl_api = TableApi().get_table(db_sync)
     tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
@@ -980,20 +976,22 @@ def list_all_indicators_for_one_geometry(
     if limit:
         query = query.limit(limit)
     with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:4326',
-        )
-        assert isinstance(gdf, gpd.GeoDataFrame)
-
-    return response_decision('portrait', request, gdf)
+        psycopg2_connection = conn.connection
+        curs = psycopg2_connection.cursor()
+        buffer = io.BytesIO()
+        copy_sql = f"""
+            COPY (
+                {query.compile(dialect=db_sync.dialect, compile_kwargs={'literal_binds': True})}
+            ) TO STDOUT WITH (FORMAT PARQUET);
+        """
+        curs.copy_expert(copy_sql, buffer)
+        curs.close()
+        return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
 @app.get(
     '/municipalities/{year}/parquet',
-    tags=['Dimensions'],
+    tags=['DIM Municipalities'],
     description=textwrap.dedent("""
         Returns as Parquet file for a given year (since 1850).
         Geometry is stored as serialized WKT in column `geometry`.
@@ -1002,7 +1000,7 @@ def list_all_indicators_for_one_geometry(
 )
 @app.get(
     '/municipalities/{year}/xlsx',
-    tags=['Dimensions'],
+    tags=['DIM Municipalities'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a XLSX file.
 
@@ -1017,7 +1015,7 @@ def list_all_indicators_for_one_geometry(
 )
 @app.get(
     '/municipalities/{year}/csv',
-    tags=['Dimensions'],
+    tags=['DIM Municipalities'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a CSV.
 
@@ -1029,7 +1027,7 @@ def list_all_indicators_for_one_geometry(
 )
 @app.get(
     '/municipalities/{year}',
-    tags=['Dimensions'],
+    tags=['DIM Municipalities'],
     description=textwrap.dedent("""
         Returns municipalities of Switzerland for a given year (since 1850). Returns a JSON.
 
@@ -1049,6 +1047,7 @@ def list_municipalities_by_year(
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
+    FIRST_PATH_ELEMENT = 'municipalities'
     tbl_gemeinde = TableGemeinde().get_table(db_sync)
     query = (
         select(
@@ -1077,19 +1076,22 @@ def list_municipalities_by_year(
     if limit:
         query = query.limit(limit)
     with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:4326',
-        )
-        assert isinstance(gdf, gpd.GeoDataFrame)
-    return response_decision('municipalities', request, gdf)
+        psycopg2_connection = conn.connection
+        curs = psycopg2_connection.cursor()
+        buffer = io.BytesIO()
+        copy_sql = f"""
+            COPY (
+                {query.compile(dialect=db_sync.dialect, compile_kwargs={'literal_binds': True})}
+            ) TO STDOUT WITH (FORMAT PARQUET);
+        """
+        curs.copy_expert(copy_sql, buffer)
+        curs.close()
+        return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
 @app.get(
     '/districts/{year}/parquet',
-    tags=['Dimensions'],
+    tags=['DIM Districts'],
     description=textwrap.dedent("""
         Returns as Parquet file for a given year (since 1850).
         Geometry is stored as serialized WKT in column `geometry`.
@@ -1098,7 +1100,7 @@ def list_municipalities_by_year(
 )
 @app.get(
     '/districts/{year}/xlsx',
-    tags=['Dimensions'],
+    tags=['DIM Districts'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a XLSX file.
 
@@ -1113,7 +1115,7 @@ def list_municipalities_by_year(
 )
 @app.get(
     '/districts/{year}/csv',
-    tags=['Dimensions'],
+    tags=['DIM Districts'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a CSV.
 
@@ -1125,7 +1127,7 @@ def list_municipalities_by_year(
 )
 @app.get(
     '/districts/{year}',
-    tags=['Dimensions'],
+    tags=['DIM Districts'],
     description=textwrap.dedent("""
         Returns districts of Switzerland for a given year (since 1850). Returns a JSON.
 
@@ -1145,6 +1147,7 @@ def list_districts_by_year(
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
+    FIRST_PATH_ELEMENT = 'districts'
     tbl_bezirk = TableBezirk().get_table(db_sync)
 
     query = (
@@ -1172,19 +1175,22 @@ def list_districts_by_year(
     if limit:
         query = query.limit(limit)
     with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:4326',
-        )
-        assert isinstance(gdf, gpd.GeoDataFrame)
-    return response_decision('districts', request, gdf)
+        psycopg2_connection = conn.connection
+        curs = psycopg2_connection.cursor()
+        buffer = io.BytesIO()
+        copy_sql = f"""
+            COPY (
+                {query.compile(dialect=db_sync.dialect, compile_kwargs={'literal_binds': True})}
+            ) TO STDOUT WITH (FORMAT PARQUET);
+        """
+        curs.copy_expert(copy_sql, buffer)
+        curs.close()
+        return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
 @app.get(
     '/cantons/{year}/parquet',
-    tags=['Dimensions'],
+    tags=['DIM Cantons'],
     description=textwrap.dedent("""
         Returns as Parquet file for a given year (since 1850).
         Geometry is stored as serialized WKT in column `geometry`.
@@ -1193,7 +1199,7 @@ def list_districts_by_year(
 )
 @app.get(
     '/cantons/{year}/xlsx',
-    tags=['Dimensions'],
+    tags=['DIM Cantons'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a XLSX file.
 
@@ -1208,7 +1214,7 @@ def list_districts_by_year(
 )
 @app.get(
     '/cantons/{year}/csv',
-    tags=['Dimensions'],
+    tags=['DIM Cantons'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a CSV.
 
@@ -1220,7 +1226,7 @@ def list_districts_by_year(
 )
 @app.get(
     '/cantons/{year}',
-    tags=['Dimensions'],
+    tags=['DIM Cantons'],
     description=textwrap.dedent("""
         Returns cantons of Switzerland for a given year (since 1850). Returns a JSON.
 
@@ -1240,6 +1246,7 @@ def list_cantons_by_year(
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
     db_sync: Engine = Depends(get_sync_engine),
 ):
+    FIRST_PATH_ELEMENT = 'cantons'
     tbl_kanton = TableKanton().get_table(db_sync)
 
     query = (
@@ -1267,14 +1274,17 @@ def list_cantons_by_year(
     if limit:
         query = query.limit(limit)
     with db_sync.connect() as conn:
-        gdf = gpd.read_postgis(
-            sql=query.compile(dialect=db_sync.dialect),
-            con=conn,
-            geom_col='geometry',
-            crs='EPSG:4326',
-        )
-        assert isinstance(gdf, gpd.GeoDataFrame)
-    return response_decision('cantons', request, gdf)
+        psycopg2_connection = conn.connection
+        curs = psycopg2_connection.cursor()
+        buffer = io.BytesIO()
+        copy_sql = f"""
+            COPY (
+                {query.compile(dialect=db_sync.dialect, compile_kwargs={'literal_binds': True})}
+            ) TO STDOUT WITH (FORMAT PARQUET);
+        """
+        curs.copy_expert(copy_sql, buffer)
+        curs.close()
+        return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
 # TESTS ######################################################################
