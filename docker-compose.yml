@@ -148,8 +148,8 @@ services:
     volumes:
       - /tmp/io_manager_storage:/tmp/io_manager_storage
     networks:
-      odapi_public:
-      odapi_private:
+      - odapi_public
+      - odapi_private
     depends_on:
       - data-postgis
 
@@ -179,8 +179,8 @@ services:
     volumes:
       - /tmp/io_manager_storage:/tmp/io_manager_storage
     networks:
-      odapi_public:
-      odapi_private:
+      - odapi_public
+      - odapi_private
     depends_on:
       - data-postgis
 
@@ -191,17 +191,33 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
+    user: "1000:1000"                 # OWASP Rule #3
+    security_opt:
+      - no-new-privileges:true        # OWASP Rule #4
     restart: *restart-policy
+    deploy:
+      resources:
+        limits:
+          cpus: 8
+          memory: 64g
     profiles:
       - dev
       - prod
-    ports:
-      - "8881:80"
+    expose:
+      - 80
     networks:
-      odapi_public:
-      odapi_private:
+      - odapi_public
+      - odapi_private
+      - traefik_traefik_public
     depends_on:
       - data-postgis
+    labels:
+      traefik.enable: true
+      traefik.http.routers.odapi.entrypoints: websecure
+      traefik.http.routers.odapi.rule: Host(`odapi.bardos.dev`)
+      traefik.http.routers.odapi.tls: true
+      traefik.http.routers.odapi.tls.certresolver: myresolver
+      traefik.docker.network: traefik_traefik_public
 
 # #######################################################################
 # VOLUMES
@@ -222,6 +238,8 @@ volumes:
 networks:
   odapi_public:
   odapi_private:
+  traefik_traefik_public:
+    external: true
 
 # #######################################################################
 # Secrets
