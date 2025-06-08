@@ -322,7 +322,10 @@ def response_decision(first_path_element: str, request: Request, buffer: io.Byte
 
     def _transform_geometry_to_wkt(gdf: gpd.GeoDataFrame):
         """Transform geometry column to WKT."""
-        gdf['geometry'] = gdf['geometry'].apply(lambda b: wkb.loads(bytes(b)).wkt)
+        if first_path_element == 'values':
+            pass
+        else:
+            gdf['geometry'] = gdf['geometry'].apply(lambda b: wkb.loads(bytes(b)).wkt)
         return gdf
 
     if re.search(f'^/{first_path_element}.*/parquet$', request.url.path):
@@ -356,19 +359,22 @@ def response_decision(first_path_element: str, request: Request, buffer: io.Byte
     elif request.url.path.startswith(f'/{first_path_element}'):
         table = pq.read_table(buffer)
         df = table.to_pandas()
-        df['geometry'] = df['geometry'].apply(lambda b: wkb.loads(b))
-        columns_to_convert = [
-            'snapshot_date', 'knowledge_date_from', 'knowledge_date_to', 'period_ref_from', 'period_ref'
-        ]
-        convert_columns = {col: 'str' for col in df.columns if col in columns_to_convert}
-        df = df.astype(convert_columns)
+        if first_path_element == 'values':
+            return GeoJsonResponse(content=df.to_json())
+        else:
+            df['geometry'] = df['geometry'].apply(lambda b: wkb.loads(b))
+            columns_to_convert = [
+                'snapshot_date', 'knowledge_date_from', 'knowledge_date_to', 'period_ref_from', 'period_ref'
+            ]
+            convert_columns = {col: 'str' for col in df.columns if col in columns_to_convert}
+            df = df.astype(convert_columns)
 
-        # After some performance testing, it seems, that the solution with
-        # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
-        # GeoJSON directly and pass the raw string as custom FastAPI response.
-        assert isinstance(df, pd.DataFrame)
-        gdf = gpd.GeoDataFrame(df, geometry='geometry', crs='EPSG:4326')
-        return GeoJsonResponse(content=gdf.to_json())
+            # After some performance testing, it seems, that the solution with
+            # GeoDataFrame.to_geo_dict() is pretty slow. Therefore, build the
+            # GeoJSON directly and pass the raw string as custom FastAPI response.
+            assert isinstance(df, pd.DataFrame)
+            gdf = gpd.GeoDataFrame(df, geometry='geometry', crs='EPSG:4326')
+            return GeoJsonResponse(content=gdf.to_json())
 
 def generate_indicator_tree(data: pd.DataFrame) -> Optional[str]:
 
@@ -420,6 +426,7 @@ app = FastAPI(
 )
 
 
+# INDICATORS #################################################################
 @app.get(
     '/indicators/{geo_code}/txt',
     tags=['Indicators'],
@@ -476,11 +483,12 @@ def get_all_available_indicators(
         return df.to_dict(orient='records')
 
 
+# INDICATOR ##################################################################
 @app.get(
     '/indicator/{geo_code}/{indicator_id}/parquet',
     tags=['Indicator'],
     description=textwrap.dedent("""
-        Returns as Parquet file for a selected indicator. This is the fastes way to read/write.
+        Returns as Parquet file for a selected indicator. This is the fastes way to read data.
         Geometry is stored as serialized WKT in column `geometry`.
     """),
     response_class=GeoparquetResponse,
@@ -736,6 +744,7 @@ def get_indicator(
         return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
+# PORTRAIT ###################################################################
 @app.get(
     '/portrait/{geo_code}/{geo_value}/parquet',
     tags=['Portrait'],
@@ -989,6 +998,115 @@ def list_all_indicators_for_one_geometry(
         return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
+# NUMBERS ####################################################################
+@app.get(
+    '/values/{geo_code}/parquet',
+    tags=['Values'],
+    description=textwrap.dedent("""
+        Returns:
+        - numbers for all indicators and geo_values for one period_ref
+        - as GeoParquet. This is the fastes way to read data.
+
+        This endpoint is designed to return only the numbers of all indicators and geo_values.
+        This can then be used e.g. to generate a historgram over all indicators.
+        Because the answer can have many rows, it will not join other informations like in other endpoints.
+
+        Geometry is stored as serialized WKT in column `geometry`.
+    """),
+    response_class=GeoparquetResponse,
+)
+@app.get(
+    '/values/{geo_code}/csv',
+    tags=['Values'],
+    description=textwrap.dedent("""
+        Returns:
+        - numbers for all indicators and geo_values for one period_ref
+        - as CSV file.
+
+        This endpoint is designed to return only the numbers of all indicators and geo_values.
+        This can then be used e.g. to generate a historgram over all indicators.
+        Because the answer can have many rows, it will not join other informations like in other endpoints.
+    """),
+    response_class=CsvResponse,
+)
+@app.get(
+    '/values/{geo_code}',
+    tags=['Values'],
+    description=textwrap.dedent("""
+        Returns:
+        - numbers for all indicators and geo_values for one period_ref
+        - as JSON response.
+
+        This endpoint is designed to return only the latest numbers of all indicators and geo_values.
+        This can then be used e.g. to generate a historgram over all indicators.
+        Because the answer can have many rows, it will not join other informations like in other endpoints.
+    """),
+    response_class=GeoJsonResponse,
+)
+def get_numbers(
+    request: Request,
+    geo_code: GeoCode = Path(
+        ...,
+        description=DOC__GEO_CODE,
+    ),
+    knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
+    limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
+    db_sync: Engine = Depends(get_sync_engine),
+):
+    FIRST_PATH_ELEMENT = 'values'
+    tbl_api = TableApi().get_table(db_sync)
+
+    query = (
+        select(
+            tbl_api.c.indicator_id,
+            tbl_api.c.geo_value,
+            tbl_api.c.indicator_value_numeric,
+            tbl_api.c.source_id,
+        )
+        .distinct(tbl_api.c.indicator_id, tbl_api.c.geo_value)
+        .where(tbl_api.c.geo_code == geo_code)
+        .where(tbl_api.c._group_value_1_is_total == True)
+        .where(tbl_api.c._group_value_2_is_total == True)
+        .where(tbl_api.c._group_value_3_is_total == True)
+        .where(tbl_api.c._group_value_4_is_total == True)
+        .order_by(tbl_api.c.indicator_id, tbl_api.c.geo_value, tbl_api.c.period_ref_from.desc())
+    )
+    if knowledge_date:
+        _knowledge_date = dt.date.fromisoformat(knowledge_date)
+        query = (
+            query
+            .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
+            .where(tbl_api.c.knowledge_date_to > _knowledge_date)
+        )
+    else:
+        query = (
+            query
+            .where(tbl_api.c.knowledge_date_to == None)
+        )
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
+
+    # Use a new approach with COPY TO STDOUT, which is much (8x) faster than
+    # gathering row by row. With the newly installed pg_parquet extension,
+    # STDOUT can transfer a prebuilt parquet file, including geometry as WKB.
+    with db_sync.connect() as conn:
+        psycopg2_connection = conn.connection
+        curs = psycopg2_connection.cursor()
+        buffer = io.BytesIO()
+        copy_sql = f"""
+            COPY (
+                {query.compile(dialect=db_sync.dialect, compile_kwargs={'literal_binds': True})}
+            ) TO STDOUT WITH (FORMAT PARQUET);
+        """
+        curs.copy_expert(copy_sql, buffer)
+        curs.close()
+        return response_decision(FIRST_PATH_ELEMENT, request, buffer)
+
+
+# DIM MUNICIPALITIES #########################################################
 @app.get(
     '/municipalities/{year}/parquet',
     tags=['DIM Municipalities'],
@@ -1089,6 +1207,7 @@ def list_municipalities_by_year(
         return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
+# DIM DISTRICTS ##############################################################
 @app.get(
     '/districts/{year}/parquet',
     tags=['DIM Districts'],
@@ -1188,6 +1307,7 @@ def list_districts_by_year(
         return response_decision(FIRST_PATH_ELEMENT, request, buffer)
 
 
+# DIM PARQUET ################################################################
 @app.get(
     '/cantons/{year}/parquet',
     tags=['DIM Cantons'],
