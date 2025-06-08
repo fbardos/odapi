@@ -33,6 +33,8 @@ from sqlalchemy import Column
 from sqlalchemy import MetaData
 from sqlalchemy import Table
 from sqlalchemy import create_engine
+from sqlalchemy import literal
+from sqlalchemy import or_
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
@@ -360,7 +362,7 @@ def response_decision(first_path_element: str, request: Request, buffer: io.Byte
         table = pq.read_table(buffer)
         df = table.to_pandas()
         if first_path_element == 'values':
-            return GeoJsonResponse(content=df.to_json())
+            return GeoJsonResponse(content=df.to_json(orient='records'))
         else:
             df['geometry'] = df['geometry'].apply(lambda b: wkb.loads(b))
             columns_to_convert = [
@@ -561,8 +563,6 @@ def get_indicator(
             tbl_api.c.indicator_id,
             tbl_api.c.geo_code,
             tbl_api.c.geo_value,
-            tbl_api.c.knowledge_date_from,
-            tbl_api.c.knowledge_date_to,
             tbl_api.c.period_type,
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
@@ -611,15 +611,19 @@ def get_indicator(
     else:
         query = query.where(tbl_api.c._group_value_4_is_total == True)
     if knowledge_date:
-        _knowledge_date = dt.date.fromisoformat(knowledge_date)
+        _knowledge_date = dt.date.fromisoformat(knowledge_date).strftime('%Y-%m-%d')
         query = (
             query
+            .add_columns(literal(_knowledge_date).label('knowledge_date'))
             .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
-            .where(tbl_api.c.knowledge_date_to > _knowledge_date)
+            # is much faster than a coalesce (because of idx scan)
+            .where(or_(tbl_api.c.knowledge_date_to > _knowledge_date, tbl_api.c.knowledge_date_to == None))
         )
     else:
+        _knowledge_date = dt.date.today().strftime('%Y-%m-%d')
         query = (
             query
+            .add_columns(literal(_knowledge_date).label('knowledge_date'))
             .where(tbl_api.c.knowledge_date_to == None)
         )
     if join_indicator:
@@ -721,7 +725,7 @@ def get_indicator(
             case GeoCode.kant:
                 query = query.add_columns(tbl_kanton.c.geom_border_simple_500m.label('geometry'))
     if period_ref:
-        query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
+        query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref).strftime('%Y-%m-%d'))
     if skip:
         query = query.offset(skip)
     if limit:
@@ -820,8 +824,6 @@ def list_all_indicators_for_one_geometry(
             tbl_api.c.indicator_id,
             tbl_api.c.geo_code,
             tbl_api.c.geo_value,
-            tbl_api.c.knowledge_date_from,
-            tbl_api.c.knowledge_date_to,
             tbl_api.c.period_type,
             tbl_api.c.period_code,
             tbl_api.c.period_ref_from,
@@ -868,15 +870,19 @@ def list_all_indicators_for_one_geometry(
     else:
         query = query.where(tbl_api.c._group_value_4_is_total == True)
     if knowledge_date:
-        _knowledge_date = dt.date.fromisoformat(knowledge_date)
+        _knowledge_date = dt.date.fromisoformat(knowledge_date).strftime('%Y-%m-%d')
         query = (
             query
+            .add_columns(literal(_knowledge_date).label('knowledge_date'))
             .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
-            .where(tbl_api.c.knowledge_date_to > _knowledge_date)
+            # is much faster than a coalesce (because of idx scan)
+            .where(or_(tbl_api.c.knowledge_date_to > _knowledge_date, tbl_api.c.knowledge_date_to == None))
         )
     else:
+        _knowledge_date = dt.date.today().strftime('%Y-%m-%d')
         query = (
             query
+            .add_columns(literal(_knowledge_date).label('knowledge_date'))
             .where(tbl_api.c.knowledge_date_to == None)
         )
     if join_indicator:
@@ -979,7 +985,7 @@ def list_all_indicators_for_one_geometry(
             case GeoCode.kant:
                 query = query.add_columns(tbl_kanton.c.geom_border_simple_500m.label('geometry'))
     if period_ref:
-        query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref))
+        query = query.where(tbl_api.c.period_ref == dt.date.fromisoformat(period_ref).strftime('%Y-%m-%d'))
     if skip:
         query = query.offset(skip)
     if limit:
@@ -1073,11 +1079,12 @@ def get_numbers(
         .order_by(tbl_api.c.indicator_id, tbl_api.c.geo_value, tbl_api.c.period_ref_from.desc())
     )
     if knowledge_date:
-        _knowledge_date = dt.date.fromisoformat(knowledge_date)
+        _knowledge_date = dt.date.fromisoformat(knowledge_date).strftime('%Y-%m-%d')
         query = (
             query
             .where(tbl_api.c.knowledge_date_from <= _knowledge_date)
-            .where(tbl_api.c.knowledge_date_to > _knowledge_date)
+            # is much faster than a coalesce (because of idx scan)
+            .where(or_(tbl_api.c.knowledge_date_to > _knowledge_date, tbl_api.c.knowledge_date_to == None))
         )
     else:
         query = (
