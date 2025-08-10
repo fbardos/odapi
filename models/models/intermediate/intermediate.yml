@@ -139,7 +139,7 @@ models:
   # ---------------------------------------------------------------------------
     config:
       odapi:
-        indicator: 5
+        indicator: 6
         period_type: duedate
         period_code: year
       intm_statatlas:

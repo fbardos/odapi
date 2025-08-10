@@ -4,9 +4,9 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 3,Bevoelkerung (staendig),01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl der Bevölkerung
 4,Anteil versiegelte Flaeche,02 Raum & Umwelt,02.01 Bodennutzung,Versiegelte Fläche,,Prozent,Anteil der versiegelten Flaeche
 5,Geburtenueberschuss,01 Bevölkerung,01.02 Bewegungen,Geburtenüberschuss,,Personen,Geburtenüberschuss
-6,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-7,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-8,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+6,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Wanderungssaldo total
+7,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Wanderungssaldo Ein-/Auswanderungen
+8,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Binnenwanderungssaldo
 9,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Gesamtfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Gesamtflaeche
 10,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Produktivfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Produktivfläche
 11,Jugendquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Jugendquotient,Prozent,Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20-64 Jahre
