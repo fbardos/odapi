@@ -163,13 +163,10 @@ services:
     restart: *restart-policy
     init: true
     entrypoint:
-      - conda
-      - run
-      - --no-capture-output
-      - -n
-      - odapi
       - dagster-daemon
       - run
+      - -f
+      - "odapi/definitions.py"
     profiles:
       - prod
     environment:

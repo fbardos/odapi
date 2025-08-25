@@ -1,5 +1,4 @@
-FROM python:3.10-slim
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 
 ARG GIT_CLONE_ROOT=/tmp/odapi
 ARG GIT_CLONE_USER=fbardos
@@ -26,24 +25,15 @@ RUN apt-get update \
 # Load files
 COPY ./docker/.deploy/.env /opt/dagster/app/
 
-# # Install miniconda
-# ENV CONDA_DIR=/opt/conda
-# RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py310_24.7.1-0-Linux-x86_64.sh -O ~/miniconda.sh \
-#     && /bin/bash ~/miniconda.sh -b -p $CONDA_DIR \
-#     && rm ~/miniconda.sh
-# ENV PATH=$CONDA_DIR/bin:$PATH
-#
-# # Must be placed after conda install, otherwise, will load wrong version
-# COPY ./environment.yml /tmp/environment.yml
-# RUN conda env create --solver libmamba -f /tmp/environment.yml && conda clean -ay
-
 ARG CACHEBUST=1
 
 RUN --mount=type=secret,id=git_token,target=/run/secrets/git_token \
     mkdir /tmp/odapi \
     && git clone https://${GIT_CLONE_USER}:$(cat /run/secrets/git_token)@github.com/fbardos/odapi.git ${GIT_CLONE_ROOT} \
-    && cp -R ${GIT_CLONE_ROOT}/dag/. /opt/dagster/app \
-    && cp -R ${GIT_CLONE_ROOT}/models/. /opt/dbt
+    && cp -R ${GIT_CLONE_ROOT}/dag/. ${DAGSTER_HOME} \
+    && cp -R ${GIT_CLONE_ROOT}/models/. /opt/dbt \
+    && cp -R ${GIT_CLONE_ROOT}/uv.lock ${DAGSTER_HOME} \
+    && cp -R ${GIT_CLONE_ROOT}/pyproject.toml ${DAGSTER_HOME}
 
 # I don't know why, but dagster-dbt needs a manifest.json file (will be overwritten),
 # during prepare-and-package. An empty file is not enough, but only checks for the
@@ -53,21 +43,17 @@ COPY ./docker/.deploy/manifest.json /opt/dbt/target/
 # Overwrite dagster.yaml again, will otherise not use psql/minio
 COPY ./docker/dagster/dagster.yaml /opt/dagster/app/
 
-# # Change shell
-# SHELL ["conda", "run", "-n", "odapi", "/bin/bash", "-c"]
-# RUN pip install --no-dependencies /opt/dagster/app
-
 COPY ./docker/.deploy/.env /opt/dagster/app
-# ENV PROJ_LIB=/opt/conda/share/proj
 
 WORKDIR ${DAGSTER_HOME}
-RUN uv sync --locked  # read from uv.lock
-RUN . .venv/bin/activate
+RUN uv venv .venv && \
+    uv sync --frozen --all-groups  # read from uv.lock
+RUN uv pip install --no-deps .
+ENV PATH="${DAGSTER_HOME}/.venv/bin:${PATH}"
 RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/dbt.py
 
 # Load DBT deps
 RUN dbt deps --project-dir /opt/dbt
 
 EXPOSE 3000
-# ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "odapi", "dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
-ENTRYPOINT ["uv", "run", "dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
+ENTRYPOINT ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-f", "odapi/definitions.py"]
