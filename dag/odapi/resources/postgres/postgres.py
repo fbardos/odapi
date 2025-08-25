@@ -1,10 +1,10 @@
-import requests
-import pandas as pd
-
-from dagster import asset, AssetObservation, OpExecutionContext, op, MaterializeResult, MetadataValue, ConfigurableResource, Definitions, EnvVar, Output, load_assets_from_package_module
 import sqlalchemy
-import psycopg2
-from sqlalchemy import Table, Column, String, MetaData, insert
+from dagster import ConfigurableResource
+from sqlalchemy import Column
+from sqlalchemy import MetaData
+from sqlalchemy import String
+from sqlalchemy import Table
+from sqlalchemy import insert
 from sqlalchemy.dialects.postgresql import insert
 
 
@@ -42,8 +42,6 @@ class XcomPostgresResource(PostgresResource):
         insert_stmt = insert(self._XCOM_TABLE).values(key=key, value=value)
         on_duplicate_key_stmt = insert_stmt.on_conflict_do_update(  # upsert
             index_elements=[self._XCOM_TABLE.c.key],
-            # set_=dict(value=insert_stmt.values.value),
             set_=dict(value=insert_stmt.excluded.value),
         )
         self.get_sqlalchemy_engine().execute(on_duplicate_key_stmt)
-

@@ -41,6 +41,6 @@ COPY api/ .
 EXPOSE 80
 
 # Run the FastAPI application using uvicorn
-CMD ["conda", "run", "--no-capture-output", "-n", "odapi", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]
+CMD ["conda", "run", "--no-capture-output", "-n", "odapi", "uvicorn", "odapi:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]
 
 

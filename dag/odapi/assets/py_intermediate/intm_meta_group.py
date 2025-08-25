@@ -6,6 +6,7 @@ from dagster import AssetKey
 from dagster import asset
 from dagster import asset_check
 from great_expectations import expectations as gxe
+from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.qa.great_expectations import GreatExpectationsResource
@@ -69,24 +70,28 @@ def _asset(
 
     with db.get_sqlalchemy_engine().begin() as connection:
         connection.execute(
-            """
-            CREATE SCHEMA IF NOT EXISTS py_intermediate;
-            CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_group (
-                group_id SMALLSERIAL,
-                group_name TEXT UNIQUE
-            );
-        """
+            text(
+                """
+                CREATE SCHEMA IF NOT EXISTS py_intermediate;
+                CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_group (
+                    group_id SMALLSERIAL,
+                    group_name TEXT UNIQUE
+                );
+                """
+            )
         )
 
         # Write the DataFrame to the database
         for _, row in df.iterrows():
             connection.execute(
-                f"""
-                INSERT INTO py_intermediate.intm_meta_group (group_id, group_name)
-                VALUES (DEFAULT, %s)
-                ON CONFLICT (group_name) DO NOTHING;
-                """,
-                row['group_name'],
+                text(
+                    """
+                    INSERT INTO py_intermediate.intm_meta_group (group_id, group_name)
+                    VALUES (DEFAULT, :group_name)
+                    ON CONFLICT (group_name) DO NOTHING;
+                    """,
+                ),
+                {'group_name': row['group_name']},
             )
 
     return df

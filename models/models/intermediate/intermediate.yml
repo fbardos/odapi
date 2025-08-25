@@ -87,6 +87,10 @@ models:
           - '^_?\d+_5124_5122_5121_?$'  # Historische Statistik / 01 - Bevoelkerung / Bevoelkerungsdichte 1850-2000 - Gesamtflaeche
           - '^_?\d+_72_71_70_?$'        # 01 - Bevoelkerung / Bevoelkerungsstand / Stand
         distinct_rows: true
+      intm_statatlas_v2:
+        indicateur_id: stndigewohnbevlkerun
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+        # map: map179  --> not needed at the moment, because max(map_id) gets selected
     tests:
       - statatlas_intm_pk
       - odapi_intm_columns
@@ -107,6 +111,7 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      # XXX: intm_statatlas_v2: also include period_ref like 2013/18 in import file
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -120,13 +125,17 @@ models:
     config:
       odapi:
         indicator: 5
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Geburten.?berschuss$'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: geburtenberschuss
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -139,14 +148,18 @@ models:
   # ---------------------------------------------------------------------------
     config:
       odapi:
-        indicator: 5
-        period_type: duedate
+        indicator: 6
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Differenz von Zu\- und Wegzügen'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: wanderungssaldopro10
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -160,13 +173,17 @@ models:
     config:
       odapi:
         indicator: 7
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Differenz aus Ein\- und Auswanderungen pro 1[ ]?000'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: wanderungssaldopro10
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -180,13 +197,17 @@ models:
     config:
       odapi:
         indicator: 8
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Differenz aus Zu\- und Wegz.?gen von.*andere[n]? Regionen der Schweiz'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: binnenwanderungssald
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -206,6 +227,9 @@ models:
         indicator_regex: '^Einwohner.*pro km.*Gesamt'
         path_regex:
           - '^_?\d+_75_3501_70_?$'  # 01 - Bevoelkerung / Bevoelkerungsdichte / Gesamtflaeche
+      intm_statatlas_v2:
+        indicateur_id: bevlkerungsdichteg1
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -225,6 +249,27 @@ models:
         indicator_regex: '^Einwohner.*pro km.*Produktivfl.+che'
         path_regex:
           - '^_?\d+_3002_3501_70_?$'  # 01 - Bevoelkerung / Bevoelkerungsdichte / Produktivflaeche
+      intm_statatlas_v2:
+        indicateur_id: bevlkerungsdichtep1
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_gesamtquotient
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 175
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: gesamtquotient
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -243,6 +288,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20 bis 64 Jahren'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: jugendquotient
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -261,12 +309,35 @@ models:
       intm_statatlas:
         indicator_regex: '(Personen im Alter von 65 oder mehr Jahren|65-Jährige und Ältere) pro 100 Personen im Alter von 20-64 Jahren'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: altersquotient
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
       - odapi_intm_columns
       - odapi_intm_unique_municipalities
       - odapi_intm_rowsmin
+
+  # Currently cannot be used, because period_ref is in 10-year intervals (2010-2020)
+  # Add handling for this first.
+  ## ---------------------------------------------------------------------------
+  #- name: intm_bfs_statatlas_altersstruktur_altersquotient_diff
+  ## ---------------------------------------------------------------------------
+  #  config:
+  #    odapi:
+  #      indicator: 174
+  #      period_type: period
+  #      period_code: year
+  #    intm_statatlas_v2:
+  #      indicateur_id: vernderungdesaltersq
+  #      period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+  #  tests:
+  #    - odapi_intm_pk_nogroups
+  #    - statatlas_intm_pk
+  #    - odapi_intm_columns
+  #    - odapi_intm_unique_municipalities
+  #    - odapi_intm_rowsmin
 
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_greyingindex
@@ -279,6 +350,99 @@ models:
       intm_statatlas:
         indicator_regex: '(Personen im Alter von 80 oder mehr Jahren|80-Jährige und Ältere) pro.*65(-| bis )79'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: greyingindex
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_0019jahre
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 172
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: anteilder019jhrige1
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_2039jahre
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 167
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: anteilder2039jhrig1
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_2064jahre
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 169
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: anteilder2064jhrigen
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_altersstruktur_65plusjahre
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 173
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: anteilder2064jhrigen
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_auslaender_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 177
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: stndigewohnbevlkeraus
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -297,6 +461,27 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der ständigen ausländischen Bevölkerung.*gesamten ständigen Wohnbevölkerung'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: bevlkerungsanteilaus
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_auslaenderanteil_eu
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 168
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: anteilderstaatsangeh
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -315,6 +500,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der (Wohnbev.+lkerung mit )?deutsche.+ Staatsangeh.*rig(en|keit) an der gesamten st.?ndigen'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteilderdeutschenwo
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -333,6 +521,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der (Wohnbev.+lkerung mit )?franz.?sische.+ Staatsangeh.*rig(en|keit) an der gesamten st.?ndigen'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteilderfranzsische
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -364,13 +555,17 @@ models:
     config:
       odapi:
         indicator: 18
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Lebendgeburten pro 1.?000'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: rohegeburtenziffer
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -384,13 +579,17 @@ models:
     config:
       odapi:
         indicator: 19
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Heiraten pro 1.?000'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: roheheiratsziffer
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -404,13 +603,17 @@ models:
     config:
       odapi:
         indicator: 58
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Anzahl Heiraten'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: heiraten
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -424,13 +627,17 @@ models:
     config:
       odapi:
         indicator: 20
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Scheidungen pro 1.?000'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: rohescheidungsziffer
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -444,13 +651,17 @@ models:
     config:
       odapi:
         indicator: 57
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Anzahl Scheidungen$'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: scheidungen
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -464,13 +675,17 @@ models:
     config:
       odapi:
         indicator: 21
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Todesf.?lle pro 1.?000'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: scheidungen
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -484,13 +699,17 @@ models:
     config:
       odapi:
         indicator: 59
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Anzahl Todesfälle$'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: todesflle
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -504,13 +723,36 @@ models:
     config:
       odapi:
         indicator: 22
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: '^Rohe Einb.?rgerungsziffer.?'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: einbrgerungenpro1000
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_einbuergerungen_anzahl
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 176
+        period_type: period
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: einbrgerungen
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -529,6 +771,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der Einpersonenhaushalte am Total der Privathaushalte.*$'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteildereinpersonen
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -547,6 +792,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der Zweipersonenhaushalte am Total der Privataushalte.*$'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteilderzweipersone
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -565,6 +813,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der Dreipersonenhaushalte am Total der Privataushalte.*$'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteilderdreipersone
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -583,6 +834,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der Vierpersonenhaushalte am Total der Privathaushalte.*$'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteildervierpersone
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -601,6 +855,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der Haushalte mit 5 oder mehr Personen am Total der Privathaushalte.*$'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: anteilderhaushaltemi
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -619,6 +876,9 @@ models:
       intm_statatlas:
         indicator_regex: '^Durchschnittliche Haushaltsgrösse.*$'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: durchschnittlichehau
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -637,7 +897,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der Siedlungsflächen.? an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -657,7 +916,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil des Gebäudeareals.? an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -677,7 +935,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil des Industrie- und Gewerbeareals.? an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -697,7 +954,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der Verkehrsflächen.? an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -717,7 +973,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der Landwirtschaftsflächen.? an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -737,7 +992,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der bestockten Flächen\* \(Wald und Gehölze\) an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -757,7 +1011,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der unproduktiven Flächen\* an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -777,7 +1030,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der künstlich angelegten Flächen\* an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -797,7 +1049,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der vegetationslosen Flächen\* \(Fels, Geröll, Lockergestein\) an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -817,7 +1068,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anteil der Wasser- und Feuchtflächen\* \(Wasser, Gletscher, Nassstandorte\) an der Gesamtfläche'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -837,6 +1087,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Zahl der Arbeitsstätten im 1\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: arbeitsstttenwirtsch
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -855,6 +1108,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Zahl der Arbeitsstätten im 2\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: arbeitsstttenwirts1  # ugly increment, but its true
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -873,6 +1129,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Zahl der Arbeitsstätten im 3\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: arbeitsstttenwirts2  # ugly increment, but its true
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -891,6 +1150,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Zahl der Beschäftigten im 1\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: beschftigtewirtschaf  # ugly increment, but its true
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -909,6 +1171,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Zahl der Beschäftigten im 2\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: beschftigtewirtsch1  # ugly increment, but its true
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -927,6 +1192,9 @@ models:
       intm_statatlas:
         indicator_regex: 'Zahl der Beschäftigten im 3\. Wirtschaftssektor'
         # No path_regex needed, only one path (witout year) available
+      intm_statatlas_v2:
+        indicateur_id: beschftigtewirtsch2  # ugly increment, but its true
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -940,7 +1208,7 @@ models:
     config:
       odapi:
         indicator: 45
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Anzahl der im Referenzjahr neu gegründeten Unternehmen'
@@ -960,7 +1228,7 @@ models:
     config:
       odapi:
         indicator: 46
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Anzahl der im Referenzjahr in neuen Unternehmen entstandenen Arbeitsplätze'
@@ -985,7 +1253,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anzahl aktiver Unternehmen im Referenzjahr'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -1005,7 +1272,6 @@ models:
       intm_statatlas:
         indicator_regex: 'Anzahl Beschäftigte in aktiven Unternehmen im Referenzjahr'
         # No path_regex needed, only one path (witout year) available
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -1020,7 +1286,7 @@ models:
     config:
       odapi:
         indicator: 49
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Anzahl geschlossener Unternehmen im Referenzjahr'
@@ -1040,7 +1306,7 @@ models:
     config:
       odapi:
         indicator: 50
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Anzahl verlorene Stellen durch Unternehmensschliessungen im Referenzjahr'
@@ -1060,7 +1326,7 @@ models:
     config:
       odapi:
         indicator: 51
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Neu erstellte Gebäude mit Wohnungen pro 1.?000 Einwohner'
@@ -1068,6 +1334,10 @@ models:
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
         distinct_rows: true
+      intm_statatlas_v2:
+        indicateur_id: neuerstelltegebwohnpro
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1081,13 +1351,17 @@ models:
     config:
       odapi:
         indicator: 60
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'neu erstellte Gebäude mit Wohnungen'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: neuerstelltegebwohn
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1101,13 +1375,17 @@ models:
     config:
       odapi:
         indicator: 52
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Neu erstellte Wohnungen pro 1.?000 Einwohner'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: neuerstelltewohnungenpro
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1121,13 +1399,35 @@ models:
     config:
       odapi:
         indicator: 61
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'neu erstellte Wohnungen'
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: neuerstelltewohnungen
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_wohnflaeche
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 171
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: wohnflaechen
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1148,6 +1448,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anteileinfamilienhus
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1168,6 +1471,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anteil34zimmerwohnun
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1187,6 +1493,9 @@ models:
         indicator_regex: 'Anteil leer stehender Wohnungen am Gesamtwohnungsbestand'
         # No path_regex needed, only one path (witout year) available
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: leerwohnungsziffer
+        period_ref_transformation: "make_date(period_ref::INTEGER, 6, 1)"  # Special period_ref for LWZ
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1207,6 +1516,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anteilbewohnerinneni
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1228,7 +1540,6 @@ models:
           - '^_?\d+_17196_17189_17188_169_?$'  # 09 - Bau / Energie / Gebaeude / Dominierende Energiequelle
         value_col: desc_val
         value_col_is_text: true
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -1250,6 +1561,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: wohnunganteilheizl
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1270,6 +1584,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: gebudeanteilgas
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1290,6 +1607,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: gebudeanteilwrmepump
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1311,7 +1631,6 @@ models:
           - '^_?\d+_17205_17198_17188_169_?$'  # 09 - Bau / Energie / Wohnungen / Dominierende Energiequelle
         value_col: desc_val
         value_col_is_text: true
-        period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
     tests:
       - odapi_intm_pk_nogroups
@@ -1333,6 +1652,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: wohnunganteilheizl
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1353,6 +1675,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: wohnunganteilgas
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1373,6 +1698,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: wohnunganteilwrmepum
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1393,6 +1721,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: elektrischprsnnwgn
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1413,6 +1744,9 @@ models:
         # No path_regex needed, only one path (witout year) available
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anteilelektrische
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1468,6 +1802,10 @@ models:
         indicator_regex: 'Unterstützte Personen'
         path_regex:
           - '^_?\d+_112_7281_7263_?$'  # 13 - Soziale Sicherheit / Sozialleistungen / Sozialhilfebeziehende
+      intm_statatlas_v2:
+        indicateur_id: sozialhilfeempf
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1487,6 +1825,10 @@ models:
         indicator_regex: 'Sozialhilfequote'
         path_regex:
           - '^_?\d+_112_7281_7263_?$'  # 13 - Soziale Sicherheit / Sozialleistungen / Sozialhilfebeziehende
+      intm_statatlas_v2:
+        indicateur_id: sozialhilfequot
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1506,6 +1848,9 @@ models:
         indicator_regex: 'Anzahl Museen'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anzahlmuseen
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1523,6 +1868,9 @@ models:
         period_code: year
       intm_statatlas:
         indicator_regex: '^Bibliotheken$'
+      intm_statatlas_v2:
+        indicateur_id: anzahlbibliotheken
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1540,6 +1888,9 @@ models:
         period_code: year
       intm_statatlas:
         indicator_regex: '^Bibliotheken pro'
+      intm_statatlas_v2:
+        indicateur_id: anzahlbibliothekenpro
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1559,6 +1910,9 @@ models:
         indicator_regex: '^Anzahl Kinos$'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anzahlkinos
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1578,6 +1932,9 @@ models:
         indicator_regex: '^Anzahl Kinos.le$'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anzahlkinosle
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1594,9 +1951,12 @@ models:
         period_type: duedate
         period_code: year
       intm_statatlas:
-        indicator_regex: '^Anzahl Kinos.le$'
+        indicator_regex: '^Anzahl Kinos.le mit 3D-Technik$'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: kinos3d
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1616,6 +1976,9 @@ models:
         indicator_regex: 'Kinokomplexe'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anzahlkinokomplexe
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1635,6 +1998,9 @@ models:
         indicator_regex: 'Multiplexkino'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anzahlmultiplexkinos
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1654,6 +2020,9 @@ models:
         indicator_regex: '^Anzahl Kino-Sitzplätze$'
         period_ref_from_transformation: "substring(period_ref, '^[0-9]{4}-[0-9]{2}-[0-9]{2}')::DATE"
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: anzahlkinositzpltze
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1671,6 +2040,9 @@ models:
         period_code: year
       intm_statatlas:
         indicator_regex: 'Arbeitsstätten der Kulturwirtschaft'
+      intm_statatlas_v2:
+        indicateur_id: arbeitsstttenkultur
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1688,6 +2060,9 @@ models:
         period_code: year
       intm_statatlas:
         indicator_regex: 'Beschäftigte der Kulturwirtschaft'
+      intm_statatlas_v2:
+        indicateur_id: beschftigtekultur
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk
@@ -1701,7 +2076,7 @@ models:
     config:
       odapi:
         indicator: 88
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Reineinkommen pro Steuerpflichtigem/-r, in Franken'
@@ -1722,7 +2097,7 @@ models:
     config:
       odapi:
         indicator: 89
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Reineinkommen pro Einwohner'
@@ -1743,7 +2118,7 @@ models:
     config:
       odapi:
         indicator: 90
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Steuerbares Einkommen pro Steuerpflichtigem/-r'
@@ -1764,7 +2139,7 @@ models:
     config:
       odapi:
         indicator: 91
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Steuerbares Einkommen pro Einwohner/-in'
@@ -1785,7 +2160,7 @@ models:
     config:
       odapi:
         indicator: 92
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Reineinkommen, in Mio. Franken'
@@ -1807,7 +2182,7 @@ models:
     config:
       odapi:
         indicator: 93
-        period_type: duedate
+        period_type: period
         period_code: year
       intm_statatlas:
         indicator_regex: 'Steuerbares Einkommen, in Mio. Franken'
@@ -1834,6 +2209,32 @@ models:
       intm_statatlas:
         indicator_regex: '^Anteil der Jugendlichen.*bis zum 25.*gymnasiales Maturit.?tszeugnis.*haben'
         period_ref_transformation: "substring(period_ref, '[0-9]{4}-[0-9]{2}-[0-9]{2}$')::DATE"
+      intm_statatlas_v2:
+        indicateur_id: gymmaturiquote
+        period_ref_from_transformation: "make_date(period_ref::INTEGER, 1, 1)"
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+    tests:
+      - odapi_intm_pk_nogroups
+      - statatlas_intm_pk
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+
+  # ---------------------------------------------------------------------------
+  - name: intm_bfs_statatlas_beschaeftigte_betriebswirtschaft
+  # ---------------------------------------------------------------------------
+    config:
+      odapi:
+        indicator: 170
+        period_type: duedate
+        period_code: year
+      intm_statatlas_v2:
+        indicateur_id: beschaeftigte
+        period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
+        grouping:
+          - column: group_name
+            name: 'betriebswirtschaftliche Ausrichtung'
+            total_value: 'totvars'
     tests:
       - odapi_intm_pk_nogroups
       - statatlas_intm_pk

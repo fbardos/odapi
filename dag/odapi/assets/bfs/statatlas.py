@@ -1,26 +1,28 @@
+import datetime as dt
+import json
 import logging
-import tqdm
+import re
 import urllib
-import pandas as pd
-import requests
+from dataclasses import dataclass
 from typing import List
 from typing import Tuple
-from dagster import asset
-from dagster import HookContext
-from odapi.resources.postgres.postgres import PostgresResource
-from dagster import AssetExecutionContext
-from dagster import MetadataValue
-from odapi.resources.extract.extract_handler import ExtractHandler
-import datetime as dt
-from pytz import timezone
-from dataclasses import dataclass
-from dagster import define_asset_job
-from dagster import success_hook
-from dagster import get_dagster_logger
-from dagster import ScheduleDefinition
-import re
+
 import jq
-import json
+import pandas as pd
+import requests
+import tqdm
+from dagster import AssetExecutionContext
+from dagster import HookContext
+from dagster import MetadataValue
+from dagster import ScheduleDefinition
+from dagster import asset
+from dagster import define_asset_job
+from dagster import get_dagster_logger
+from dagster import success_hook
+from pytz import timezone
+
+from odapi.resources.extract.extract_handler import ExtractHandler
+from odapi.resources.postgres.postgres import PostgresResource
 
 
 @asset(
@@ -29,9 +31,7 @@ import json
     key=['src', 'bfs_statatlas'],
 )
 def bfs_statatlas(
-    context: AssetExecutionContext,
-    extractor: ExtractHandler,
-    db: PostgresResource
+    context: AssetExecutionContext, extractor: ExtractHandler, db: PostgresResource
 ):
     """
 
@@ -89,12 +89,16 @@ def bfs_statatlas(
         map_id: int
         structure_id: int
 
-    def _load_structure(structure_id: str = '2857', max_depth: int = 4) -> Tuple[List[StructureItem], List[MapItem]]:
+    def _load_structure(
+        structure_id: str = '2857', max_depth: int = 4
+    ) -> Tuple[List[StructureItem], List[MapItem]]:
         return_structures = []
         return_maps = []
 
         if max_depth > 0:
-            url = f'https://www.atlas.bfs.admin.ch/json/13/structures/{structure_id}.json'
+            url = (
+                f'https://www.atlas.bfs.admin.ch/json/13/structures/{structure_id}.json'
+            )
             try:
                 logger.info(f'Recursively loading structure from URL: {url}')
                 response = requests.get(url)
@@ -107,38 +111,50 @@ def bfs_statatlas(
                 logger.error(f'Failed to parse JSON from URL: {url}')
                 return return_structures, return_maps
             _structure_id = jq.compile('.ida').input(response_json).first()
-            _structure_name_de = jq.compile('.translation."111"').input(response_json).first()
+            _structure_name_de = (
+                jq.compile('.translation."111"').input(response_json).first()
+            )
 
             # If the response has childrens, recursively call the function, otherwise, return maps.
             if len(jq.compile('.children.[]').input(response_json).all()) > 0:
-                _children_raw = jq.compile('.children | keys[]').input(response_json).all()
+                _children_raw = (
+                    jq.compile('.children | keys[]').input(response_json).all()
+                )
                 for raw_key in _children_raw:
                     match = re.match(r'_(\d+)', raw_key)
                     if match:
-                        return_structures.append(StructureItem(
-                            structure_id=int(_structure_id),
-                            structure_name_de=_structure_name_de,
-                            child_id=int(match.group(1)),
-                            child_name_de=jq.compile(f'.children."_{match.group(1)}"."111"').input(response_json).first(),
-                        ))
-                        structures, maps = _load_structure(match.group(1), max_depth=max_depth - 1)
+                        return_structures.append(
+                            StructureItem(
+                                structure_id=int(_structure_id),
+                                structure_name_de=_structure_name_de,
+                                child_id=int(match.group(1)),
+                                child_name_de=jq.compile(
+                                    f'.children."_{match.group(1)}"."111"'
+                                )
+                                .input(response_json)
+                                .first(),
+                            )
+                        )
+                        structures, maps = _load_structure(
+                            match.group(1), max_depth=max_depth - 1
+                        )
                         return_structures.extend(structures)
                         return_maps.extend(maps)
 
             # If the response has maps, collect them.
             if len(jq.compile('.info.[]').input(response_json).all()) > 0:
                 for map in jq.compile('.info | .[].MAP').input(response_json).all():
-                    return_maps.append(MapItem(
-                        map_id=int(map),
-                        structure_id=int(_structure_id),
-                    ))
+                    return_maps.append(
+                        MapItem(
+                            map_id=int(map),
+                            structure_id=int(_structure_id),
+                        )
+                    )
 
         return return_structures, return_maps
 
     def _expand_mother_child_structure_relations(
-        data: pd.DataFrame,
-        structures: List[StructureItem],
-        maps: List[MapItem]
+        data: pd.DataFrame, structures: List[StructureItem], maps: List[MapItem]
     ) -> pd.DataFrame:
 
         # Build hierarcy of structures, starting with maps
@@ -148,20 +164,34 @@ def bfs_statatlas(
         assert isinstance(df_maps, pd.DataFrame)
         max_depth = 6
         for i in range(max_depth):
-            df_maps = df_maps.merge(df_structures[['child_id', 'child_name_de', 'structure_id']], left_on='structure_id', right_on='child_id', how='left')
+            df_maps = df_maps.merge(
+                df_structures[['child_id', 'child_name_de', 'structure_id']],
+                left_on='structure_id',
+                right_on='child_id',
+                how='left',
+            )
 
             # Make the joined child_id the new structure_id, to be joined in the next iteration
             df_maps['structure_id'] = df_maps['structure_id_y']
-            df_maps.drop(columns=['structure_id_x', 'structure_id_y'], errors='ignore', inplace=True)
+            df_maps.drop(
+                columns=['structure_id_x', 'structure_id_y'],
+                errors='ignore',
+                inplace=True,
+            )
 
-            df_maps.rename(inplace=True, columns={
-                'child_id': f'mother_{i}_id',
-                'child_name_de': f'mother_{i}_name',
-            })
+            df_maps.rename(
+                inplace=True,
+                columns={
+                    'child_id': f'mother_{i}_id',
+                    'child_name_de': f'mother_{i}_name',
+                },
+            )
 
             # Break if no more mothers are found
             if df_maps[f'mother_{i}_id'].isnull().all():
-                df_maps.drop(columns=[f'mother_{i}_id', f'mother_{i}_name'], inplace=True)
+                df_maps.drop(
+                    columns=[f'mother_{i}_id', f'mother_{i}_name'], inplace=True
+                )
                 break
 
         # Join hierarchy to the data table
@@ -175,9 +205,14 @@ def bfs_statatlas(
     structures, maps = _load_structure(max_depth=7)
     unique_maps = list(set(maps))
 
-    for map in tqdm.tqdm(unique_maps, mininterval=10, desc='Loading asset dataframes...'):
+    for map in tqdm.tqdm(
+        unique_maps, mininterval=10, desc='Loading asset dataframes...'
+    ):
         try:
-            df = pd.read_csv(f'https://www.atlas.bfs.admin.ch/core/projects/13/xshared/csv/{map.map_id}_131.csv', sep=';')
+            df = pd.read_csv(
+                f'https://www.atlas.bfs.admin.ch/core/projects/13/xshared/csv/{map.map_id}_131.csv',
+                sep=';',
+            )
             df = _expand_mother_child_structure_relations(df, structures, maps)
             df['low_level_structure_id'] = map.structure_id
             dataframes.append(df)
@@ -186,7 +221,9 @@ def bfs_statatlas(
             skips += 1
             continue
 
-    logging.info(f'Loaded dataframes, skipped {skips} assets, highest ID found {max_found}.')
+    logging.info(
+        f'Loaded dataframes, skipped {skips} assets, highest ID found {max_found}.'
+    )
     df = pd.concat(dataframes)
 
     # Remove duplicates
@@ -197,21 +234,31 @@ def bfs_statatlas(
     df['GEO_ID'] = df['GEO_ID'].astype(str)
 
     # Write to database
-    df.to_sql('bfs_statatlas', db.get_sqlalchemy_engine(), schema='src', if_exists='replace', index=False)
+    df.to_sql(
+        'bfs_statatlas',
+        db.get_sqlalchemy_engine(),
+        schema='src',
+        if_exists='replace',
+        index=False,
+    )
 
     # Store extract via extractor
     execution_date = dt.datetime.now(tz=timezone('Europe/Zurich'))
-    key = '/'.join(['bfs_statatlas', f'extracted_data_{execution_date.isoformat()}.fernet'])
+    key = '/'.join(
+        ['bfs_statatlas', f'extracted_data_{execution_date.isoformat()}.fernet']
+    )
     extractor.write_data(key, df)
 
     # Insert metadata
-    context.add_output_metadata(metadata={
-        'max_found_index': max_found,
-        'amount_of_skips': skips,
-        'num_records': len(df.index),
-        'num_cols': len(df.columns),
-        'preview': MetadataValue.md(df.head().to_markdown()),
-    })
+    context.add_output_metadata(
+        metadata={
+            'max_found_index': max_found,
+            'amount_of_skips': skips,
+            'num_records': len(df.index),
+            'num_cols': len(df.columns),
+            'preview': MetadataValue.md(df.head().to_markdown()),
+        }
+    )
 
 
 @success_hook(required_resource_keys={'healthcheck'})
@@ -232,4 +279,3 @@ schedule_statatlas = ScheduleDefinition(
     job=job_statatlas,
     cron_schedule='5 2 * * 6',  # once per week, on Saturday at 02:05
 )
-

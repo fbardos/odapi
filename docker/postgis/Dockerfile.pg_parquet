@@ -1,7 +1,7 @@
 ARG POSTGRES_MAJOR=16
 
 # Use the bullseye based image
-FROM postgis/postgis:${POSTGRES_MAJOR}-3.5
+FROM postgis/postgis:${POSTGRES_MAJOR}-3.5-alpine
 
 # Re‐declare ARG inside this stage so $POSTGRES_MAJOR is available in RUN commands
 ARG POSTGRES_MAJOR
@@ -13,19 +13,42 @@ ENV DEBIAN_FRONTEND noninteractive
 ##############################################################################
 
 # Install system packages required for building Rust & pg_parquet
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      build-essential \
+# RUN apt-get update && \
+#     apt-get install -y --no-install-recommends \
+#       build-essential \
+#       curl \
+#       ca-certificates \
+#       git \
+#       libpq-dev \
+#       pkg-config \
+#       llvm \
+#       clang \
+#       postgresql-server-dev-${POSTGRES_MAJOR} \
+#       make && \
+#     rm -rf /var/lib/apt/lists/*
+# Install system packages required for building Rust & pg_parquet
+RUN apk add --no-cache \
+      build-base \
       curl \
       ca-certificates \
       git \
-      libpq-dev \
-      pkg-config \
+      pkgconf \
       llvm \
       clang \
-      postgresql-server-dev-${POSTGRES_MAJOR} \
-      make && \
-    rm -rf /var/lib/apt/lists/*
+      clang-dev \
+      postgresql-dev \
+      openssl-dev \
+      zlib-dev \
+      xz-dev \
+      bzip2-dev \
+      zstd-dev \
+      libxml2-dev \
+      libzip-dev \
+      openssl-libs-static \
+      zlib-static \
+      xz-static \
+      bzip2-static \
+      zstd-static
 
 # Install Rust + cargo-pgrx
 #  Note: rustup-init script will place ~/.cargo/bin in PATH for root;
@@ -49,7 +72,10 @@ RUN git clone https://github.com/CrunchyData/pg_parquet.git
 WORKDIR /usr/src/pg_parquet
 
 # Build & install into the Postgres installation specified by pg_config
-RUN cargo pgrx install --release
+# RUN cargo pgrx install --release
+RUN export RUSTFLAGS="-C target-feature=-crt-static" \
+    && cargo pgrx install --release
+
 
 # Append the pg_parquet preload line into the “postgresql.conf.sample” under the PG sharedir
 RUN printf "shared_preload_libraries = 'pg_parquet'\n" >> "$(pg_config --sharedir)/postgresql.conf.sample"

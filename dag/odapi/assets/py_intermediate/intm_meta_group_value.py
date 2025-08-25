@@ -7,6 +7,7 @@ from dagster import DagsterError
 from dagster import asset
 from dagster import asset_check
 from great_expectations import expectations as gxe
+from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.qa.great_expectations import GreatExpectationsResource
@@ -70,16 +71,18 @@ def _asset(
 
     with db.get_sqlalchemy_engine().begin() as connection:
         connection.execute(
-            """
-            CREATE SCHEMA IF NOT EXISTS py_intermediate;
-            CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_group_value (
-                group_value_id SMALLSERIAL,
-                group_value_name TEXT UNIQUE
-            );
-            INSERT INTO py_intermediate.intm_meta_group_value (group_value_id, group_value_name)
-            VALUES (DEFAULT, 'GROUP TOTAL')
-            ON CONFLICT (group_value_name) DO NOTHING;
-        """
+            text(
+                """
+                CREATE SCHEMA IF NOT EXISTS py_intermediate;
+                CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_group_value (
+                    group_value_id SMALLSERIAL,
+                    group_value_name TEXT UNIQUE
+                );
+                INSERT INTO py_intermediate.intm_meta_group_value (group_value_id, group_value_name)
+                VALUES (DEFAULT, 'GROUP TOTAL')
+                ON CONFLICT (group_value_name) DO NOTHING;
+                """
+            )
         )
 
         # Write the DataFrame to the database
@@ -88,12 +91,14 @@ def _asset(
                 'Inserting group value: %s, on index %s', row['group_value'], idx
             )
             connection.execute(
-                f"""
-                INSERT INTO py_intermediate.intm_meta_group_value (group_value_id, group_value_name)
-                VALUES (DEFAULT, %s)
-                ON CONFLICT (group_value_name) DO NOTHING;
-                """,
-                row['group_value'],
+                text(
+                    f"""
+                    INSERT INTO py_intermediate.intm_meta_group_value (group_value_id, group_value_name)
+                    VALUES (DEFAULT, :group_value)
+                    ON CONFLICT (group_value_name) DO NOTHING;
+                    """
+                ),
+                {'group_value': row['group_value']},
             )
 
     return df

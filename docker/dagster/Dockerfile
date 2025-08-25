@@ -1,4 +1,5 @@
 FROM python:3.10-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ARG GIT_CLONE_ROOT=/tmp/odapi
 ARG GIT_CLONE_USER=fbardos
@@ -25,16 +26,16 @@ RUN apt-get update \
 # Load files
 COPY ./docker/.deploy/.env /opt/dagster/app/
 
-# Install miniconda
-ENV CONDA_DIR=/opt/conda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py310_24.7.1-0-Linux-x86_64.sh -O ~/miniconda.sh \
-    && /bin/bash ~/miniconda.sh -b -p $CONDA_DIR \
-    && rm ~/miniconda.sh
-ENV PATH=$CONDA_DIR/bin:$PATH
-
-# Must be placed after conda install, otherwise, will load wrong version
-COPY ./environment.yml /tmp/environment.yml
-RUN conda env create --solver libmamba -f /tmp/environment.yml && conda clean -ay
+# # Install miniconda
+# ENV CONDA_DIR=/opt/conda
+# RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py310_24.7.1-0-Linux-x86_64.sh -O ~/miniconda.sh \
+#     && /bin/bash ~/miniconda.sh -b -p $CONDA_DIR \
+#     && rm ~/miniconda.sh
+# ENV PATH=$CONDA_DIR/bin:$PATH
+#
+# # Must be placed after conda install, otherwise, will load wrong version
+# COPY ./environment.yml /tmp/environment.yml
+# RUN conda env create --solver libmamba -f /tmp/environment.yml && conda clean -ay
 
 ARG CACHEBUST=1
 
@@ -52,18 +53,21 @@ COPY ./docker/.deploy/manifest.json /opt/dbt/target/
 # Overwrite dagster.yaml again, will otherise not use psql/minio
 COPY ./docker/dagster/dagster.yaml /opt/dagster/app/
 
-# Change shell
-SHELL ["conda", "run", "-n", "odapi", "/bin/bash", "-c"]
-RUN pip install --no-dependencies /opt/dagster/app
+# # Change shell
+# SHELL ["conda", "run", "-n", "odapi", "/bin/bash", "-c"]
+# RUN pip install --no-dependencies /opt/dagster/app
 
 COPY ./docker/.deploy/.env /opt/dagster/app
-ENV PROJ_LIB=/opt/conda/share/proj
+# ENV PROJ_LIB=/opt/conda/share/proj
+
+WORKDIR ${DAGSTER_HOME}
+RUN uv sync --locked  # read from uv.lock
+RUN . .venv/bin/activate
+RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/dbt.py
 
 # Load DBT deps
 RUN dbt deps --project-dir /opt/dbt
 
-WORKDIR ${DAGSTER_HOME}
-RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/dbt.py
-
 EXPOSE 3000
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "odapi", "dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
+# ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "odapi", "dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]
+ENTRYPOINT ["uv", "run", "dagster-webserver", "-h", "0.0.0.0", "-p", "3000"]

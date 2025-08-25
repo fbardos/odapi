@@ -60,6 +60,7 @@
             , src.indikator_value as indicator_value_numeric
             , NULL::TEXT as indicator_value_text
             , 'Gemeindeportrait des Kantons Zürich' as source
+            , 1 as _etl_version
         from src
     )
     select * from mapping

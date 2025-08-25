@@ -4,9 +4,9 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 3,Bevoelkerung (staendig),01 Bevölkerung,01.01 Bestand,staendig,,Personen,Anzahl der Bevölkerung
 4,Anteil versiegelte Flaeche,02 Raum & Umwelt,02.01 Bodennutzung,Versiegelte Fläche,,Prozent,Anteil der versiegelten Flaeche
 5,Geburtenueberschuss,01 Bevölkerung,01.02 Bewegungen,Geburtenüberschuss,,Personen,Geburtenüberschuss
-6,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-7,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
-8,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Geburtenüberschuss
+6,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,total,Personen pro 1000 Einwohner/innen,Wanderungssaldo total
+7,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Ein-/Auswanderungen,Personen pro 1000 Einwohner/innen,Wanderungssaldo Ein-/Auswanderungen
+8,Wanderungssaldo,01 Bevölkerung,01.02 Bewegungen,Wanderungssaldo,Binnenwanderungssaldo,Personen pro 1000 Einwohner/innen,Binnenwanderungssaldo
 9,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Gesamtfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Gesamtflaeche
 10,Bevölkerungsdichte,01 Bevölkerung,01.01 Bestand,Bevölkerungsdichte,Produktivfläche,Einwohner/innnen pro km2,Einwohner/innen pro km2 Produktivfläche
 11,Jugendquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Jugendquotient,Prozent,Personen im Alter von weniger als 20 Jahren pro 100 Personen im Alter von 20-64 Jahre
@@ -20,7 +20,7 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 19,Heiraten,01 Bevölkerung,01.02 Bewegungen,Heiraten,,Personen pro 1000,Heiraten pro 1000 Einwohner/innen
 20,Scheidungen,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Personen pro 1000,Scheidungen pro 1000 Einwohner/innen
 21,Todesfälle,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Personen pro 1000,Todesfälle pro 1000 Einwohner/innen
-22,Einbürgerungen,01 Bevölkerung,01.02 Bewegungen,Einbürgerungen,,Rohe Einbürgerungsziffer,Rohe Einbbürgerungsziffer
+22,Einbürgerungen,01 Bevölkerung,01.02 Bewegungen,Einbürgerungen,,Personen pro 1000,Rohe Einbbürgerungsziffer
 23,Einpersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Einpersonenhaushalt,Anteil Prozent,Anteil der Einpersonenhaushalte am Total der Privathaushalte
 24,Zweipersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Zweipersonenhaushalt,Anteil Prozent,Anteil der Zweipersonenhaushalte am Total der Privathaushalte
 25,Dreipersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Dreipersonenhaushalt,Anteil Prozent,Anteil der Dreipersonenhaushalte am Total der Privathaushalte
@@ -165,3 +165,14 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 164,"Tiere in landwirtschaftlichen Betrieben, nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.02 Tiere,,,Anzahl,Anzahl der Tiere
 165,"Landwirtschaftliche Nutzfläche (LN), nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.03 Landwirtschaftliche Nutzfläche,,,Hektar,Landwirtschaftliche Nutzfläche in Hektar
 166,"Beschäftigte in landwirtschaftlichen Betrieben, nach Art und Betriebssystem",07 Land- & Forstwirtschaft,07.04 Beschäftigte,,,Anzahl,Anzahl Beschäftigte in landwirtschaftlichen Betrieben
+167,"Anteil der 20-39-Jähringen",01 Bevölkerung,01.01 Bestand,Altersstruktur,20-39 Jahre,Prozent,Anteil der 20-39-Jährigen an der ständigen Wohnbevölkerung
+168,Anteil Ausländer/innen (EU),01 Bevölkerung,01.04 Migration,Anteil Ausländerinnen,ständig,Prozent,Anteil der Staatsangehörigen eines EU-Mitgliedsstaates an der gesamten ständigen ausländischen Wohnbevölkerung
+169,"Anteil der 20-64-Jähringen",01 Bevölkerung,01.01 Bestand,Altersstruktur,20-64 Jahre,Prozent,Anteil der 20-64-Jährigen an der ständigen Wohnbevölkerung
+170,"Beschäftigte in Landwirtschaft, nach betriebswirtschaftlicher Ausrichtung",06 Industrie & Dienstleistungen,06.01 Beschäftigte,,,Anzahl,Beschäftigte in Landwirtschaft nach betriebswirtschaftlicher Ausrichtung
+171,"Wohnfläche pro Person",09 Bauen & Wohnen,09.02 Wohnen,Wohnfläche,,Quadratmeter (m2),Durchschnittliche Wohnfläche pro Person
+172,"Anteil der 0-19-Jähringen",01 Bevölkerung,01.01 Bestand,Altersstruktur,0-19 Jahre,Prozent,Anteil der 0-19-Jährigen an der ständigen Wohnbevölkerung
+173,"Anteil der 65+-Jähringen",01 Bevölkerung,01.01 Bestand,Altersstruktur,65+ Jahre,Prozent,Anteil der 65+-Jährigen an der ständigen Wohnbevölkerung
+174,Veränderung Altersquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Altersquotient,Prozentpunkte,Veränderung des Altersquotienten in Prozentpunkten
+175,Gesamtquotient,01 Bevölkerung,01.01 Bestand,Altersstruktur,Gesamtquotient,Prozent,Personen im Alter von 0 bis 19 und über 64 Jahren pro 100 Personen im Alter von 20 bis 64 Jahren
+176,Einbürgerungen,01 Bevölkerung,01.02 Bewegungen,Einbürgerungen,,Personen,"Erwerb des Schweizer Bürgerrechts, Anzahl Fälle"
+177,Ausländer,01 Bevölkerung,01.04 Migration,Auslände,,Anzahl,Anzahl Ausländer/-innen
