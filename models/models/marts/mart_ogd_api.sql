@@ -23,9 +23,23 @@ with src as (
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_altersstruktur_altersquotient')}}
     UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_altersstruktur_gesamtquotient')}}
+    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_altersstruktur_greyingindex')}}
     UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_altersstruktur_0019jahre')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_altersstruktur_2039jahre')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_altersstruktur_2064jahre')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_altersstruktur_65plusjahre')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_auslaender_anzahl')}}
+    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_auslaenderanteil_staendig')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_auslaenderanteil_eu')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_auslaenderanteil_deutsche')}}
     UNION ALL
@@ -48,6 +62,8 @@ with src as (
     select * from {{ ref('intm_bfs_statatlas_todesfaelle_anzahl')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_einbuergerungen')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_einbuergerungen_anzahl')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_haushalt_1pax')}}
     UNION ALL
@@ -111,7 +127,11 @@ with src as (
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_bau_wohnung')}}
     UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_bau_wohnung_anzahl')}}
+    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_efh')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_wohnflaeche')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_zi34')}}
     UNION ALL
@@ -168,6 +188,8 @@ with src as (
     select * from {{ ref('intm_bfs_statatlas_arbeitsstaetten_kultur')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_beschaeftigte_kultur')}}
+    UNION ALL
+    select * from {{ ref('intm_bfs_statatlas_beschaeftigte_betriebswirtschaft')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_tax_reineinkommen_steuerpflichtig')}}
     UNION ALL

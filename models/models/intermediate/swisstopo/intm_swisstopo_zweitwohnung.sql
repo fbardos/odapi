@@ -141,4 +141,7 @@ with src as (
         , source
     from src
 )
-select * from union_all
+select
+    *
+    , 1 as _etl_version
+from union_all

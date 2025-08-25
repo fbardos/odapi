@@ -1,3 +1,4 @@
+import great_expectations as gx
 import pandas as pd
 from dagster import AssetCheckResult
 from dagster import AssetCheckSeverity
@@ -7,6 +8,7 @@ from dagster import DagsterError
 from dagster import asset
 from dagster import asset_check
 from great_expectations import expectations as gxe
+from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.qa.great_expectations import GreatExpectationsResource
@@ -56,23 +58,28 @@ def _asset(
     # Do not insert row if it already exists.
     with db.get_sqlalchemy_engine().begin() as connection:
         connection.execute(
-            """
-            CREATE SCHEMA IF NOT EXISTS py_intermediate;
-            CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_source (
-                id SMALLSERIAL,
-                source TEXT UNIQUE
-            );
-        """
+            text(
+                """
+                CREATE SCHEMA IF NOT EXISTS py_intermediate;
+                CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_source (
+                    id SMALLSERIAL,
+                    source TEXT UNIQUE
+                );
+                """
+            )
         )
 
         # Write the DataFrame to the database
         for _, row in df.iterrows():
             connection.execute(
-                f"""
-                INSERT INTO py_intermediate.intm_meta_source (id, source)
-                VALUES (DEFAULT, '{row['source']}')
-                ON CONFLICT (source) DO NOTHING;
-                """
+                text(
+                    f"""
+                    INSERT INTO py_intermediate.intm_meta_source (id, source)
+                    VALUES (DEFAULT, :source)
+                    ON CONFLICT (source) DO NOTHING;
+                    """
+                ),
+                {'source': row['source']},
             )
 
     return df

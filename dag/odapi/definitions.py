@@ -7,6 +7,7 @@ import odapi.assets as assets
 import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 import odapi.assets.bfs.stat_tab as assets_stat_tab
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
+import odapi.assets.bfs.statatlas_v2 as assets_bfs_statatlas_v2
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 import odapi.assets.swisstopo.api as assets_swisstopo
 from odapi.assets.dbt import dbt
@@ -23,6 +24,7 @@ from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
 from odapi.resources.url.healthcheck import HealthCheckResource
 from odapi.resources.url.pushover import PushoverResource
+from odapi.resources.url.requests_info import RequestsInfo
 from odapi.resources.url.stat_tab import StatTabResource
 
 ################################################################################
@@ -74,12 +76,16 @@ defs = Definitions(
             user_key=EnvVar('PUSHOVER__USER_KEY'),
             api_token=EnvVar('PUSHOVER__API_TOKEN'),
         ),
+        'requests_info': RequestsInfo(
+            user_from=EnvVar('REQUESTS__FROM'),
+        ),
         'stat_tab': StatTabResource(),
         'great_expectations': GreatExpectationsResource(),
     },
     jobs=[
         *assets_opendataswiss.jobs_opendataswiss,
         assets_bfs_statatlas.job_statatlas,
+        assets_bfs_statatlas_v2.job_statatlas_v2,
         assets_swissboundaries.job_bfs_swissboundaries,
         assets_swisstopo.job_geoadmin,
         assets_stat_tab.job_bfs_stat_tab,
@@ -89,6 +95,7 @@ defs = Definitions(
     ],
     schedules=[
         assets_bfs_statatlas.schedule_statatlas,
+        assets_bfs_statatlas_v2.schedule_statatlas_v2,
         assets_swissboundaries.schedule_bfs_swissboundaries,
         assets_swisstopo.schedule_geoadmin,
         assets_stat_tab.schedule_stat_tab,

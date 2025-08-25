@@ -6,6 +6,7 @@ sources:
     schema: src
     tables:
       - name: bfs_statatlas
+      - name: bfs_statatlas_v2
       - name: bfs_swissboundaries_2015
       - name: bfs_swissboundaries_gemeinde
       - name: bfs_swissboundaries_bezirk

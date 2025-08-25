@@ -22,6 +22,7 @@
     'indicator_value_numeric',
     'indicator_value_text',
     'source',
+    '_etl_version',
 ] %}
 {{ return(default__expect_table_columns_to_match_ordered_list(model, column_list, transform)) }}
 {% endtest %}

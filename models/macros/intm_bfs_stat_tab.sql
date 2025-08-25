@@ -80,7 +80,7 @@
 		{% endfor %}
 	)
 
-    
+
     , intm_build_total as (
         {% for indicator in indicators %}
             {% set grouping = indicator.get('grouping', []) %}
@@ -229,10 +229,12 @@
             {% endif %}
         {% endfor %}
     )
-	
-	select *
+
+	select
+        *
+        , 1 as _etl_version
     from set_names_for_group_totals
-	where 
+	where
 		1=1
 		-- global filters
 		AND geo_code = 'polg' AND geo_value is not NULL -- can be extended later
