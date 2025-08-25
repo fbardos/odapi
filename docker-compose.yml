@@ -31,6 +31,7 @@ services:
       POSTGRES_USER: ${STORAGE__PSQL__USER}
       POSTGRES_PASSWORD: ${STORAGE__PSQL__PASSWORD}
       POSTGRES_DB: ${STORAGE__PSQL__DB}
+      PAGER: "less -FRX"  # used for paging psql output
     volumes:
       - data-postgis:/var/lib/postgresql/data
     logging: *extended-logging
