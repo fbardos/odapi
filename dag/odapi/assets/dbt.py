@@ -42,5 +42,5 @@ else:
 
 
 @dbt_assets(manifest=dbt_manifest_path)
-def assets_homelab_dbt(context: AssetExecutionContext, dbt: DbtCliResource):
-    yield from dbt.cli(["build"], context=context).stream()
+def assets_homelab_dbt(context: AssetExecutionContext, dbt_res: DbtCliResource):
+    yield from dbt_res.cli(["build"], context=context).stream()
