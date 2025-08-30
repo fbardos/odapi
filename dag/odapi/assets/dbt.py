@@ -21,13 +21,15 @@ dbt_path = Path(dbt_path_str).absolute()
 dbt_profiles = Path(dbt_profiles_str).resolve()
 dbt_project = DbtProject(project_dir=dbt_path, profiles_dir=dbt_profiles)
 
-dbt = DbtCliResource(project_dir=dbt_project, profiles_dir=dbt_profiles)
+dbt_cmd = DbtCliResource(project_dir=dbt_project, profiles_dir=dbt_profiles)
 
 if os.getenv('DAGSTER_DBT_PARSE_PROJECT_ON_LOAD'):
     logger = get_dagster_logger()
-    logger.info('Parsing dbt project, because ENV DAGSTER_DBT_PARSE_PROJECT_ON_LOAD is set...')
+    logger.info(
+        'Parsing dbt project, because ENV DAGSTER_DBT_PARSE_PROJECT_ON_LOAD is set...'
+    )
     dbt_manifest_path = (
-        dbt.cli(
+        dbt_cmd.cli(
             ["--quiet", "parse"],
             target_path=Path('target'),
         )
@@ -42,4 +44,3 @@ else:
 @dbt_assets(manifest=dbt_manifest_path)
 def assets_homelab_dbt(context: AssetExecutionContext, dbt: DbtCliResource):
     yield from dbt.cli(["build"], context=context).stream()
-
