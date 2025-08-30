@@ -265,5 +265,9 @@ with _dummy as (
         , _etl_version desc
 )
 
-select * from keep_only_one_row_v1_v2
+, final as (
+    select *
+    from keep_only_one_row_v1_v2
+)
+
 {% endmacro %}
