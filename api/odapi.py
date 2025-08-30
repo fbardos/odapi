@@ -82,7 +82,7 @@ def get_sync_engine() -> Engine:
 
 
 def get_metadata():
-    return MetaData(bind=None, schema='dbt')
+    return MetaData(schema='dbt')
 
 
 @dataclass
@@ -104,7 +104,7 @@ class TableDefinition(ABC):
 
     @property
     def metadata(cls):
-        return MetaData(bind=None, schema=cls.SCHEMA)
+        return MetaData(schema=cls.SCHEMA)
 
     def get_table(self, engine: Engine):
 
@@ -117,7 +117,6 @@ class TableDefinition(ABC):
         return Table(
             self.TABLE_NAME,
             self.metadata,
-            autoload=self.AUTOLOAD,
             autoload_with=engine,
             *coldefs,
         )

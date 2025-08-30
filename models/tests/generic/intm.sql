@@ -45,13 +45,15 @@
 --------------------------------------------------------------------------------
 -- expect at least 2000 municipalities in tables with municipalities
 --------------------------------------------------------------------------------
+-- Do not group by knowledge_date_from or knowledge_date_to, because when
+-- only a few municipalities get updated, the count(*) will be lower than min_value.
 {% test odapi_intm_unique_municipalities(model) %}
     {{ adapter.dispatch('test_expect_table_row_count_to_be_between', 'dbt_expectations') (
         model,
         min_value=2000,
         max_value=None,
-        group_by=['knowledge_date_from', 'period_ref'],
-        row_condition="geo_code = 'polg'",
+        group_by=['period_ref'],
+        row_condition="geo_code = 'polg' and knowledge_date_to is NULL",
         strictly=False,
     ) }}
 {% endtest %}
