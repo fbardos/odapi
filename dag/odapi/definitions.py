@@ -10,7 +10,7 @@ import odapi.assets.bfs.statatlas as assets_bfs_statatlas
 import odapi.assets.bfs.statatlas_v2 as assets_bfs_statatlas_v2
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 import odapi.assets.swisstopo.api as assets_swisstopo
-from odapi.assets.dbt import dbt
+from odapi.assets.dbt import dbt_cmd
 from odapi.resources.ckan.ckan import OpenDataSwiss
 from odapi.resources.crypto.fernet import FernetCipher
 from odapi.resources.extract.extract_handler import ExtractHandler
@@ -42,7 +42,7 @@ defs = Definitions(
     asset_checks=load_asset_checks_from_package_module(assets),
     resources={
         # Global resources
-        'dbt': dbt,
+        'dbt_res': dbt_cmd,
         'db': PostgresResource(
             sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
         ),
