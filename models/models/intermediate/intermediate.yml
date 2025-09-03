@@ -88,7 +88,7 @@ models:
           - '^_?\d+_72_71_70_?$'        # 01 - Bevoelkerung / Bevoelkerungsstand / Stand
         distinct_rows: true
       intm_statatlas_v2:
-        indicateur_id: stndigewohnbevlkerun
+        indicateur_id: staendigepop
         period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
         # map: map179  --> not needed at the moment, because max(map_id) gets selected
     tests:
