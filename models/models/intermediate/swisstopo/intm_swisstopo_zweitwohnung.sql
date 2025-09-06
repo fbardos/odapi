@@ -144,4 +144,5 @@ with src as (
 select
     *
     , 1 as _etl_version
+    , 'zahl' as measure_code
 from union_all

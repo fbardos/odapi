@@ -45,19 +45,11 @@ with src as (
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_auslaenderanteil_franzoesisch')}}
     UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_auslaenderanteil_europaeisch')}}
-    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_geburten')}}
-    UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_heiraten')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_heiraten_anzahl')}}
     UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_scheidungen')}}
-    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_scheidungen_anzahl')}}
-    UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_todesfaelle')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_todesfaelle_anzahl')}}
     UNION ALL
@@ -121,11 +113,7 @@ with src as (
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_schliessung_arbeitsplaetze')}}
     UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_bau_gebaeude')}}
-    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_bau_gebaeude_anzahl')}}
-    UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_bau_wohnung')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_bau_wohnung_anzahl')}}
     UNION ALL
@@ -165,13 +153,9 @@ with src as (
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_sozialhilfe_anzahl')}}
     UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_sozialhilfe_quote')}}
-    UNION ALL
     select * from {{ ref('intm_bfs_statatlas_museen')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_biblio')}}
-    UNION ALL
-    select * from {{ ref('intm_bfs_statatlas_biblio_100k')}}
     UNION ALL
     select * from {{ ref('intm_bfs_statatlas_kinos')}}
     UNION ALL
@@ -283,6 +267,7 @@ with src as (
             when coalesce(group_value_4.group_value_id, 1) = 1 then TRUE
             else FALSE
         end as _group_value_4_is_total
+        , measure_code
         , indicator_value_numeric
         , indicator_value_text
         , dim.id::SMALLINT as source_id
