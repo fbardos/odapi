@@ -42,6 +42,7 @@ with src as (
         , NULL::TEXT as indicator_value_text
         , 'Eidgenössische Steuerverwaltung ESTV' as source
         , 1 as _etl_version
+        , 'zahl' as measure_code
     from {{ ref('stgn_estv_db_np') }}
     where
         zivilstand = 'T'  -- Maybe extend later
