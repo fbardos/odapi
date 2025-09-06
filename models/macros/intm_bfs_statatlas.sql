@@ -269,5 +269,35 @@ with _dummy as (
     select *
     from keep_only_one_row_v1_v2
 )
+    
+{% if execute %}
+    {% set measure_config = config.require('odapi').get('measure', none) %}
+{% endif %}
+{% if measure_config is none %}
+    select
+        indicator_id
+        , geo_code
+        , geo_value
+        , knowledge_date_from
+        , knowledge_date_to
+        , period_type
+        , period_code
+        , period_ref_from
+        , period_ref
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
+        , indicator_value_numeric
+        , indicator_value_text
+        , source
+        , _etl_version
+        , 'zahl' as measure_code
+    from final
+{% endif %}
 
 {% endmacro %}

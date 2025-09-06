@@ -1,14 +1,18 @@
 -- Convention: one mart per source?
 {% macro intm_measures(upstream_model) %}
+    {% set measure_config = none %}
+
     {% if execute %}
         {% set measure_config = config.require('odapi').get('measure', none) %}
     {% endif %}
 
+    -- XXX: Add db index for also fast-filter measure_code
     -- XXX: Add final CTE for all INTM macros, otherwise, will not work.
-    with measure_src as (
+    , measure_src as (
         select *
         from final  -- final of macro intm_bfs_statatlas etc
     )
+
     , bev_src as (
         select
             geo_code
@@ -20,7 +24,13 @@
             knowledge_date_to is NULL
     )
 
-    {% if measure_config is not none %}
+    {% if measure_config is none %}
+        , measure_final as (
+                select *
+                , NULL::TEXT as measure_code 
+                from final
+        )
+    {% else %}
     
         -- If base is not == zahl, then first calc back to zahl
         -- if base == anteil, then calc to anzahl
@@ -31,100 +41,126 @@
         {% elif measure_config.get('base', none) in ['pro1000', 'pro100000'] %}
             , measure_zahl as (
                 select
-                    indicator_id
-                    , geo_code
-                    , geo_value
-                    , knowledge_date_from
-                    , knowledge_date_to
-                    , period_type
-                    , period_code
-                    , period_ref_from
-                    , period_ref
-                    , group_1_name
-                    , group_1_value
-                    , group_2_name
-                    , group_2_value
-                    , group_3_name
-                    , group_3_value
-                    , group_4_name
-                    , group_4_value
-                    , indicator_value_numeric * (
-                        bev_src.indicator_value_numeric /
-                        {% if measure_config.get('base', none) == 'pro1000' %}
+                    meas.indicator_id
+                    , meas.geo_code
+                    , meas.geo_value
+                    , meas.knowledge_date_from
+                    , meas.knowledge_date_to
+                    , meas.period_type
+                    , meas.period_code
+                    , meas.period_ref_from
+                    , meas.period_ref
+                    , meas.group_1_name
+                    , meas.group_1_value
+                    , meas.group_2_name
+                    , meas.group_2_value
+                    , meas.group_3_name
+                    , meas.group_3_value
+                    , meas.group_4_name
+                    , meas.group_4_value
+                    , meas.indicator_value_numeric * (
+                        bev.indicator_value_numeric /
+                        {% if measure_config.get('base', none) == 'pro100' %}
+                            100.0
+                        {% elif measure_config.get('base', none) == 'pro1000' %}
                             1000.0
                         {% elif measure_config.get('base', none) == 'pro100000' %}
                             100000.0
                         {% endif %}
                     ) as indicator_value_numeric
-                    , indicator_value_text
-                    , source
-                    , _etl_version
-                from measure_src
-                    left join bev_src on
-                        measure_src.geo_code = bev_src.geo_code
-                        and measure_src.geo_value = bev_src.geo_value
+                    , meas.indicator_value_text
+                    , meas.source
+                    , meas._etl_version
+                from measure_src meas
+                    left join bev_src bev on
+                        meas.geo_code = bev.geo_code
+                        and meas.geo_value = bev.geo_value
                         and
-                            extract(year from measure_src.period_ref)
-                            = extract(year from bev_src.period_ref)
+                            extract(year from meas.period_ref)
+                            = extract(year from bev.period_ref)
             )
         {% endif %}
         
         {% if measure_config.get('calc', none) is not none %}
             , measure_final as (
-                {% for calc in measure_config.get('calc', []) %}
-                    {% if loop.index0 > 0 %}
-                        UNION ALL
-                    {% else %}
-                        select
-                            indicator_id
-                            , geo_code
-                            , geo_value
-                            , knowledge_date_from
-                            , knowledge_date_to
-                            , period_type
-                            , period_code
-                            , period_ref_from
-                            , period_ref
-                            , group_1_name
-                            , group_1_value
-                            , group_2_name
-                            , group_2_value
-                            , group_3_name
-                            , group_3_value
-                            , group_4_name
-                            , group_4_value
-                            , indicator_value_numeric / (
-                                bev_src.indicator_value_numeric /
-                                {% if calc == 'pro1000' %}
-                                    1000.0
-                                {% elif calc == 'pro100000' %}
-                                    100000.0
-                                {% endif %}
-                            ) as indicator_value_numeric
-                            , indicator_value_text
-                            , source
-                            , _etl_version
-                            , {{ calc }} as measure_code
-                        from measure_zahl
-                            left join bev_src on
-                                measure_src.geo_code = bev_src.geo_code
-                                and measure_src.geo_value = bev_src.geo_value
-                                and
-                                    extract(year from measure_src.period_ref)
-                                    = extract(year from bev_src.period_ref)
-                    {% endif %}
+                select
+                    meas.indicator_id
+                    , meas.geo_code
+                    , meas.geo_value
+                    , meas.knowledge_date_from
+                    , meas.knowledge_date_to
+                    , meas.period_type
+                    , meas.period_code
+                    , meas.period_ref_from
+                    , meas.period_ref
+                    , meas.group_1_name
+                    , meas.group_1_value
+                    , meas.group_2_name
+                    , meas.group_2_value
+                    , meas.group_3_name
+                    , meas.group_3_value
+                    , meas.group_4_name
+                    , meas.group_4_value
+                    , meas.indicator_value_numeric
+                    , meas.indicator_value_text
+                    , meas.source
+                    , meas._etl_version
+                    , 'zahl' as measure_code
+                from measure_zahl meas
+
+                {% set _iter_without_zahl = measure_config.get('calc', []) + [measure_config.get('base', none)] %}
+                {% set _iter_without_zahl = _iter_without_zahl | reject("equalto", 'zahl') | list %}
+                {% for calc in _iter_without_zahl %}
+                    UNION ALL
+                    select
+                        meas.indicator_id
+                        , meas.geo_code
+                        , meas.geo_value
+                        , meas.knowledge_date_from
+                        , meas.knowledge_date_to
+                        , meas.period_type
+                        , meas.period_code
+                        , meas.period_ref_from
+                        , meas.period_ref
+                        , meas.group_1_name
+                        , meas.group_1_value
+                        , meas.group_2_name
+                        , meas.group_2_value
+                        , meas.group_3_name
+                        , meas.group_3_value
+                        , meas.group_4_name
+                        , meas.group_4_value
+                        , meas.indicator_value_numeric / (
+                            bev.indicator_value_numeric /
+                            {% if calc == 'pro100' %}
+                                100.0
+                            {% elif calc == 'pro1000' %}
+                                1000.0
+                            {% elif calc == 'pro100000' %}
+                                100000.0
+                            {% endif %}
+                        ) as indicator_value_numeric
+                        , meas.indicator_value_text
+                        , meas.source
+                        , meas._etl_version
+                        , '{{ calc }}' as measure_code
+                    from measure_zahl meas
+                        left join bev_src bev on
+                            meas.geo_code = bev.geo_code
+                            and meas.geo_value = bev.geo_value
+                            and
+                                extract(year from meas.period_ref)
+                                = extract(year from bev.period_ref)
                 {% endfor %}
             )
         {% else %}
             , measure_final as (
                 select
                     *
-                    , {{ measure_config.get('base', 'zahl') }} as measure_code
+                    , '{{ measure_config.get("base", "zahl") }}' as measure_code
                 from measure_zahl
             )
         {% endif %}
-    {% else %}
-        , measure_final as (select * from final)
     {% endif %}
 
     select * from measure_final

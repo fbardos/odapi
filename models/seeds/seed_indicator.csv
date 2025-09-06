@@ -15,11 +15,7 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 14,Anteil Ausländer/innen,01 Bevölkerung,01.04 Migration,Anteil Ausländerinnen,ständig,Prozent,Anteil der ständigen ausländischen Bevölkerung an der gesamten ständigen Wohnbevölkerung
 15,Anteil Deutsche,01 Bevölkerung,01.04 Migration,Anteil Deutsche,ständig,Prozent,Anteil der deutschen Staatsangehörigen an der gesamten ständigen ausländischen Wohnbevölkerung
 16,Anteil Französisch,01 Bevölkerung,01.04 Migration,Anteil Französisch,ständig,Prozent,Anteil der französischen Staatsangehörigen an der gesamten ständigen ausländischen Wohnbevölkerung
-17,Anteil Europäisch,01 Bevölkerung,01.04 Migration,Anteil Europäisch,ständig,Prozent,Anteil der Staatsangehörigen eines EU-Mitgliedsstaates an der gesamten ständigen ausländischen Wohnbevölkerung
 18,Geburten,01 Bevölkerung,01.02 Bewegungen,Geburten,,Personen pro 1000,Lebendgeburten pro 1000 Einwohner/innen
-19,Heiraten,01 Bevölkerung,01.02 Bewegungen,Heiraten,,Personen pro 1000,Heiraten pro 1000 Einwohner/innen
-20,Scheidungen,01 Bevölkerung,01.02 Bewegungen,Scheidungen,,Personen pro 1000,Scheidungen pro 1000 Einwohner/innen
-21,Todesfälle,01 Bevölkerung,01.02 Bewegungen,Todesfälle,,Personen pro 1000,Todesfälle pro 1000 Einwohner/innen
 22,Einbürgerungen,01 Bevölkerung,01.02 Bewegungen,Einbürgerungen,,Personen pro 1000,Rohe Einbbürgerungsziffer
 23,Einpersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Einpersonenhaushalt,Anteil Prozent,Anteil der Einpersonenhaushalte am Total der Privathaushalte
 24,Zweipersonenhaushalte,01 Bevölkerung,01.03 Familie/Haushalt,Haushaltsgroesse,Zweipersonenhaushalt,Anteil Prozent,Anteil der Zweipersonenhaushalte am Total der Privathaushalte
@@ -49,8 +45,6 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 48,Bestand Arbeitsplätze,06 Industrie & Dienstleistungen,06.03 Bestand,Arbeitsplätze,,Anzahl,Anzahl Beschäftigte in aktiven Unternehmen im Referenzjahr
 49,Schliessungen Unternehmen,06 Industrie & Dienstleistungen,06.05 Schliessungen,Unternehmen,,Anzahl,Anzahl geschlossener Unternehmen im Referenzjahr
 50,Schliessungen Arbeitsplätze,06 Industrie & Dienstleistungen,06.05 Schliessungen,Arbeitsplätze,,Anzahl,Anzahl verlorene Stellen durch Unternehmensschliessungen im Referenzjahr
-51,Neue Gebäude,09 Bauen & Wohnen,09.01 Bauen,Neue Gebäude (mit Wohnungen),,Anzahl pro 1000 Einwohner/innen,Neu erstellte Gebäude mit Wohnungen pro 1 000 Einwohner
-52,Neue Wohnungen,09 Bauen & Wohnen,09.01 Bauen,Neue Wohnungen,,Anzahl pro 1000 Einwohner/innen,Neu erstellte Wohnungen pro 1 000 Einwohner
 53,Anteil Einfamilienhäuser,09 Bauen & Wohnen,09.02 Wohnen,EFH,,Anteil (Prozent),Anteil Einfamilienhäuser
 54,Anteil 3-4 Zimmer-Wohnungen,09 Bauen & Wohnen,09.02 Wohnen,3-4 Zimmer,,Anteil (Prozent),Anteil 3-4 Zimmer-Wohnungen
 55,Leerwohnungsziffer,09 Bauen & Wohnen,09.02 Wohnen,Leerwohnungen,,Anteil (Prozent),Anteil leer stehender Wohnungen am Gesamtwohnungsbestand
@@ -74,10 +68,8 @@ indicator_id,indicator_name,topic_1,topic_2,topic_3,topic_4,indicator_unit,indic
 73,Pendlerbilanz,11 Mobilität & Verkehr,11.02 Pendlermobilität,Pendlerbilanz,,Bilanz Zu-/Wegpendler,Bilanz der Zu- und Wegpendler pro 100 Erwerbstätige sowie Schüler/Studierende
 74,Pendlersaldo,11 Mobilität & Verkehr,11.02 Pendlermobilität,Pendlersaldo,,Anzahl Personen,Anzahl der Zu- minus Wegpendler
 75,Sozialhilfebeziehende,13 Soziale Sicherheit,13.01 Sozialleistungen,Sozialhilfebeziehende,,Anzahl Personen,Anzahl der unterstuetzten Personen
-76,Sozialhilfequote,13 Soziale Sicherheit,13.01 Sozialleistungen,Sozialhilfequote,,Prozent,Sozialhilfequote
 77,Museen,16 Kultur & Medien,16.01 Museen,,,Anzahl,Anzahl Museen
 78,Bibliotheken,16 Kultur & Medien,16.02 Bibliotheken,,,Anzahl,Anzahl Bibliotheken
-79,Bibliotheken pro 100k Einwohner,16 Kultur & Medien,16.02 Bibliotheken,,,Anzahl,Anzahl Bibliotheken pro 100'000 Einwohner/innen
 80,Kinos,16 Kultur & Medien,16.03 Kino,Kinos,,Anzahl,Anzahl Kinos
 81,Kinosäle,16 Kultur & Medien,16.03 Kino,Kinosäle,,Anzahl,Anzahl Kinosäle
 82,Kinosäle mit 3D-Technik,16 Kultur & Medien,16.03 Kino,Kinosäle,,Anzahl,Anzahl Kinosäle mit 3D-Technik

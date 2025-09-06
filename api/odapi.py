@@ -7,6 +7,7 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
+from typing import Union
 
 import geopandas as gpd
 import networkx as nx
@@ -100,25 +101,36 @@ class TableDefinition(ABC):
     AUTOLOAD: bool = True
     SCHEMA: str
     TABLE_NAME: str
-    COLUMNS: list[GeoColumnDefinition] = []
+    COLUMNS: tuple[Union[GeoColumnDefinition, Column], ...] = ()
 
     @property
-    def metadata(cls):
-        return MetaData(schema=cls.SCHEMA)
+    def metadata(self) -> MetaData:
+        return MetaData(schema=self.SCHEMA)
 
-    def get_table(self, engine: Engine):
+    def get_table(self, engine: Engine) -> Table:
 
         # Column objects need to be copied, otherwise will throw error,
         # because, the same column object can't be used in multiple tables.
         # Information about the assigned table is stored in the column object.
-        coldefs = [
-            coldef.column for coldef in self.COLUMNS if isinstance(coldef, GeoColumnDefinition)
-        ]
+        # coldefs = [
+        #     coldef.column for coldef in self.COLUMNS if isinstance(coldef, GeoColumnDefinition)
+        # ]
+        coldefs = []
+        for col in self.COLUMNS:
+            if isinstance(col, GeoColumnDefinition):
+                coldefs.append(col.column.copy())
+            elif isinstance(col, Column):
+                coldefs.append(col.copy())
+            else:
+                raise ValueError(f'Unknown column definition: {col}')
+        # coldefs = [
+        #     coldef.column for coldef in self.COLUMNS
+        # ]
         return Table(
             self.TABLE_NAME,
             self.metadata,
-            autoload_with=engine,
             *coldefs,
+            autoload_with=engine,
         )
 
 
@@ -143,104 +155,104 @@ class TableApi(TableDefinition):
 class TableGemeinde(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_gemeinde'
-    COLUMNS = [
+    COLUMNS = (
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
-    ]
+    )
 
 
 class TableGemeindeLatest(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_gemeinde_latest'
-    COLUMNS = [
+    COLUMNS = (
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_border_simple_100m', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
-    ]
+    )
 
 
 class TableBezirk(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_bezirk'
-    COLUMNS = [
+    COLUMNS = (
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
-    ]
+    )
 
 
 class TableBezirkLatest(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_bezirk_latest'
-    COLUMNS = [
+    COLUMNS = (
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
-    ]
+    )
 
 
 class TableKanton(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_kanton'
-    COLUMNS = [
+    COLUMNS = (
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
-    ]
+    )
 
 
 class TableKantonLatest(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_kanton_latest'
-    COLUMNS = [
+    COLUMNS = (
         GeoColumnDefinition('geom_border', 'MULTIPOLYGON'),
         GeoColumnDefinition('geom_center', 'POINT'),
-    ]
+    )
 
 
-class TableDimSource(Table):
+class TableDimSource(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_source'
-    COLUMNS = [
+    COLUMNS = (
         Column('id', SMALLINT, primary_key=True),
         Column('source', TEXT),
-    ]
-
-    TABLE = Table(
-        TABLE_NAME,
-        metadata,
-        *COLUMNS,
-        schema=SCHEMA,
     )
 
+    # TABLE = Table(
+    #     TABLE_NAME,
+    #     metadata,
+    #     *COLUMNS,
+    #     schema=SCHEMA,
+    # )
 
-class TableDimGroup(Table):
+
+class TableDimGroup(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_group'
-    COLUMNS = [
+    COLUMNS = (
         Column('group_id', SMALLINT, primary_key=True),
         Column('group_name', TEXT),
-    ]
-
-    TABLE = Table(
-        TABLE_NAME,
-        metadata,
-        *COLUMNS,
-        schema=SCHEMA,
     )
 
+    # TABLE = Table(
+    #     TABLE_NAME,
+    #     metadata,
+    #     *COLUMNS,
+    #     schema=SCHEMA,
+    # )
 
-class TableDimGroupValue(Table):
+
+class TableDimGroupValue(TableDefinition):
     SCHEMA = 'dbt_marts'
     TABLE_NAME = 'dim_group_value'
-    COLUMNS = [
+    COLUMNS = (
         Column('group_value_id', SMALLINT, primary_key=True),
         Column('group_value_name', TEXT),
-    ]
-
-    TABLE = Table(
-        TABLE_NAME,
-        metadata,
-        *COLUMNS,
-        schema=SCHEMA,
     )
+
+    # TABLE = Table(
+    #     TABLE_NAME,
+    #     metadata,
+    #     *COLUMNS,
+    #     schema=SCHEMA,
+    # )
 
 
 # CUSTOM CLASSES #############################################################
@@ -256,6 +268,13 @@ class GeometryMode(str, Enum):
     border_simple_50m = 'border_simple_50_meter'
     border_simple_100m = 'border_simple_100_meter'
     border_simple_500m = 'border_simple_500_meter'
+
+
+class Measure(str, Enum):
+    zahl = 'zahl'
+    pro100 = 'pro100'
+    pro1000 = 'pro1000'
+    pro100000 = 'pro100000'
 
 
 class GeoJsonResponse(Response):
@@ -527,6 +546,7 @@ def get_indicator(
     geo_value: Optional[int] = Query(None, description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
     knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
+    measure: Optional[Measure] = Query(None, description='Show values as simple mumber (zahl), or per 100 (pro100), per 1\'000 (pro1000) or per 100\'000 (pro100000) inhabitants. Default (none) does not filter.'),
     join_indicator: Optional[bool] = Query(None, description='Optional. Joins information about the indicator.'),
     join_geo: Optional[bool] = Query(None, description='Optional. Joins information about the geometry like its name or its parents.'),
     geometry_mode: Optional[GeometryMode] = Query(
@@ -548,15 +568,15 @@ def get_indicator(
     tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
     tbl_bezirk =  TableBezirkLatest().get_table(db_sync)
     tbl_kanton = TableKantonLatest().get_table(db_sync)
-    tbl_dim_source = TableDimSource().TABLE
-    tbl_dim_group_1 = TableDimGroup().TABLE.alias('tbl_dim_group_1')
-    tbl_dim_group_2 = TableDimGroup().TABLE.alias('tbl_dim_group_2')
-    tbl_dim_group_3 = TableDimGroup().TABLE.alias('tbl_dim_group_3')
-    tbl_dim_group_4 = TableDimGroup().TABLE.alias('tbl_dim_group_4')
-    tbl_dim_group_value_1 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_1')
-    tbl_dim_group_value_2 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_2')
-    tbl_dim_group_value_3 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_3')
-    tbl_dim_group_value_4 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_4')
+    tbl_dim_source = TableDimSource().get_table(db_sync)
+    tbl_dim_group_1 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_1')
+    tbl_dim_group_2 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_2')
+    tbl_dim_group_3 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_3')
+    tbl_dim_group_4 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_4')
+    tbl_dim_group_value_1 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_1')
+    tbl_dim_group_value_2 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_2')
+    tbl_dim_group_value_3 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_3')
+    tbl_dim_group_value_4 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_4')
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -574,6 +594,7 @@ def get_indicator(
             tbl_dim_group_value_3.c.group_value_name.label('group_3_value'),
             tbl_dim_group_4.c.group_name.label('group_4_name'),
             tbl_dim_group_value_4.c.group_value_name.label('group_4_value'),
+            tbl_api.c.measure_code,
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.indicator_value_text,
             tbl_api.c.source_id,
@@ -591,6 +612,8 @@ def get_indicator(
         .where(tbl_api.c.indicator_id == indicator_id)
         .where(tbl_api.c.geo_code == geo_code)
     )
+    if measure:
+        query = query.where(tbl_api.c.measure_code == measure)
     if geo_value:
         query = query.where(tbl_api.c.geo_value == geo_value)
     if any([expand_all_groups, expand_group_1]):
@@ -787,6 +810,7 @@ def list_all_indicators_for_one_geometry(
     ),
     geo_value: int = Path(..., description='ID for a selected `geo_code`. E.g. when `geo_code == polg` is selected, `geo_value == 230` will return Winterthur.'),
     knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
+    measure: Optional[Measure] = Query(None, description='Show values as simple mumber (zahl), or per 100 (pro100), per 1\'000 (pro1000) or per 100\'000 (pro100000) inhabitants. Default (none) does not filter.'),
     period_ref: Optional[str] = Query(None, description='Allows to filter for a specific period_ref. Format: ISO-8601, Example: `2023-12-31`'),
     join_indicator: Optional[bool] = Query(None, description='Joins information about the indicator.'),
     join_geo: Optional[bool] = Query(None, description='Joins information about the geometry like its name.'),
@@ -809,15 +833,15 @@ def list_all_indicators_for_one_geometry(
     tbl_gemeinde = TableGemeindeLatest().get_table(db_sync)
     tbl_bezirk =  TableBezirkLatest().get_table(db_sync)
     tbl_kanton = TableKantonLatest().get_table(db_sync)
-    tbl_dim_source = TableDimSource().TABLE
-    tbl_dim_group_1 = TableDimGroup().TABLE.alias('tbl_dim_group_1')
-    tbl_dim_group_2 = TableDimGroup().TABLE.alias('tbl_dim_group_2')
-    tbl_dim_group_3 = TableDimGroup().TABLE.alias('tbl_dim_group_3')
-    tbl_dim_group_4 = TableDimGroup().TABLE.alias('tbl_dim_group_4')
-    tbl_dim_group_value_1 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_1')
-    tbl_dim_group_value_2 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_2')
-    tbl_dim_group_value_3 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_3')
-    tbl_dim_group_value_4 = TableDimGroupValue().TABLE.alias('tbl_dim_group_value_4')
+    tbl_dim_source = TableDimSource().get_table(db_sync)
+    tbl_dim_group_1 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_1')
+    tbl_dim_group_2 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_2')
+    tbl_dim_group_3 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_3')
+    tbl_dim_group_4 = TableDimGroup().get_table(db_sync).alias('tbl_dim_group_4')
+    tbl_dim_group_value_1 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_1')
+    tbl_dim_group_value_2 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_2')
+    tbl_dim_group_value_3 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_3')
+    tbl_dim_group_value_4 = TableDimGroupValue().get_table(db_sync).alias('tbl_dim_group_value_4')
     query = (
         select(
             tbl_api.c.indicator_id,
@@ -835,6 +859,7 @@ def list_all_indicators_for_one_geometry(
             tbl_dim_group_value_3.c.group_value_name.label('group_3_value'),
             tbl_dim_group_4.c.group_name.label('group_4_name'),
             tbl_dim_group_value_4.c.group_value_name.label('group_4_value'),
+            tbl_api.c.measure_code,
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.indicator_value_text,
             tbl_api.c.source_id,
@@ -852,6 +877,8 @@ def list_all_indicators_for_one_geometry(
         .where(tbl_api.c.geo_code == geo_code)
         .where(tbl_api.c.geo_value == geo_value)
     )
+    if measure:
+        query = query.where(tbl_api.c.measure_code == measure)
     if any([expand_all_groups, expand_group_1]):
         pass  # if any selection is made, do not filter the table
     else:
@@ -1054,6 +1081,7 @@ def get_numbers(
         ...,
         description=DOC__GEO_CODE,
     ),
+    measure: Optional[Measure] = Query(None, description='Show values as simple mumber (zahl), or per 100 (pro100), per 1\'000 (pro1000) or per 100\'000 (pro100000) inhabitants. Default (none) does not apply this filter.'),
     knowledge_date: Optional[str] = Query(None, examples=[dt.date.today().strftime('%Y-%m-%d')], description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601'),
     skip: Optional[int] = Query(None, examples=[0], description='Optional. Skip the first n rows.'),
     limit: Optional[int] = Query(None, examples=[100], description='Optional. Limit response to the set amount of rows.'),
@@ -1066,6 +1094,7 @@ def get_numbers(
         select(
             tbl_api.c.indicator_id,
             tbl_api.c.geo_value,
+            tbl_api.c.measure_code,
             tbl_api.c.indicator_value_numeric,
             tbl_api.c.source_id,
         )
@@ -1090,6 +1119,8 @@ def get_numbers(
             query
             .where(tbl_api.c.knowledge_date_to == None)
         )
+    if measure:
+        query = query.where(tbl_api.c.measure_code == measure)
     if skip:
         query = query.offset(skip)
     if limit:
