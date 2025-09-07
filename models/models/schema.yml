@@ -56,6 +56,11 @@ sources:
       - name: intm_meta_source
       - name: intm_meta_group
       - name: intm_meta_group_value
+  - name: marts
+    database: data
+    schema: dbt_marts
+    tables:
+      - name: mart_ogd_api
 
 groups:
   - name: staging

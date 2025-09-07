@@ -142,7 +142,26 @@ with src as (
     from src
 )
 select
-    *
-    , 1 as _etl_version
-    , 'zahl' as measure_code
-from union_all
+    meas.indicator_id::SMALLINT
+    , meas.geo_code::CHAR(4)
+    , meas.geo_value::SMALLINT
+    , meas.knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE
+    , meas.knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE
+    , meas.period_type::TEXT
+    , meas.period_code::TEXT
+    , meas.period_ref_from::DATE
+    , meas.period_ref::DATE
+    , meas.group_1_name::TEXT
+    , meas.group_1_value::TEXT
+    , meas.group_2_name::TEXT
+    , meas.group_2_value::TEXT
+    , meas.group_3_name::TEXT
+    , meas.group_3_value::TEXT
+    , meas.group_4_name::TEXT
+    , meas.group_4_value::TEXT
+    , meas.indicator_value_numeric::NUMERIC
+    , meas.indicator_value_text::TEXT
+    , meas.source::TEXT
+    , 1::SMALLINT as _etl_version
+    , 'zahl'::TEXT as measure_code
+from union_all meas

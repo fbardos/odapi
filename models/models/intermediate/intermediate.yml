@@ -7,6 +7,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_ktzh_gp_bevoelkerung
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 1
         period_type: duedate
@@ -19,6 +22,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_ktzh_gp_auslaenderanteil
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 2
         period_type: duedate
@@ -30,6 +36,19 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: intm_bfe_minergie
+    config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
+      odapi:
+        indicators:
+          - indicator_id: 95
+          - indicator_id: 96
+          - indicator_id: 97
+          - indicator_id: 98
+          - indicator_id: 99
+          - indicator_id: 100
+
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -40,6 +59,52 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: intm_estv_db_jp
+    config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
+      odapi:
+        indicators:
+          - indicator_id: 106
+          - indicator_id: 107
+          - indicator_id: 108
+          - indicator_id: 109
+          - indicator_id: 110
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            ["indicator_id", "geo_code", "geo_value", "period_ref"]
+      - odapi_intm_columns
+      - odapi_intm_unique_municipalities
+      - odapi_intm_rowsmin
+      - odapi_intm_pk_nogroups
+
+  # ---------------------------------------------------------------------------
+  - name: intm_estv_db_np
+    config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
+      odapi:
+        indicators:
+          - indicator_id: 111
+          - indicator_id: 112
+          - indicator_id: 113
+          - indicator_id: 114
+          - indicator_id: 115
+          - indicator_id: 116
+          - indicator_id: 117
+          - indicator_id: 118
+          - indicator_id: 119
+          - indicator_id: 120
+          - indicator_id: 121
+          - indicator_id: 122
+          - indicator_id: 123
+          - indicator_id: 124
+          - indicator_id: 125
+          - indicator_id: 126
+          - indicator_id: 127
+          - indicator_id: 128
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -74,6 +139,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_einwohner_staendig
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 3
         period_type: duedate
@@ -99,6 +167,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_versiegelte_flaeche_anteil
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 4
         period_type: duedate
@@ -121,6 +192,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geburtenueberschuss
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 5
         period_type: period
@@ -146,6 +220,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_wanderungssaldo_p1000
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 6
         period_type: period
@@ -174,6 +251,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_int_wanderungssaldo_p1000
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 7
         period_type: period
@@ -202,6 +282,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_binnen_wanderungssaldo_p1000
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 8
         period_type: period
@@ -230,6 +313,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bevoelkerungsdichte_gesamt
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 9
         period_type: duedate
@@ -253,6 +339,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bevoelkerungsdichte_produktiv
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 10
         period_type: duedate
@@ -276,10 +365,15 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_gesamtquotient
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 175
         period_type: duedate
         period_code: year
+        measure:
+          base: zahl
       intm_statatlas_v2:
         indicateur_id: gesamtquotient
         period_ref_transformation: "make_date(period_ref::INTEGER, 12, 31)"
@@ -293,6 +387,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_jugendquotient
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 11
         period_type: duedate
@@ -315,6 +412,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_altersquotient
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 12
         period_type: duedate
@@ -357,6 +457,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_greyingindex
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 13
         period_type: duedate
@@ -379,6 +482,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_0019jahre
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 172
         period_type: duedate
@@ -398,6 +504,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_2039jahre
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 167
         period_type: duedate
@@ -417,6 +526,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_2064jahre
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 169
         period_type: duedate
@@ -436,6 +548,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_altersstruktur_65plusjahre
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 173
         period_type: duedate
@@ -455,6 +570,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaender_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 177
         period_type: duedate
@@ -477,6 +595,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_staendig
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 14
         period_type: duedate
@@ -499,6 +620,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_eu
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 168
         period_type: duedate
@@ -521,6 +645,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_deutsche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 15
         period_type: duedate
@@ -543,6 +670,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_auslaenderanteil_franzoesisch
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 16
         period_type: duedate
@@ -565,6 +695,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geburten
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 18
         period_type: period
@@ -593,6 +726,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_heiraten_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 58
         period_type: period
@@ -621,6 +757,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_scheidungen_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 57
         period_type: period
@@ -649,6 +788,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_todesfaelle_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 59
         period_type: period
@@ -677,6 +819,9 @@ models:
   - name: intm_bfs_statatlas_einbuergerungen
     # Einbuergerungsziffer has amount of Auslaender as base, not total population
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 22
         period_type: period
@@ -702,6 +847,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_einbuergerungen_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 176
         period_type: period
@@ -725,6 +873,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_1pax
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 23
         period_type: duedate
@@ -747,6 +898,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_2pax
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 24
         period_type: duedate
@@ -769,6 +923,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_3pax
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 25
         period_type: duedate
@@ -791,6 +948,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_4pax
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 26
         period_type: duedate
@@ -813,6 +973,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushalt_5pluspax
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 27
         period_type: duedate
@@ -835,6 +998,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_haushaltsgroesse
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 28
         period_type: duedate
@@ -857,6 +1023,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_siedlungsflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 29
         period_type: duedate
@@ -878,6 +1047,9 @@ models:
   - name: intm_bfs_statatlas_gebaeudeareal_gesamt
     # TODO: Missing v2
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 30
         period_type: duedate
@@ -898,6 +1070,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_industrieareal
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 31
         period_type: duedate
@@ -918,6 +1093,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_verkehrsflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 32
         period_type: duedate
@@ -938,6 +1116,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_landwirtschaftsflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 33
         period_type: duedate
@@ -958,6 +1139,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_waldflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 34
         period_type: duedate
@@ -978,6 +1162,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_unproduktivflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 35
         period_type: duedate
@@ -998,6 +1185,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kuenstlich_angelegt
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 36
         period_type: duedate
@@ -1018,6 +1208,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_vegetationslose_flaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 37
         period_type: duedate
@@ -1038,6 +1231,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_wasserflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 38
         period_type: duedate
@@ -1058,6 +1254,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_sektor1
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 39
         period_type: duedate
@@ -1083,6 +1282,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_sektor2
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 40
         period_type: duedate
@@ -1108,6 +1310,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_sektor3
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 41
         period_type: duedate
@@ -1133,6 +1338,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_sektor1
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 42
         period_type: duedate
@@ -1158,6 +1366,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_sektor2
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 43
         period_type: duedate
@@ -1183,6 +1394,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_sektor3
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 44
         period_type: duedate
@@ -1208,6 +1422,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_neu_unternehmen
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 45
         period_type: period
@@ -1232,6 +1449,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_neu_arbeitsplaetze
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 46
         period_type: period
@@ -1256,6 +1476,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bestand_unternehmen
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 47
         period_type: duedate
@@ -1280,6 +1503,9 @@ models:
   - name: intm_bfs_statatlas_bestand_arbeitsplaetze
     # TODO: Needs adoption for statatlas_v2
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 48
         period_type: duedate
@@ -1304,6 +1530,9 @@ models:
   - name: intm_bfs_statatlas_schliessung_unternehmen
     # TODO: Needs adoption for statatlas_v2
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 49
         period_type: period
@@ -1328,6 +1557,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_schliessung_arbeitsplaetze
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 50
         period_type: period
@@ -1352,6 +1584,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bau_gebaeude_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 60
         period_type: period
@@ -1380,6 +1615,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bau_wohnung_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 61
         period_type: period
@@ -1408,6 +1646,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_wohnflaeche
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 171
         period_type: duedate
@@ -1427,6 +1668,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_efh
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 53
         period_type: duedate
@@ -1451,6 +1695,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_zi34
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 54
         period_type: duedate
@@ -1475,6 +1722,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_lwz
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 55
         period_type: duedate
@@ -1498,6 +1748,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_bewohner_efh
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 56
         period_type: duedate
@@ -1522,6 +1775,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_energiequelle
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 63
         period_type: duedate
@@ -1544,6 +1800,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_heizoel
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 64
         period_type: duedate
@@ -1568,6 +1827,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_gas
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 65
         period_type: duedate
@@ -1592,6 +1854,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_geb_waermepumpe
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 66
         period_type: duedate
@@ -1616,6 +1881,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_energiequelle
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 67
         period_type: duedate
@@ -1637,6 +1905,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_heizoel
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 68
         period_type: duedate
@@ -1661,6 +1932,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_gas
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 69
         period_type: duedate
@@ -1685,6 +1959,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_whg_waermepumpe
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 70
         period_type: duedate
@@ -1709,6 +1986,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_elektroautos_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 71
         period_type: duedate
@@ -1736,6 +2016,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_elektroautos_anteil
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 72
         period_type: duedate
@@ -1760,6 +2043,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_pendler_bilanz
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 73
         period_type: duedate
@@ -1779,6 +2065,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_pendler_saldo
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 74
         period_type: duedate
@@ -1798,6 +2087,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_sozialhilfe_anzahl
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 75
         period_type: duedate
@@ -1825,6 +2117,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_museen
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 77
         period_type: duedate
@@ -1851,6 +2146,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_biblio
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 78
         period_type: duedate
@@ -1874,6 +2172,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinos
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 80
         period_type: duedate
@@ -1900,6 +2201,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinosaele
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 81
         period_type: duedate
@@ -1926,6 +2230,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinosaele_3d
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 82
         period_type: duedate
@@ -1952,6 +2259,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kinokomplexe
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 83
         period_type: duedate
@@ -1978,6 +2288,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_multiplexkino
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 84
         period_type: duedate
@@ -2004,6 +2317,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_kino_sitzplaetze
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 85
         period_type: duedate
@@ -2030,6 +2346,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_arbeitsstaetten_kultur
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 86
         period_type: duedate
@@ -2053,6 +2372,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_kultur
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 87
         period_type: duedate
@@ -2077,6 +2399,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_reineinkommen_steuerpflichtig
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 88
         period_type: period
@@ -2099,6 +2424,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_reineinkommen_einwohner
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 89
         period_type: period
@@ -2121,6 +2449,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_steuerbar_steuerpflichtig
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 90
         period_type: period
@@ -2143,6 +2474,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_steuerbar_einwohner
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 91
         period_type: period
@@ -2165,6 +2499,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_reineinkommen_total
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 92
         period_type: period
@@ -2188,6 +2525,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_tax_steuerbar_total
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 93
         period_type: period
@@ -2211,6 +2551,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_gymi_anteil
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 94
         period_type: duedate
@@ -2234,6 +2577,9 @@ models:
   # ---------------------------------------------------------------------------
   - name: intm_bfs_statatlas_beschaeftigte_betriebswirtschaft
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         indicator: 170
         period_type: duedate
@@ -2264,6 +2610,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2313,6 +2662,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2344,6 +2696,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2373,6 +2728,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2401,6 +2759,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2433,6 +2794,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2465,6 +2829,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2564,6 +2931,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2595,6 +2965,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2617,7 +2990,7 @@ models:
               - column: bauperiode
                 name: "Bauperiode"
                 # here no total value, build on the fly with build_total_value
-                #
+
   # ---------------------------------------------------------------------------
   - name: intm_stab_geb_leerwhg
     tests:
@@ -2625,6 +2998,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2635,14 +3011,13 @@ models:
             is_numeric: True
             period_type: duedate
             period_code: year
-            build_total_value: sum(indicator_value_numeric) # set for all groupings
             grouping:
               - column: wohnraum
                 name: "Anzahl Wohnräume"
-                # here no total value, build on the fly with build_total_value
+                total_value: "Anzahl Wohnräume - Total"
               - column: typ
                 name: "Leerwohnungstyp"
-                # here no total value, build on the fly with build_total_value
+                total_value: "Leer stehende Wohnung - Total"
             filter_and:
               - column: indikator
                 exact_match: "Anzahl"
@@ -2654,6 +3029,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2737,6 +3115,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2759,6 +3140,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2781,6 +3165,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2804,6 +3191,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2890,6 +3280,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
@@ -2959,6 +3352,9 @@ models:
       - odapi_intm_columns
       - odapi_intm_rowsmin
     config:
+      indexes:
+        - columns: [geo_code, indicator_id, knowledge_date_to]
+          unique: false
       odapi:
         measure:
           base: zahl
