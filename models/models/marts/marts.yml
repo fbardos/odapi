@@ -1,145 +1,143 @@
 x-default-group: &default-group marts
 
-
 models:
-
   # ---------------------------------------------------------------------------
-  - name: mart_ogd_api
-  # ---------------------------------------------------------------------------
+  - name: full_mart_ogd_api
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
+      materialized: view
       grants:
-        select: ['odapi_public']
-      indexes:
-        - columns: [geo_code, geo_value]
-          unique: false
-        - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
-          unique: false
-        - columns: [geo_code, geo_value, period_ref]
-          unique: false
-        - columns: [geo_code, geo_value]
-          unique: false
-        - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
-          unique: false
-        - columns: [geo_code, geo_value, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total, 
-            _group_value_3_is_total, _group_value_4_is_total]
-          unique: false
-        - columns: [geo_code, indicator_id]
-          unique: false
-        - columns: [geo_code, indicator_id, period_ref]
-          unique: false
-        - columns: [geo_code, indicator_id, knowledge_date_to]
-          unique: false
-        - columns: [geo_code, indicator_id, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total, 
-            _group_value_3_is_total, _group_value_4_is_total]
-          unique: false
-        - columns: [geo_code, indicator_id, knowledge_date_from, knowledge_date_to]
-          unique: false
+        select: ["odapi_public"]
+      #indexes:
+      #  - columns: [geo_code, geo_value]
+      #    unique: false
+      #  - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
+      #    unique: false
+      #  - columns: [geo_code, geo_value, period_ref]
+      #    unique: false
+      #  - columns: [geo_code, geo_value]
+      #    unique: false
+      #  - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
+      #    unique: false
+      #  - columns: [geo_code, geo_value, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total,
+      #      _group_value_3_is_total, _group_value_4_is_total]
+      #    unique: false
+      #  - columns: [geo_code, indicator_id]
+      #    unique: false
+      #  - columns: [geo_code, indicator_id, period_ref]
+      #    unique: false
+      #  - columns: [geo_code, indicator_id, knowledge_date_to]
+      #    unique: false
+      #  - columns: [geo_code, indicator_id, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total,
+      #      _group_value_3_is_total, _group_value_4_is_total]
+      #    unique: false
+      #  - columns: [geo_code, indicator_id, knowledge_date_from, knowledge_date_to]
+      #    unique: false
 
   # ---------------------------------------------------------------------------
   - name: mart_available_indicator
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_gemeinde
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [snapshot_year]
           unique: false
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_gemeinde_latest
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [gemeinde_bfs_id]
           unique: true
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [snapshot_year]
           unique: false
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk_latest
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [bezirk_bfs_id]
           unique: true
       grants:
-        select: ['odapi_public']
-  
+        select: ["odapi_public"]
+
   # ---------------------------------------------------------------------------
   - name: dim_kanton
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [snapshot_year]
           unique: false
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_kanton_latest
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [kanton_bfs_id]
           unique: true
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_source
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [id]
           unique: true
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_group
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [group_id]
           unique: true
       grants:
-        select: ['odapi_public']
+        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_group_value
-  # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
         - columns: [group_value_id]
           unique: true
       grants:
-        select: ['odapi_public']
-
+        select: ["odapi_public"]

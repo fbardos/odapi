@@ -9,6 +9,7 @@ class DbtModelSelection:
     model_name: str
     group: str
     relation_name: str
+    config: dict
 
 
 def load_intm_data_models() -> list[DbtModelSelection]:
@@ -34,6 +35,7 @@ def load_intm_data_models() -> list[DbtModelSelection]:
                     model_name=node_value['name'],
                     group=node_value['group'],
                     relation_name=node_value['relation_name'],
+                    config=node_value['config'],
                 )
             )
     return _models

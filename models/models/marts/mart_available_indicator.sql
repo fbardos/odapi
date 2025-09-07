@@ -8,7 +8,7 @@ select distinct
     , indi.topic_4
     , indi.indicator_unit
     , indi.indicator_description
-from {{ ref('mart_ogd_api') }} api
+from {{ ref('full_mart_ogd_api') }} api
     join {{ ref('seed_indicator') }} indi on api.indicator_id = indi.indicator_id
 order by api.indicator_id
 

@@ -166,8 +166,55 @@ with src as (
     from src
 )
 
-select
-    *
-    , 1 as _etl_version
-    , 'zahl' as measure_code
-from union_all
+, final as (
+    select
+        indicator_id::SMALLINT
+        , geo_code::CHAR(4)
+        , geo_value::SMALLINT
+        , knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE
+        , knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE
+        , period_type
+        , period_code
+        , period_ref_from::DATE
+        , period_ref::DATE
+        , group_1_name
+        , group_1_value
+        , group_2_name
+        , group_2_value
+        , group_3_name
+        , group_3_value
+        , group_4_name
+        , group_4_value
+        , indicator_value_numeric::NUMERIC as indicator_value_numeric
+        , NULL::TEXT as indicator_value_text
+        , source
+        , 1::SMALLINT as _etl_version
+        , 'zahl' as measure_code
+    from union_all
+)
+
+
+select 
+    meas.indicator_id::SMALLINT
+    , meas.geo_code::CHAR(4)
+    , meas.geo_value::SMALLINT
+    , meas.knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE
+    , meas.knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE
+    , meas.period_type::TEXT
+    , meas.period_code::TEXT
+    , meas.period_ref_from::DATE
+    , meas.period_ref::DATE
+    , meas.group_1_name::TEXT
+    , meas.group_1_value::TEXT
+    , meas.group_2_name::TEXT
+    , meas.group_2_value::TEXT
+    , meas.group_3_name::TEXT
+    , meas.group_3_value::TEXT
+    , meas.group_4_name::TEXT
+    , meas.group_4_value::TEXT
+    , meas.indicator_value_numeric::NUMERIC
+    , meas.indicator_value_text::TEXT
+    , meas.source::TEXT
+    , meas._etl_version::SMALLINT
+    , meas.measure_code::TEXT
+from final meas

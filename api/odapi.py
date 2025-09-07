@@ -149,7 +149,7 @@ class TableAvailableIndicator(TableDefinition):
 
 class TableApi(TableDefinition):
     SCHEMA = 'dbt_marts'
-    TABLE_NAME = 'mart_ogd_api'
+    TABLE_NAME = 'full_mart_ogd_api'
 
 
 class TableGemeinde(TableDefinition):
