@@ -17,6 +17,7 @@ from dagster import MetadataValue
 from dagster import ScheduleDefinition
 from dagster import asset
 from dagster import define_asset_job
+from dagster import failure_hook
 from dagster import get_dagster_logger
 from dagster import success_hook
 from pytz import timezone
@@ -269,10 +270,15 @@ def ping_healthchecks(context: HookContext):
     context.resources.healthcheck.ping_by_env('HC__BFS_STATATLAS')
 
 
+@failure_hook(required_resource_keys={'pushover'})
+def pushover_on_failure(context: HookContext):
+    context.resources.pushover.send_failure_message(context)
+
+
 job_statatlas = define_asset_job(
     name='bfs_statatlas',
     selection='src/bfs_statatlas*',
-    hooks={ping_healthchecks},
+    hooks={ping_healthchecks, pushover_on_failure},
 )
 
 schedule_statatlas = ScheduleDefinition(

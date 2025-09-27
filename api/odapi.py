@@ -411,7 +411,7 @@ def generate_indicator_tree(data: pd.DataFrame) -> Optional[str]:
     # indicator
     _df = data.copy()
     _df['filled_topic'] = _df['topic_4'].fillna(_df['topic_3']).fillna(_df['topic_2']).fillna(_df['topic_1'])
-    _df['indicator_name'] = '[#' + _df['indicator_id'].astype(str).str.zfill(4) + '] ' + _df['indicator_name'] + ' (' + _df['indicator_unit'] + ')'
+    _df['indicator_name'] = '[#' + _df['indicator_id'].astype(str).str.zfill(4) + '] ' + _df['indicator_name'] + ' (' + _df['indicator_unit'] + ')' + ' ' + _df['measure_codes'].astype(str)
     _df = _df[['filled_topic', 'indicator_name']].copy()
     _df.columns = ['parent', 'child']
     _df.dropna(inplace=True)
@@ -487,6 +487,7 @@ def get_all_available_indicators(
             tbl_available_indicator.c.topic_4,
             tbl_available_indicator.c.indicator_unit,
             tbl_available_indicator.c.indicator_description,
+            tbl_available_indicator.c.measure_codes,
         )
         .where(tbl_available_indicator.c.geo_code == geo_code)
     )
