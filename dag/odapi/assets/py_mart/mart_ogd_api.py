@@ -76,20 +76,42 @@ def _asset(
             ) PARTITION BY LIST (indicator_id);
             """
 
+    def sql_func_attach_partition() -> str:
+        return f"""
+            CREATE OR REPLACE FUNCTION attach_partition_if_missing(
+              parent  regclass,
+              child   regclass,
+              bounds  text  -- e.g. 'FOR VALUES IN (1,2,3)' or 'FOR VALUES FROM (...) TO (...)'
+            ) RETURNS void
+            LANGUAGE plpgsql AS $$
+            BEGIN
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_inherits
+                WHERE inhrelid = child AND inhparent = parent
+              ) THEN
+                EXECUTE format('ALTER TABLE %s ATTACH PARTITION %s %s', parent, child, bounds);
+              END IF;
+            END$$;
+        """
+
     def sql_attach_partition() -> str:
         partitions_sql = ''
         for relation, indicators in indicators_per_model().items():
             indicators_list = ', '.join(map(str, indicators))
             if len(indicators) > 0:
                 partitions_sql += f"""
-                    ALTER TABLE {PARENT_SCHEMA}.{PARENT_TABLE}
-                        ATTACH PARTITION {relation} FOR VALUES IN ({indicators_list});
-                    """
+                    SELECT attach_partition_if_missing(
+                      '{PARENT_SCHEMA}.{PARENT_TABLE}'::REGCLASS,
+                      '{relation}'::REGCLASS,
+                      'FOR VALUES IN ({indicators_list})'
+                    );
+                """
         return partitions_sql
 
     def build_query() -> str:
         full_query = ''
         full_query += sql_parent_table()
+        full_query += sql_func_attach_partition()
         full_query += sql_attach_partition()
         context.log.info(f'Full SQL for parent table and partitions:\n{full_query}')
         return full_query
