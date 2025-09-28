@@ -67,6 +67,7 @@ def swisstopo_api_factory(geo_config: GeoAdminConfiguration) -> AssetsDefinition
         db: PostgresResource,
     ):
         gdf = geoadmin.download_all_sources(
+            context=context,
             collection=geo_config.collection,
             feature_id_regex=geo_config.feature_id_regex,
             artefact_type=geo_config.artefact_type,

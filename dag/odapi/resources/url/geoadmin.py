@@ -1,24 +1,27 @@
 """
-    Contains the resources to download data from data.geo.admin.ch.
+Contains the resources to download data from data.geo.admin.ch.
 
-    Uses the STAC API [1] to retrieve the artefact URLs for a specific collection.
-    Then downloads the shapefiles and return a GeoDataFrame.
+Uses the STAC API [1] to retrieve the artefact URLs for a specific collection.
+Then downloads the shapefiles and return a GeoDataFrame.
 
-    Data can manually be explored here:
-      - Browser: https://data.geo.admin.ch/browser/index.html
+Data can manually be explored here:
+  - Browser: https://data.geo.admin.ch/browser/index.html
 
-    [1] https://data.geo.admin.ch/api/stac/static/spec/v0.9/api.html
+[1] https://data.geo.admin.ch/api/stac/static/spec/v0.9/api.html
 
 """
+
+import datetime as dt
+import re
+from dataclasses import dataclass
+from typing import Optional
+
+import geopandas as gpd
+import pandas as pd
 import requests
+from dagster import AssetExecutionContext
 from dagster import ConfigurableResource
 from dagster import get_dagster_logger
-from typing import Optional
-import geopandas as gpd
-from dataclasses import dataclass
-import datetime as dt
-import pandas as pd
-import re
 
 
 @dataclass
@@ -30,6 +33,7 @@ class DownloadAssets:
     asset_created: dt.datetime
     asset_updated: dt.datetime
     feature_datetime: dt.datetime
+
 
 class GeoAdminResource(ConfigurableResource):
 
@@ -46,6 +50,7 @@ class GeoAdminResource(ConfigurableResource):
 
     def download_all_sources(
         self,
+        context: AssetExecutionContext,
         collection: str,
         feature_id_regex: Optional[str] = None,
         artefact_type: Optional[str] = None,
@@ -71,14 +76,19 @@ class GeoAdminResource(ConfigurableResource):
         for feature in filtered_features:
             for asset_key, asset in feature['assets'].items():
                 if re.match(asset_key_regex, asset_key):
+                    context.log.info(f'Found asset {asset_key} with value {asset}')
                     filtered_assets.append(
                         DownloadAssets(
                             asset_key=asset_key,
                             asset_type=asset['type'],
                             asset_href=asset['href'],
-                            asset_epsg=asset['proj:epsg'],
-                            asset_created=dt.datetime.strptime(asset['created'], '%Y-%m-%dT%H:%M:%S.%fZ'),
-                            asset_updated=dt.datetime.strptime(asset['updated'], '%Y-%m-%dT%H:%M:%S.%fZ'),
+                            asset_epsg=asset.get('proj:epsg', 2056),
+                            asset_created=dt.datetime.strptime(
+                                asset['created'], '%Y-%m-%dT%H:%M:%S.%fZ'
+                            ),
+                            asset_updated=dt.datetime.strptime(
+                                asset['updated'], '%Y-%m-%dT%H:%M:%S.%fZ'
+                            ),
                             feature_datetime=dt.datetime.strptime(
                                 feature['properties']['datetime'], '%Y-%m-%dT%H:%M:%SZ'
                             ),
@@ -104,4 +114,3 @@ class GeoAdminResource(ConfigurableResource):
             extracted_gdfs.append(gdf)
         merged_gdf = pd.concat(extracted_gdfs)
         return gpd.GeoDataFrame(merged_gdf)
-
