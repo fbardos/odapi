@@ -5,6 +5,8 @@ from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy import insert
+from sqlalchemy import inspect
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 
@@ -25,23 +27,25 @@ class XcomPostgresResource(PostgresResource):
 
     def _verify_xcom_table_exists(self):
         engine = self.get_sqlalchemy_engine()
-        if not engine.has_table('xcom'):
-            self._XCOM_TABLE.create(engine)
+        inspector = inspect(engine)
+        if not inspector.has_table('xcom'):
+            with engine.begin() as conn:
+                self._XCOM_TABLE.create(conn)
 
     def xcom_pull(self, key):
         self._verify_xcom_table_exists()
-        select_stmt = self._XCOM_TABLE.select().where(self._XCOM_TABLE.c.key == key)
-        result = self.get_sqlalchemy_engine().execute(select_stmt)
-        row = result.fetchone()
-        if row:
-            return row['value']
-        return None
+        engine = self.get_sqlalchemy_engine()
+        stmt = select(self._XCOM_TABLE.c.value).where(self._XCOM_TABLE.c.key == key)
+        with engine.connect() as conn:
+            return conn.execute(stmt).scalar_one_or_none()
 
     def xcom_push(self, key, value):
         self._verify_xcom_table_exists()
+        engine = self.get_sqlalchemy_engine()
         insert_stmt = insert(self._XCOM_TABLE).values(key=key, value=value)
         on_duplicate_key_stmt = insert_stmt.on_conflict_do_update(  # upsert
             index_elements=[self._XCOM_TABLE.c.key],
             set_=dict(value=insert_stmt.excluded.value),
         )
-        self.get_sqlalchemy_engine().execute(on_duplicate_key_stmt)
+        with engine.begin() as conn:
+            conn.execute(on_duplicate_key_stmt)
