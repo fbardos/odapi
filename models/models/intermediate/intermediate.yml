@@ -11,6 +11,8 @@ models:
         - columns: [geo_code, indicator_id, knowledge_date_to]
           unique: false
       odapi:
+        measure:
+          base: zahl
         indicator: 1
         period_type: duedate
         period_code: year
@@ -26,6 +28,8 @@ models:
         - columns: [geo_code, indicator_id, knowledge_date_to]
           unique: false
       odapi:
+        measure:
+          base: zahl
         indicator: 2
         period_type: duedate
         period_code: year
@@ -41,6 +45,8 @@ models:
         - columns: [geo_code, indicator_id, knowledge_date_to]
           unique: false
       odapi:
+        measure:
+          base: zahl
         indicators:
           - indicator_id: 95
           - indicator_id: 96
@@ -64,6 +70,8 @@ models:
         - columns: [geo_code, indicator_id, knowledge_date_to]
           unique: false
       odapi:
+        measure:
+          base: zahl
         indicators:
           - indicator_id: 106
           - indicator_id: 107
@@ -86,6 +94,8 @@ models:
         - columns: [geo_code, indicator_id, knowledge_date_to]
           unique: false
       odapi:
+        measure:
+          base: zahl
         indicators:
           - indicator_id: 111
           - indicator_id: 112
@@ -3422,3 +3432,20 @@ models:
             filter_and:
               - column: beobachtungseinheit
                 regex: "^Beschäftigte.*"
+
+  # ---------------------------------------------------------------------------
+  - name: intm_swisstopo_zweitwohnung
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        measure:
+          base: zahl
+        indicators:
+          - indicator_id: 101
+          - indicator_id: 102
+          - indicator_id: 103
+          - indicator_id: 104
+          - indicator_id: 105

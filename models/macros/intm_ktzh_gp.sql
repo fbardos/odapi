@@ -61,7 +61,6 @@
             , NULL::TEXT as indicator_value_text
             , 'Gemeindeportrait des Kantons Zürich' as source
             , 1 as _etl_version
-            , 'zahl' as measure_code
         from src
     )
     select
@@ -86,6 +85,5 @@
         , meas.indicator_value_text::TEXT
         , meas.source::TEXT
         , meas._etl_version::SMALLINT
-        , meas.measure_code::TEXT
     from mapping meas
 {% endmacro %}

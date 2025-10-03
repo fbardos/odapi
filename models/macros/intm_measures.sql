@@ -1,16 +1,17 @@
--- Convention: one mart per source?
 {% macro intm_measures(upstream_model) %}
     {% set measure_config = none %}
 
     {% if execute %}
-        {% set measure_config = config.require('odapi').get('measure', none) %}
+        {% set upstream_cfg = intm_get_upstream_config() %}
+        {% set measure_config = upstream_cfg.get('odapi', {}).get('measure', none) %}
     {% endif %}
 
     -- XXX: Add db index for also fast-filter measure_code
     -- XXX: Add final CTE for all INTM macros, otherwise, will not work.
-    , measure_src as (
+    {% set upstream_model_name = model.name.split('__')[0] %}
+    with measure_src as (
         select *
-        from final  -- final of macro intm_bfs_statatlas etc
+        from {{ ref(upstream_model_name)}}
     )
 
     , bev_src as (
@@ -27,11 +28,16 @@
     {% if measure_config is none %}
         , measure_final as (
                 select *
-                , NULL::TEXT as measure_code 
-                from final
+                -- when no measure.base is set, then it has to be a textual indicator
+                -- like intm_bfs_statatlas_whg_energiequelle
+                -- with filled indicator_value_text
+                -- But in practice, when measure config gets forgotten to be set,
+                -- default should not be 'text' as default, because otherise missleading
+                , NULL::TEXT as measure_code
+                from measure_src
         )
     {% else %}
-    
+
         -- If base is not == zahl, then first calc back to zahl
         -- if base == anteil, then calc to anzahl
         {% if measure_config.get('base', none) == 'zahl' %}
@@ -80,7 +86,7 @@
                             = extract(year from bev.period_ref)
             )
         {% endif %}
-        
+
         {% if measure_config.get('calc', none) is not none %}
             , measure_final as (
                 select
@@ -157,13 +163,13 @@
             , measure_final as (
                 select
                     *
-                    , '{{ measure_config.get("base", "zahl") }}' as measure_code
+                    , '{{ measure_config.get("base", none) }}' as measure_code
                 from measure_zahl
             )
         {% endif %}
     {% endif %}
 
-    select 
+    select
         meas.indicator_id::SMALLINT
         , meas.geo_code::CHAR(4)
         , meas.geo_value::SMALLINT

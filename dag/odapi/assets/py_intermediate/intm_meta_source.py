@@ -1,10 +1,8 @@
-import great_expectations as gx
 import pandas as pd
 from dagster import AssetCheckResult
 from dagster import AssetCheckSeverity
 from dagster import AssetExecutionContext
 from dagster import AssetKey
-from dagster import DagsterError
 from dagster import asset
 from dagster import asset_check
 from great_expectations import expectations as gxe
@@ -12,7 +10,9 @@ from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.qa.great_expectations import GreatExpectationsResource
-from odapi.utils.dbt_handling import load_intm_data_models
+from odapi.utils.dbt_handling import load_data_models
+
+MODEL_SEARCH_PATTERN = r'^(?!.*__\w+$)intm_.*$'
 
 
 @asset(
@@ -22,7 +22,9 @@ from odapi.utils.dbt_handling import load_intm_data_models
     description=f"INTM model to dynamically compose SQL for selecting sources from INTM.",
     deps=[
         AssetKey(['intermediate', model.model_name])
-        for model in load_intm_data_models()
+        for model in load_data_models(
+            pattern=MODEL_SEARCH_PATTERN, dbt_group='intermediate'
+        )
     ],
 )
 def _asset(
@@ -33,7 +35,9 @@ def _asset(
     def build_query() -> str:
         selects = [
             f'select source from {model.relation_name}\n'
-            for model in load_intm_data_models()
+            for model in load_data_models(
+                pattern=MODEL_SEARCH_PATTERN, dbt_group='intermediate'
+            )
         ]
         src_select = 'UNION \n'.join(selects)
         return f"""

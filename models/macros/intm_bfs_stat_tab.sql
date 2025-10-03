@@ -230,47 +230,16 @@
         {% endfor %}
     )
 
-    , final as (
-        select
-            *
-            , 1 as _etl_version
-        from set_names_for_group_totals
-        where
-            1=1
-            -- global filters
-            AND geo_code = 'polg' AND geo_value is not NULL -- can be extended later
-            AND (indicator_value_numeric is not NULL or indicator_value_text is not NULL)
-    )
-
-    {% set measure_config = config.require('odapi').get('measure', none) %}
-    {% if measure_config is none %}
-        select
-            indicator_id
-            , geo_code
-            , geo_value
-            , knowledge_date_from
-            , knowledge_date_to
-            , period_type
-            , period_code
-            , period_ref_from
-            , period_ref
-            , group_1_name
-            , group_1_value
-            , group_2_name
-            , group_2_value
-            , group_3_name
-            , group_3_value
-            , group_4_name
-            , group_4_value
-            , indicator_value_numeric
-            , indicator_value_text
-            , source
-            , _etl_version
-            , 'zahl' as measure_code
-        from final
-    {% endif %}
+    select
+        *
+        , 1 as _etl_version
+    from set_names_for_group_totals
+    where
+        1=1
+        -- global filters
+        AND geo_code = 'polg' AND geo_value is not NULL -- can be extended later
+        AND (indicator_value_numeric is not NULL or indicator_value_text is not NULL)
 
     {% endif %}
-
 
 {% endmacro %}

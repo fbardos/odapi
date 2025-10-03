@@ -1,0 +1,28 @@
+data=#
+SELECT
+    idx.relname AS index_name,
+    string_agg(col.attname, ', ' ORDER BY x.ordinality) AS indexed_columns,
+    pg_size_pretty(pg_relation_size(idx.oid)) AS index_size,
+    ui.idx_scan,
+    ui.idx_tup_read,
+    ui.idx_tup_fetch
+FROM
+    pg_stat_user_indexes ui
+JOIN
+    pg_index i ON ui.indexrelid = i.indexrelid
+JOIN
+    pg_class idx ON idx.oid = ui.indexrelid
+JOIN
+    pg_class tbl ON tbl.oid = ui.relid
+JOIN
+    LATERAL unnest(i.indkey) WITH ORDINALITY AS x(attnum, ordinality) ON true
+JOIN
+    pg_attribute col ON col.attnum = x.attnum
+                    AND col.attrelid = tbl.oid
+WHERE
+    tbl.relname = 'mart_ogd_api'
+GROUP BY
+    idx.relname, idx.oid, ui.idx_scan, ui.idx_tup_read, ui.idx_tup_fetch
+ORDER BY
+    ui.idx_scan DESC, index_size DESC;
+

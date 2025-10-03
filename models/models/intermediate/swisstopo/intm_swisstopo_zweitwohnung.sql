@@ -163,5 +163,4 @@ select
     , meas.indicator_value_text::TEXT
     , meas.source::TEXT
     , 1::SMALLINT as _etl_version
-    , 'zahl'::TEXT as measure_code
 from union_all meas
