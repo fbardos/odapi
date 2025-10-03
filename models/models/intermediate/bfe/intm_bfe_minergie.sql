@@ -189,12 +189,11 @@ with src as (
         , NULL::TEXT as indicator_value_text
         , source
         , 1::SMALLINT as _etl_version
-        , 'zahl' as measure_code
     from union_all
 )
 
 
-select 
+select
     meas.indicator_id::SMALLINT
     , meas.geo_code::CHAR(4)
     , meas.geo_value::SMALLINT
@@ -216,5 +215,4 @@ select
     , meas.indicator_value_text::TEXT
     , meas.source::TEXT
     , meas._etl_version::SMALLINT
-    , meas.measure_code::TEXT
 from final meas

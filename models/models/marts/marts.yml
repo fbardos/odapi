@@ -3,41 +3,14 @@ x-default-group: &default-group marts
 models:
   # ---------------------------------------------------------------------------
   - name: full_mart_ogd_api
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       materialized: view
       grants:
         select: ["odapi_public"]
-      #indexes:
-      #  - columns: [geo_code, geo_value]
-      #    unique: false
-      #  - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
-      #    unique: false
-      #  - columns: [geo_code, geo_value, period_ref]
-      #    unique: false
-      #  - columns: [geo_code, geo_value]
-      #    unique: false
-      #  - columns: [geo_code, geo_value, knowledge_date_from, knowledge_date_to]
-      #    unique: false
-      #  - columns: [geo_code, geo_value, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total,
-      #      _group_value_3_is_total, _group_value_4_is_total]
-      #    unique: false
-      #  - columns: [geo_code, indicator_id]
-      #    unique: false
-      #  - columns: [geo_code, indicator_id, period_ref]
-      #    unique: false
-      #  - columns: [geo_code, indicator_id, knowledge_date_to]
-      #    unique: false
-      #  - columns: [geo_code, indicator_id, knowledge_date_to, _group_value_1_is_total, _group_value_2_is_total,
-      #      _group_value_3_is_total, _group_value_4_is_total]
-      #    unique: false
-      #  - columns: [geo_code, indicator_id, knowledge_date_from, knowledge_date_to]
-      #    unique: false
 
   # ---------------------------------------------------------------------------
   - name: mart_available_indicator
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       grants:
@@ -45,7 +18,6 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_gemeinde
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
@@ -56,7 +28,6 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_gemeinde_latest
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
@@ -67,7 +38,6 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
@@ -78,7 +48,6 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk_latest
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
@@ -89,7 +58,6 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_kanton
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
@@ -100,7 +68,6 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_kanton_latest
-    # ---------------------------------------------------------------------------
     config:
       group: *default-group
       indexes:
@@ -111,33 +78,105 @@ models:
 
   # ---------------------------------------------------------------------------
   - name: dim_source
-    # ---------------------------------------------------------------------------
     config:
+      contract: { enforced: true }
       group: *default-group
       indexes:
         - columns: [id]
           unique: true
+        - columns: [source]
+          unique: true
       grants:
         select: ["odapi_public"]
+    columns:
+      - name: id
+        data_type: smallint
+        constraints:
+          - type: primary_key
+      - name: source
+        data_type: text
+        constraints:
+          - type: not_null
+          # prevents row explosion on MART models, RAM usage on
+          # mart_stab_geb_flaeche reduces from 46GB to 18 GB
+          - type: unique
 
   # ---------------------------------------------------------------------------
   - name: dim_group
-    # ---------------------------------------------------------------------------
     config:
+      contract: { enforced: true }
       group: *default-group
       indexes:
         - columns: [group_id]
           unique: true
+        - columns: [group_name]
+          unique: true
       grants:
         select: ["odapi_public"]
+    columns:
+      - name: group_id
+        data_type: smallint
+        constraints:
+          - type: primary_key
+      - name: group_name
+        data_type: text
+        constraints:
+          - type: not_null
+          # prevents row explosion on MART models, RAM usage on
+          # mart_stab_geb_flaeche reduces from 46GB to 18 GB
+          - type: unique
 
   # ---------------------------------------------------------------------------
   - name: dim_group_value
-    # ---------------------------------------------------------------------------
     config:
+      contract: { enforced: true }
       group: *default-group
       indexes:
         - columns: [group_value_id]
           unique: true
+        - columns: [group_value_name]
+          unique: true
       grants:
         select: ["odapi_public"]
+    columns:
+      - name: group_value_id
+        data_type: smallint
+        constraints:
+          - type: primary_key
+      - name: group_value_name
+        data_type: text
+        constraints:
+          - type: not_null
+          # prevents row explosion on MART models, RAM usage on
+          # mart_stab_geb_flaeche reduces from 46GB to 18 GB
+          - type: unique
+
+  # ---------------------------------------------------------------------------
+  - name: mart_stab_geb_flaeche
+    config:
+      # RAM hungry model, finetuning Postgres settings
+      # Disabled hashjoin and hashagg which will cause the RAM to explode
+      # But instead, i big tempfile is needed (postgres will use a file on disk instead)
+      pre_hook:
+        - "SET LOCAL work_mem = '3GB'"
+        - "SET LOCAL hash_mem_multiplier = 1.0"
+        - "SET LOCAL max_parallel_workers_per_gather = 0"
+        - "SET LOCAL enable_hashjoin = off" # force merge/nested loop (spills instead of RAM blowups)
+        - "SET LOCAL enable_hashagg = off"
+        - "SET LOCAL temp_file_limit = '60GB'"
+        - "SET LOCAL jit = on"
+
+  # ---------------------------------------------------------------------------
+  - name: mart_stab_geb_bestand
+    config:
+      # RAM hungry model, finetuning Postgres settings
+      # Disabled hashjoin and hashagg which will cause the RAM to explode
+      # But instead, i big tempfile is needed (postgres will use a file on disk instead)
+      pre_hook:
+        - "SET LOCAL work_mem = '3GB'"
+        - "SET LOCAL hash_mem_multiplier = 1.0"
+        - "SET LOCAL max_parallel_workers_per_gather = 0"
+        - "SET LOCAL enable_hashjoin = off" # force merge/nested loop (spills instead of RAM blowups)
+        - "SET LOCAL enable_hashagg = off"
+        - "SET LOCAL temp_file_limit = '60GB'"
+        - "SET LOCAL jit = on"

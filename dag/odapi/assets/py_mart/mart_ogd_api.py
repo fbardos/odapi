@@ -1,27 +1,23 @@
-import great_expectations as gx
-import pandas as pd
-from dagster import AssetCheckResult
-from dagster import AssetCheckSeverity
 from dagster import AssetExecutionContext
 from dagster import AssetKey
-from dagster import DagsterError
 from dagster import asset
-from dagster import asset_check
 from great_expectations import expectations as gxe
 from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
-from odapi.utils.dbt_handling import load_intm_data_models
+from odapi.utils.dbt_handling import load_data_models
 
 
 @asset(
     compute_kind='python',
-    group_name='dbt_marts',
+    group_name='marts',
     key=['marts', 'mart_ogd_api'],
     description=f"Partitioned parent table for OGD API data.",
     deps=[
-        AssetKey(['intermediate', model.model_name])
-        for model in load_intm_data_models()
+        AssetKey(['marts', model.model_name])
+        for model in load_data_models(
+            r'^(?!mart_ogd_api|mart_available_indicator)mart_.*$', dbt_group='marts'
+        )
     ],
 )
 def _asset(
@@ -33,7 +29,10 @@ def _asset(
 
     def indicators_per_model() -> dict[str, list[int]]:
         indicators_dict = {}
-        for model in load_intm_data_models():
+        # get the config from the corresponding intm models
+        for model in load_data_models(
+            r'^(?!.*__\w+$)intm_.*$', dbt_group='intermediate'
+        ):
             _indicators = []
             _top_level_indicator = model.config.get('odapi', {}).get('indicator', None)
             _indicators.append(_top_level_indicator)
@@ -45,7 +44,10 @@ def _asset(
             context.log.debug(f'All collected indicators: {_indicators}')
             _indicators = [i for i in _indicators if i is not None]
             context.log.debug(f'Filtered indicators: {_indicators}')
-            indicators_dict[model.relation_name] = _indicators
+            # only models with at least one indicator config are relevant
+            # filters out models like mart_available_indicator
+            if len(_indicators) > 0:
+                indicators_dict[model.relation_name] = _indicators
         return indicators_dict
 
     def sql_parent_table() -> str:
@@ -60,19 +62,22 @@ def _asset(
                 , period_code           TEXT                            NULL
                 , period_ref_from       DATE                            NULL
                 , period_ref            DATE                            NULL
-                , group_1_name          TEXT                            NULL
-                , group_1_value         TEXT                            NULL
-                , group_2_name          TEXT                            NULL
-                , group_2_value         TEXT                            NULL
-                , group_3_name          TEXT                            NULL
-                , group_3_value         TEXT                            NULL
-                , group_4_name          TEXT                            NULL
-                , group_4_value         TEXT                            NULL
-                , indicator_value_numeric NUMERIC                       NULL
-                , indicator_value_text    TEXT                          NULL
-                , source                TEXT                            NULL
-                , _etl_version          SMALLINT                        NULL
+                , group_1_id            SMALLINT                        NULL
+                , group_value_1_id      SMALLINT                        NULL
+                , _group_value_1_is_total   BOOLEAN                     NULL
+                , group_2_id            SMALLINT                        NULL
+                , group_value_2_id      SMALLINT                        NULL
+                , _group_value_2_is_total   BOOLEAN                     NULL
+                , group_3_id            SMALLINT                        NULL
+                , group_value_3_id      SMALLINT                        NULL
+                , _group_value_3_is_total   BOOLEAN                     NULL
+                , group_4_id            SMALLINT                        NULL
+                , group_value_4_id      SMALLINT                        NULL
+                , _group_value_4_is_total   BOOLEAN                     NULL
+                , indicator_value_numeric NUMERIC(32,9)                 NULL
+                , indicator_value_text  TEXT                            NULL
                 , measure_code          TEXT                            NULL
+                , source_id             SMALLINT                        NULL
             ) PARTITION BY LIST (indicator_id);
             """
 
@@ -97,6 +102,9 @@ def _asset(
     def sql_attach_partition() -> str:
         partitions_sql = ''
         for relation, indicators in indicators_per_model().items():
+            # replace relation to mart (not from intm, because view)
+            relation = relation.replace('intm_', 'mart_')
+            relation = relation.replace('intermediate', 'marts')
             indicators_list = ', '.join(map(str, indicators))
             if len(indicators) > 0:
                 partitions_sql += f"""

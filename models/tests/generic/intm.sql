@@ -23,7 +23,6 @@
     'indicator_value_text',
     'source',
     '_etl_version',
-    'measure_code',
 ] %}
 {{ return(default__expect_table_columns_to_match_ordered_list(model, column_list, transform)) }}
 {% endtest %}
@@ -33,12 +32,12 @@
 -- GLOBAL PK
 --------------------------------------------------------------------------------
 {% test odapi_intm_pk_nogroups(model) %}
-    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from', 'measure_code'] %}
+    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from'] %}
     {{ return(adapter.dispatch('test_unique_combination_of_columns', 'dbt_utils')(model, combination_of_columns, quote_columns=False)) }}
 {% endtest %}
 
 {% test odapi_intm_pk_groups(model) %}
-    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from', 'group_1_value', 'group_2_value', 'group_3_value', 'group_4_value', 'measure_code'] %}
+    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from', 'group_1_value', 'group_2_value', 'group_3_value', 'group_4_value'] %}
     {{ return(adapter.dispatch('test_unique_combination_of_columns', 'dbt_utils')(model, combination_of_columns, quote_columns=False)) }}
 {% endtest %}
 
@@ -53,7 +52,7 @@
         model,
         min_value=2000,
         max_value=None,
-        group_by=['period_ref', 'measure_code'],
+        group_by=['period_ref'],
         row_condition="geo_code = 'polg' and knowledge_date_to is NULL",
         strictly=False,
     ) }}
