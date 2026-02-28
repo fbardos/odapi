@@ -145,9 +145,9 @@ assets_opendataswiss_load_extract = [
 ]
 
 
-@failure_hook(required_resource_keys={'pushover'})
+@failure_hook(required_resource_keys={'ntfy'})
 def pushover_on_failure(context: HookContext):
-    context.resources.pushover.send_failure_message(context)
+    context.resources.ntfy.send_failure_message(context)
 
 
 # Jobs

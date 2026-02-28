@@ -463,9 +463,9 @@ def stat_tab_factory(stat_tab_cube: StatTabCube) -> AssetsDefinition:
 assets_stat_tab = [stat_tab_factory(cube) for cube in CUBES]
 
 
-@failure_hook(required_resource_keys={'pushover'})
+@failure_hook(required_resource_keys={'ntfy'})
 def pushover_on_failure(context: HookContext):
-    context.resources.pushover.send_failure_message(context)
+    context.resources.ntfy.send_failure_message(context)
 
 
 @success_hook(required_resource_keys={'healthcheck'})

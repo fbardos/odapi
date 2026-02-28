@@ -23,6 +23,7 @@ from odapi.resources.url.geoadmin import GeoAdminResource
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
 from odapi.resources.url.healthcheck import HealthCheckResource
+from odapi.resources.url.ntfy import NtfyResource
 from odapi.resources.url.pushover import PushoverResource
 from odapi.resources.url.requests_info import RequestsInfo
 from odapi.resources.url.stat_tab import StatTabResource
@@ -75,6 +76,11 @@ defs = Definitions(
         'pushover': PushoverResource(
             user_key=EnvVar('PUSHOVER__USER_KEY'),
             api_token=EnvVar('PUSHOVER__API_TOKEN'),
+        ),
+        'ntfy': NtfyResource(
+            server_url=EnvVar('NTFY__SERVER_URL'),
+            api_token=EnvVar('NTFY__API_TOKEN'),
+            topic=EnvVar('NTFY__TOPIC'),
         ),
         'requests_info': RequestsInfo(
             user_from=EnvVar('REQUESTS__FROM'),
