@@ -305,9 +305,9 @@ def ping_healthchecks(context: HookContext):
     context.resources.healthcheck.ping_by_env('HC__BFS_STATATLAS')
 
 
-@failure_hook(required_resource_keys={'pushover'})
+@failure_hook(required_resource_keys={'ntfy'})
 def pushover_on_failure(context: HookContext):
-    context.resources.pushover.send_failure_message(context)
+    context.resources.ntfy.send_failure_message(context)
 
 
 job_statatlas_v2 = define_asset_job(
