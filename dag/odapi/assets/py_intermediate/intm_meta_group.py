@@ -75,17 +75,13 @@ def _asset(
     )
 
     with db.get_sqlalchemy_engine().begin() as connection:
-        connection.execute(
-            text(
-                """
+        connection.execute(text("""
                 CREATE SCHEMA IF NOT EXISTS py_intermediate;
                 CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_group (
                     group_id SMALLSERIAL,
                     group_name TEXT UNIQUE
                 );
-                """
-            )
-        )
+                """))
 
         # Write the DataFrame to the database
         for _, row in df.iterrows():
