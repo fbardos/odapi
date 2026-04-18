@@ -12,5 +12,8 @@ class RequestsInfo(ConfigurableResource):
         # Most enterprise proxies will ignore the From: header.
         # Therefore, write the information directly into the User-Agent header.
         return {
-            'User-Agent': f'{self.user_product}/{self.user_version} ({self.user_domain}; {self.user_from})',
+            'User-Agent': (
+                f'{self.user_product}/{self.user_version} '
+                f'({self.user_domain}; {self.user_from})'
+            ),
         }
