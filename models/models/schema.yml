@@ -36,6 +36,7 @@ sources:
       - name: stat_tab_wirtschaft_unternehmen
       - name: stat_tab_wirtschaft_beschaeftigte
       - name: stat_tab_lw_beschaeftigte
+      - name: statswiss_whg_gebkat
   - name: ktzh_gwr
     database: data
     schema: src

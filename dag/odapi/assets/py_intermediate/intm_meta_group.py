@@ -6,6 +6,9 @@ from dagster import AssetKey
 from dagster import asset
 from dagster import asset_check
 from great_expectations import expectations as gxe
+from great_expectations.expectations.core.expect_table_row_count_to_be_between import (
+    ExpectTableRowCountToBeBetween,
+)
 from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
@@ -33,41 +36,17 @@ def _asset(
 ) -> pd.DataFrame:
 
     def build_query() -> str:
-        selects = [
-            f"""
-            select
-                group_1_name
-                , group_2_name
-                , group_3_name
-                , group_4_name
-            from {model.relation_name}\n
-        """
-            for model in load_data_models(
-                pattern=MODEL_SEARCH_PATTERN, dbt_group='intermediate'
-            )
-        ]
-        src_select = 'UNION \n'.join(selects)
-        return f"""
-            with src as (
-                {src_select}
-            )
+        selects = []
+        for model in load_data_models(
+            pattern=MODEL_SEARCH_PATTERN, dbt_group='intermediate'
+        ):
+            selects.append(f"""
+                    select
+                        jsonb_object_keys(grouping) as group_name
+                    from {model.relation_name}\n
+            """)
 
-                select group_1_name::TEXT as group_name
-                from src
-                where group_1_name is not null
-            UNION
-                select group_2_name::TEXT as group_name
-                from src
-                where group_2_name is not null
-            UNION
-                select group_3_name::TEXT as group_name
-                from src
-                where group_3_name is not null
-            UNION
-                select group_4_name::TEXT as group_name
-                from src
-                where group_4_name is not null
-        """
+        return 'UNION \n'.join(selects)
 
     df = pd.read_sql(
         build_query(),
@@ -104,15 +83,8 @@ def ge_values_id_between_1_2000(
     great_expectations: GreatExpectationsResource,
     data: pd.DataFrame,
 ) -> AssetCheckResult:
-    expectation = gxe.ExpectTableRowCountToBeBetween(
+    expectation = ExpectTableRowCountToBeBetween(
         min_value=1,
         max_value=2000,
     )
-    result = great_expectations.get_batch(data).validate(expectation)
-    assert isinstance(result.success, bool)
-
-    return AssetCheckResult(
-        passed=result.success,
-        severity=AssetCheckSeverity.ERROR,
-        metadata=result.result,
-    )
+    return great_expectations.run_expectation(data, expectation)

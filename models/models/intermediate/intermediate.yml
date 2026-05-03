@@ -3448,4 +3448,35 @@ models:
           - indicator_id: 102
           - indicator_id: 103
           - indicator_id: 104
+          #- indicator_id: 105
+
+  # ---------------------------------------------------------------------------
+  - name: intm_stats_whg_gebkat
+    tests:
+      - odapi_intm_pk_groups
+      - odapi_intm_columns
+      - odapi_intm_rowsmin
+    config:
+      odapi:
+        geo_config:
+          base_code: polg
+          base_grouping_key: GEMEINDENAME
+          base_value_regex: '^-?\d+$'
+          base_value_type: SMALLINT
+        measure:
+          base: zahl
+        indicators:
           - indicator_id: 105
+            is_numeric: True
+            period_type: duedate
+            period_code: year
+            grouping:
+              - column: GKATS
+                name: "Gebäudekategorie"
+                total_value: "_T"
+              - column: GBAUPS
+                name: "Periode Gebäudebaujahr"
+                total_value: "_T"
+              - column: WAZIMS
+                name: "Anzahl Zimmer"
+                total_value: "_T"

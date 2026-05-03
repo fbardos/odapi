@@ -14,13 +14,16 @@ find "$BASE_DIR" -type f -name "*.sql" ! -name "*__*.sql" | while read -r file; 
     base="${file%.sql}"
 
     # Define new filenames in intermediate
+    total_file="${base}__total.sql"
     measure_file="${base}__measure.sql"
     typecast_file="${base}__typecast.sql"
 
     # Create files with the requested content
+    echo "{{ intm_build_group_total() }}" > "$total_file"
     echo "{{ intm_measures() }}" > "$measure_file"
     echo "{{ intm_typecast() }}" > "$typecast_file"
 
+    echo "Created: $total_file"
     echo "Created: $measure_file"
     echo "Created: $typecast_file"
 

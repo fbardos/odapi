@@ -12,14 +12,7 @@
         , intm.period_code::TEXT
         , intm.period_ref_from::DATE
         , intm.period_ref::DATE
-        , intm.group_1_name::TEXT
-        , intm.group_1_value::TEXT
-        , intm.group_2_name::TEXT
-        , intm.group_2_value::TEXT
-        , intm.group_3_name::TEXT
-        , intm.group_3_value::TEXT
-        , intm.group_4_name::TEXT
-        , intm.group_4_value::TEXT
+        , intm.grouping::JSONB
         , intm.indicator_value_numeric::NUMERIC
         , intm.indicator_value_text::TEXT
         , intm.source::TEXT

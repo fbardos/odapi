@@ -7,6 +7,9 @@ from dagster import DagsterError
 from dagster import asset
 from dagster import asset_check
 from great_expectations import expectations as gxe
+from great_expectations.expectations.core.expect_table_row_count_to_be_between import (
+    ExpectTableRowCountToBeBetween,
+)
 from sqlalchemy import text
 
 from odapi.resources.postgres.postgres import PostgresResource
@@ -34,41 +37,19 @@ def _asset(
 ) -> pd.DataFrame:
 
     def build_query() -> str:
-        selects = [
-            f"""
-            select
-                group_1_value
-                , group_2_value
-                , group_3_value
-                , group_4_value
-            from {model.relation_name}\n
-        """
-            for model in load_data_models(
-                pattern=MODEL_SEARCH_PATTERN, dbt_group='intermediate'
-            )
-        ]
-        src_select = 'UNION \n'.join(selects)
-        return f"""
-            with src as (
-                {src_select}
-            )
+        selects = []
+        for model in load_data_models(
+            pattern=MODEL_SEARCH_PATTERN, dbt_group='intermediate'
+        ):
+            selects.append(f"""
+                select
+                    inner_kv.value as group_value_name
+                from {model.relation_name} t
+                    cross join lateral jsonb_each(t.your_jsonb_column) AS outer_kv(key, value)
+                    cross join lateral jsonb_each(outer_kv.value) AS inner_kv(key, value)\n
+            """)
 
-                select group_1_value::TEXT as group_value
-                from src
-                where group_1_value is not null
-            UNION
-                select group_2_value::TEXT as group_value
-                from src
-                where group_2_value is not null
-            UNION
-                select group_3_value::TEXT as group_value
-                from src
-                where group_3_value is not null
-            UNION
-                select group_4_value::TEXT as group_value
-                from src
-                where group_4_value is not null
-        """
+        return 'UNION \n'.join(selects)
 
     df = pd.read_sql(
         build_query(),
@@ -76,9 +57,7 @@ def _asset(
     )
 
     with db.get_sqlalchemy_engine().begin() as connection:
-        connection.execute(
-            text(
-                """
+        connection.execute(text("""
                 CREATE SCHEMA IF NOT EXISTS py_intermediate;
                 CREATE TABLE IF NOT EXISTS py_intermediate.intm_meta_group_value (
                     group_value_id SMALLSERIAL,
@@ -87,9 +66,7 @@ def _asset(
                 INSERT INTO py_intermediate.intm_meta_group_value (group_value_id, group_value_name)
                 VALUES (DEFAULT, 'GROUP TOTAL')
                 ON CONFLICT (group_value_name) DO NOTHING;
-                """
-            )
-        )
+                """))
 
         # Write the DataFrame to the database
         for idx, row in df.iterrows():
@@ -97,13 +74,11 @@ def _asset(
                 'Inserting group value: %s, on index %s', row['group_value'], idx
             )
             connection.execute(
-                text(
-                    f"""
+                text(f"""
                     INSERT INTO py_intermediate.intm_meta_group_value (group_value_id, group_value_name)
                     VALUES (DEFAULT, :group_value)
                     ON CONFLICT (group_value_name) DO NOTHING;
-                    """
-                ),
+                    """),
                 {'group_value': row['group_value']},
             )
 
@@ -115,15 +90,8 @@ def ge_values_id_between_1_5000(
     great_expectations: GreatExpectationsResource,
     data: pd.DataFrame,
 ) -> AssetCheckResult:
-    expectation = gxe.ExpectTableRowCountToBeBetween(
+    expectation = ExpectTableRowCountToBeBetween(
         min_value=1,
         max_value=5000,
     )
-    result = great_expectations.get_batch(data).validate(expectation)
-    assert isinstance(result.success, bool)
-
-    return AssetCheckResult(
-        passed=result.success,
-        severity=AssetCheckSeverity.ERROR,
-        metadata=result.result,
-    )
+    return great_expectations.run_expectation(data, expectation)

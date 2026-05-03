@@ -8,6 +8,7 @@ import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 import odapi.assets.bfs.stat_tab as assets_stat_tab
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
 import odapi.assets.bfs.statatlas_v2 as assets_bfs_statatlas_v2
+import odapi.assets.bfs.stats_swiss as assets_stats_swiss
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 import odapi.assets.swisstopo.api as assets_swisstopo
 from odapi.assets.dbt import dbt_cmd
@@ -18,6 +19,7 @@ from odapi.resources.minio.minio import Minio
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
 from odapi.resources.qa.great_expectations import GreatExpectationsResource
+from odapi.resources.ssh.sftp import SFTPResource
 from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.url.geoadmin import GeoAdminResource
 from odapi.resources.url.geojson import SwissboundariesTill2015
@@ -25,6 +27,7 @@ from odapi.resources.url.gpkg import Swissboundaries
 from odapi.resources.url.healthcheck import HealthCheckResource
 from odapi.resources.url.pushover import PushoverResource
 from odapi.resources.url.requests_info import RequestsInfo
+from odapi.resources.url.sdmx import StatsSwissResource
 from odapi.resources.url.stat_tab import StatTabResource
 
 ################################################################################
@@ -79,7 +82,13 @@ defs = Definitions(
         'requests_info': RequestsInfo(
             user_from=EnvVar('REQUESTS__FROM'),
         ),
+        'sftp_grab': SFTPResource(
+            host=EnvVar('SFTP__ODAPI_GRAB_HOST'),
+            username=EnvVar('SFTP__ODAPI_GRAB_USER'),
+            password=EnvVar('SFTP__ODAPI_GRAB_PASS'),
+        ),
         'stat_tab': StatTabResource(),
+        'stats_swiss': StatsSwissResource(),
         'great_expectations': GreatExpectationsResource(),
     },
     jobs=[
@@ -89,6 +98,7 @@ defs = Definitions(
         assets_swissboundaries.job_bfs_swissboundaries,
         assets_swisstopo.job_geoadmin,
         assets_stat_tab.job_bfs_stat_tab,
+        assets_stats_swiss.job,
     ],
     sensors=[
         *assets_opendataswiss.sensors_opendataswiss,
@@ -99,5 +109,6 @@ defs = Definitions(
         assets_swissboundaries.schedule_bfs_swissboundaries,
         assets_swisstopo.schedule_geoadmin,
         assets_stat_tab.schedule_stat_tab,
+        assets_stats_swiss.schedule,
     ],
 )

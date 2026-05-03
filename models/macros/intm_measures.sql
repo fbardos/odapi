@@ -1,5 +1,6 @@
 {% macro intm_measures(upstream_model) %}
     {% set measure_config = none %}
+    {% set upstream_model_name = model.name.split('__')[0] ~ '__total' %}
 
     {% if execute %}
         {% set upstream_cfg = intm_get_upstream_config() %}
@@ -8,7 +9,6 @@
 
     -- XXX: Add db index for also fast-filter measure_code
     -- XXX: Add final CTE for all INTM macros, otherwise, will not work.
-    {% set upstream_model_name = model.name.split('__')[0] %}
     with measure_src as (
         select *
         from {{ ref(upstream_model_name)}}
@@ -56,14 +56,8 @@
                     , meas.period_code
                     , meas.period_ref_from
                     , meas.period_ref
-                    , meas.group_1_name
-                    , meas.group_1_value
-                    , meas.group_2_name
-                    , meas.group_2_value
-                    , meas.group_3_name
-                    , meas.group_3_value
-                    , meas.group_4_name
-                    , meas.group_4_value
+                    , meas.grouping
+                    , meas.group_1value
                     , meas.indicator_value_numeric * (
                         bev.indicator_value_numeric /
                         {% if measure_config.get('base', none) == 'pro100' %}
@@ -99,14 +93,7 @@
                     , meas.period_code
                     , meas.period_ref_from
                     , meas.period_ref
-                    , meas.group_1_name
-                    , meas.group_1_value
-                    , meas.group_2_name
-                    , meas.group_2_value
-                    , meas.group_3_name
-                    , meas.group_3_value
-                    , meas.group_4_name
-                    , meas.group_4_value
+                    , meas.grouping
                     , meas.indicator_value_numeric
                     , meas.indicator_value_text
                     , meas.source
@@ -128,14 +115,7 @@
                         , meas.period_code
                         , meas.period_ref_from
                         , meas.period_ref
-                        , meas.group_1_name
-                        , meas.group_1_value
-                        , meas.group_2_name
-                        , meas.group_2_value
-                        , meas.group_3_name
-                        , meas.group_3_value
-                        , meas.group_4_name
-                        , meas.group_4_value
+                        , meas.grouping
                         , meas.indicator_value_numeric / (
                             bev.indicator_value_numeric /
                             {% if calc == 'pro100' %}
@@ -179,14 +159,7 @@
         , meas.period_code::TEXT
         , meas.period_ref_from::DATE
         , meas.period_ref::DATE
-        , meas.group_1_name::TEXT
-        , meas.group_1_value::TEXT
-        , meas.group_2_name::TEXT
-        , meas.group_2_value::TEXT
-        , meas.group_3_name::TEXT
-        , meas.group_3_value::TEXT
-        , meas.group_4_name::TEXT
-        , meas.group_4_value::TEXT
+        , meas.grouping::JSONB
         , meas.indicator_value_numeric::NUMERIC
         , meas.indicator_value_text::TEXT
         , meas.source::TEXT
