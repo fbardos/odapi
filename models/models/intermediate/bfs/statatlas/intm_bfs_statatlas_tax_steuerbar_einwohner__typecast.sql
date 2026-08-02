@@ -1,1 +1,0 @@
-{{ intm_typecast() }}
