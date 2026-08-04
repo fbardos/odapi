@@ -104,10 +104,11 @@ def asset_download(
     )
 
     # write to sftp
-    with t.step('ensure_sftp_dir'):
-        sftp_grab.ensure_dir(CONFIG.dir_name)
-    with t.step('upload_sftp_file'):
-        sftp_grab.write_file(path, compressed.getvalue())
+    with sftp_grab.connection() as conn:
+        with t.step('ensure_sftp_dir'):
+            conn.ensure_dir(CONFIG.dir_name)
+        with t.step('upload_sftp_file'):
+            conn.write_file(path, compressed.getvalue())
 
 
 @asset(
@@ -135,18 +136,19 @@ def asset_load_staging(
     #    (dimensions as jsonb {'group_id': 'group_value'})
     #  - df_grouping with metadata about grouping
 
-    with t.step('look_for_files_sftp'):
-        filepaths = sftp_grab.find_files_in_time_window(
-            CONFIG.dir_name, context.partition_time_window
-        )
-        if len(filepaths) != 1:
-            raise DagsterError(
-                f'Expected 1 single file for partition: {context.partition_key}, '
-                f'got: {filepaths}'
+    with sftp_grab.connection() as conn:
+        with t.step('look_for_files_sftp'):
+            filepaths = conn.find_files_in_time_window(
+                CONFIG.dir_name, context.partition_time_window
             )
-        selected_file = filepaths[0]
-    with t.step('read_compressed_file'):
-        compressed = BytesIO(sftp_grab.read_file(selected_file))
+            if len(filepaths) != 1:
+                raise DagsterError(
+                    f'Expected 1 single file for partition: {context.partition_key}, '
+                    f'got: {filepaths}'
+                )
+            selected_file = filepaths[0]
+        with t.step('read_compressed_file'):
+            compressed = BytesIO(conn.read_file(selected_file))
     with t.step('decompress_file'):
         data = sftp_grab.decompress_from_xz(compressed)
     with t.step('process_raw_data'):
@@ -172,10 +174,6 @@ def asset_load_staging(
     #       "group_value_is_total": False,
     #    },
     # }
-    #
-    # TODO: Or, a even better approach is to store each grouping value in a
-    # long table. Because currently, every key uses space on the disk, even,
-    # if group_name is repeated millions of times.
     #
     # main table: primary_key
     #

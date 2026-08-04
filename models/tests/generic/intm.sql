@@ -1,7 +1,7 @@
 -- Copy of dbt_expectations.expect_table_columns_to_match_ordered_list,
 -- because - unlike macros - tests cannot be referenced in other tests.
 {% test odapi_intm_columns(model, transform='upper') %}
--- XXX: Change logic of all existing non-stats-swiss models (grouping column)
+-- TODO: Change logic of all existing non-stats-swiss models (grouping column)
 {% set column_list = [
     'indicator_id',
     'geo_code',

@@ -1,53 +1,37 @@
 import datetime as dt
+import hashlib
 import lzma
 import posixpath
 import re
 from contextlib import contextmanager
 from io import BytesIO
+from typing import Iterator
+from typing import Optional
 
 import paramiko
 from dagster import ConfigurableResource
+from dagster import ResourceDependency
 from dagster import TimeWindow
+from sqlalchemy import text
+
+from odapi.resources.postgres.postgres import PostgresResource
 
 
-class SFTPResource(ConfigurableResource):
-    host: str
-    port: int = 22
-    username: str
-    password: str | None = None
-    key_file: str | None = None
-    timeout: int = 10
+class SFTPSession:
+    """Thin wrapper around paramiko.SFTPClient."""
 
-    # ISO format from datetime.now().isoformat()
-    _ISO_DATETIME_PATTERN = re.compile(
-        r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)"
-    )
+    def __init__(self, client: paramiko.SFTPClient):
+        self._client = client
 
-    def _create_client(self) -> paramiko.SFTPClient:
-        transport = paramiko.Transport((self.host, self.port))
-
-        if self.key_file:
-            private_key = paramiko.RSAKey.from_private_key_file(self.key_file)
-            transport.connect(username=self.username, pkey=private_key)
-        else:
-            transport.connect(username=self.username, password=self.password)
-
-        return paramiko.SFTPClient.from_transport(transport)
-
-    @contextmanager
-    def get_client(self):
-        client = self._create_client()
-        try:
-            yield client
-        finally:
-            client.close()
+    def __getattr__(self, name: str):
+        """Delegate unknown attributes/methods to the underlying Paramiko client."""
+        return getattr(self._client, name)
 
     def ensure_dir(self, remote_dir: str):
         """
         Public method: ensure a directory exists (like `mkdir -p`).
         """
-        with self.get_client() as client:
-            self._mkdir_p(client, remote_dir)
+        self._mkdir_p(self._client, remote_dir)
 
     def _mkdir_p(self, client: paramiko.SFTPClient, remote_dir: str):
         """
@@ -74,42 +58,22 @@ class SFTPResource(ConfigurableResource):
                 client.mkdir(d)
 
     def read_file(self, remote_path: str) -> bytes:
-        with self.get_client() as client:
-            with client.open(remote_path, "rb") as f:
-                return f.read()
+        with self._client.open(remote_path, "rb") as f:
+            return f.read()
 
     def write_file(self, remote_path: str, data: bytes):
-        with self.get_client() as client:
-            with client.open(remote_path, "wb") as f:
-                f.write(data)
+        with self._client.open(remote_path, "wb") as f:
+            f.write(data)
 
     def list_files(self, remote_path: str) -> list[str]:
-        with self.get_client() as client:
-            return client.listdir(remote_path)
+        return self._client.listdir(remote_path)
 
     def file_exists(self, remote_path: str) -> bool:
-        with self.get_client() as client:
-            try:
-                client.stat(remote_path)
-                return True
-            except FileNotFoundError:
-                return False
-
-    def compress_to_xz(self, data: BytesIO, preset: int = 9) -> BytesIO:
-        """
-        Compress from a BytesIO into an .xz-compressed BytesIO.
-        preset: 0..9, higher = stronger/slower
-        """
-        data.seek(0)
-        raw = data.read()
-        compressed = lzma.compress(raw, preset=preset)
-        out = BytesIO(compressed)
-        out.seek(0)
-        return out
-
-    def decompress_from_xz(self, data: BytesIO) -> BytesIO:
-        data.seek(0)
-        return BytesIO(lzma.decompress(data.read()))
+        try:
+            self._client.stat(remote_path)
+            return True
+        except FileNotFoundError:
+            return False
 
     def find_single_file_for_date(
         self,
@@ -125,10 +89,7 @@ class SFTPResource(ConfigurableResource):
         Raises ValueError if more than one file matches.
         """
         normalized_dir = "/" + remote_subdir.strip("/")
-
-        with self.get_client() as client:
-            filenames = client.listdir(normalized_dir)
-
+        filenames = self._client.listdir(normalized_dir)
         matches: list[str] = []
 
         for filename in filenames:
@@ -172,10 +133,7 @@ class SFTPResource(ConfigurableResource):
         Returns full remote paths for all matching files, sorted by embedded timestamp.
         """
         normalized_dir = "/" + remote_subdir.strip("/")
-
-        with self.get_client() as client:
-            filenames = client.listdir(normalized_dir)
-
+        filenames = self._client.listdir(normalized_dir)
         matches: list[tuple[dt.datetime, str]] = []
 
         for filename in filenames:
@@ -206,3 +164,95 @@ class SFTPResource(ConfigurableResource):
 
         matches.sort(key=lambda x: x[0])
         return [path for _, path in matches]
+
+
+class SFTPResource(ConfigurableResource):
+    postgres: ResourceDependency[PostgresResource]
+    host: str
+    port: int = 22
+    username: str
+    password: str | None = None
+    key_file: str | None = None
+    timeout: int = 10
+    lock_name: str = 'sftp_grab'
+
+    # ISO format from datetime.now().isoformat()
+    _ISO_DATETIME_PATTERN = re.compile(
+        r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)"
+    )
+
+    def _advisory_lock_key(self, name: str) -> int:
+        """Convert a lock name into a stable signed 64-bit integer.
+        For Postgres advisory locks.
+        """
+        digest = hashlib.sha256(name.encode("utf-8")).digest()
+        return int.from_bytes(digest[:8], "big", signed=True)
+
+    @contextmanager
+    def _global_lock(self):
+        key = self._advisory_lock_key(self.lock_name)
+        engine = self.postgres.get_sqlalchemy_engine()
+        with engine.connect() as conn:
+            conn.execute(
+                text("SELECT pg_advisory_lock(:key)"),
+                {"key": key},
+            )
+
+            try:
+                yield
+
+            finally:
+                conn.execute(
+                    text("SELECT pg_advisory_unlock(:key)"),
+                    {"key": key},
+                )
+
+    def _create_client(self) -> tuple[paramiko.Transport, paramiko.SFTPClient]:
+        transport = paramiko.Transport((self.host, self.port))
+
+        if self.key_file:
+            private_key = paramiko.RSAKey.from_private_key_file(self.key_file)
+            transport.connect(username=self.username, pkey=private_key)
+        else:
+            transport.connect(username=self.username, password=self.password)
+
+        sftp_client = paramiko.SFTPClient.from_transport(transport)
+
+        if sftp_client is None:
+            transport.close()
+            raise RuntimeError("Failed to create SFTP client from transport")
+
+        return transport, sftp_client
+
+    @contextmanager
+    def connection(self):
+        transport: Optional[paramiko.Transport] = None
+        sftp_client: Optional[paramiko.SFTPClient] = None
+
+        with self._global_lock():
+            try:
+                transport, sftp_client = self._create_client()
+                yield SFTPSession(sftp_client)
+
+            finally:
+                if sftp_client is not None:
+                    sftp_client.close()
+
+                if transport is not None:
+                    transport.close()
+
+    def compress_to_xz(self, data: BytesIO, preset: int = 9) -> BytesIO:
+        """
+        Compress from a BytesIO into an .xz-compressed BytesIO.
+        preset: 0..9, higher = stronger/slower
+        """
+        data.seek(0)
+        raw = data.read()
+        compressed = lzma.compress(raw, preset=preset)
+        out = BytesIO(compressed)
+        out.seek(0)
+        return out
+
+    def decompress_from_xz(self, data: BytesIO) -> BytesIO:
+        data.seek(0)
+        return BytesIO(lzma.decompress(data.read()))

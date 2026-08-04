@@ -277,6 +277,40 @@ models:
           combination_of_columns: ["_surr_key"]
 
   # ---------------------------------------------------------------------------
+  - name: stgn_traffic_miv_bs
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - zst_nr_numerisch_
+            - sitecode
+            - directionname
+            - lanecode
+            - date
+            - hourfrom
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_traffic_miv_tg
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - code
+            - strasse
+            - richtung
+            - spur_code
+            - datum
+            - zeit_von
+
+  # ---------------------------------------------------------------------------
+  - name: stgn_traffic_miv_winti
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - anlage_nr
+            - zeit_von
+            - richtung
+            - spur_nr
+
+  # ---------------------------------------------------------------------------
   - name: stgn_stats_whg_gebkat
     # ---------------------------------------------------------------------------
     tests:

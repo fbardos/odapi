@@ -1,0 +1,65 @@
+models:
+  # --------------------------------------------------------------------------
+  - name: traffic_miv
+    publisher_type: MultiplePublisher
+    description: |
+      Zusammengeführte Daten aus den Verkehrszähldaten des motorisierten
+      Individualverkehrs (MIV) in der Schweiz, nach SWISS10-Klassifizierung.
+    sources:
+      - name: bs
+        type: OpenDataSwiss
+        ckan_resource_id: 0eb168ec-ebda-4d33-b0a9-99da43359029
+        load:
+          delimiter: ";"
+      - name: tg
+        type: OpenDataSwiss
+        ckan_resource_id: 545207e3-37f4-4458-a0cf-9c28e33e8bff
+        load:
+          delimiter: ";"
+      - name: winti
+        type: OpenDataSwiss
+        ckan_resource_id: aaff5f81-c78e-42a9-b26d-c835cc47e682
+      - name: stgallen
+        type: OpenDataSwiss
+        ckan_resource_id: 03783536-d200-4f57-9e89-0484f1af4097
+        load:
+          delimiter: ";"
+
+  # --------------------------------------------------------------------------
+  - name: tax_quartier
+    publisher_type: MultiplePublisher
+    description: |
+      Zusammengeführte Daten aus der Steuerstatistik pro Quartier.
+    sources:
+      - name: bs
+        type: OpenDataSwiss
+        ckan_resource_id: d9a3fdcc-4aef-4639-8e31-c5740941d31a
+        load:
+          delimiter: ";"
+      - name: zueri
+        type: OpenDataSwiss
+        ckan_resource_id: 1e16f1e5-d78c-4a20-9462-19bbda54d79f
+      - name: winti
+        type: OpenDataSwiss
+        ckan_resource_id: b39d35f4-e4ec-404d-93f5-1732b9653e10
+
+  # --------------------------------------------------------------------------
+  - name: dataset_stats
+    publisher_type: MultiplePublisher
+    description: |
+      Statistiken zu den veröffentlichten Datensätzen
+    sources:
+      - name: bs
+        type: OpenDataSwiss
+        ckan_resource_id: 1f9450b4-0331-46ba-962e-f67db16ffc32
+        load:
+          delimiter: ";"
+
+  # --------------------------------------------------------------------------
+  - name: bfs_statatlas
+    publisher_type: SinglePublisher
+    description: |
+      Daten aus dem STATATLAS (v2) des Bundesamtes für Statistik (BFS)
+    sources:
+      - name: bfs
+        type: CustomAsset

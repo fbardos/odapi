@@ -5,6 +5,7 @@ from dagster import load_assets_from_package_module
 
 import odapi.assets as assets
 import odapi.assets.bfs.opendataswiss as assets_opendataswiss
+import odapi.assets.bfs.quartier as assets_quartier
 import odapi.assets.bfs.stat_tab as assets_stat_tab
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
 import odapi.assets.bfs.statatlas_v2 as assets_bfs_statatlas_v2
@@ -14,6 +15,7 @@ import odapi.assets.swisstopo.api as assets_swisstopo
 from odapi.assets.dbt import dbt_cmd
 from odapi.resources.ckan.ckan import OpenDataSwiss
 from odapi.resources.crypto.fernet import FernetCipher
+from odapi.resources.duckdb.duckdb import DuckDBResource
 from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.minio.minio import Minio
 from odapi.resources.postgres.postgres import PostgresResource
@@ -22,6 +24,7 @@ from odapi.resources.qa.great_expectations import GreatExpectationsResource
 from odapi.resources.ssh.sftp import SFTPResource
 from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.url.geoadmin import GeoAdminResource
+from odapi.resources.url.geojson import QuartierBoundaries
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
 from odapi.resources.url.healthcheck import HealthCheckResource
@@ -40,15 +43,18 @@ from odapi.resources.url.stat_tab import StatTabResource
 # Also, cannot pack the resource, job and sensor definitions in the assets python
 # file. Will not be recognized when using Dagster CLI to e.g. debug.
 # For now, define all definitions here.
+db = PostgresResource(
+    sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
+)
+
 defs = Definitions(
     assets=load_assets_from_package_module(assets),
     asset_checks=load_asset_checks_from_package_module(assets),
     resources={
         # Global resources
         'dbt_res': dbt_cmd,
-        'db': PostgresResource(
-            sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
-        ),
+        'db': db,
+        'duckdb': DuckDBResource(database=EnvVar('DUCKDB__PATH')),
         'xcom': XcomPostgresResource(
             sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
         ),
@@ -74,6 +80,7 @@ defs = Definitions(
         'geoadmin': GeoAdminResource(),
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
+        'geo_quartier': QuartierBoundaries(),
         'healthcheck': HealthCheckResource(),
         'pushover': PushoverResource(
             user_key=EnvVar('PUSHOVER__USER_KEY'),
@@ -83,6 +90,7 @@ defs = Definitions(
             user_from=EnvVar('REQUESTS__FROM'),
         ),
         'sftp_grab': SFTPResource(
+            postgres=db,
             host=EnvVar('SFTP__ODAPI_GRAB_HOST'),
             username=EnvVar('SFTP__ODAPI_GRAB_USER'),
             password=EnvVar('SFTP__ODAPI_GRAB_PASS'),
@@ -92,16 +100,17 @@ defs = Definitions(
         'great_expectations': GreatExpectationsResource(),
     },
     jobs=[
-        *assets_opendataswiss.jobs_opendataswiss,
+        *assets_opendataswiss.collected_jobs,
         assets_bfs_statatlas.job_statatlas,
         assets_bfs_statatlas_v2.job_statatlas_v2,
         assets_swissboundaries.job_bfs_swissboundaries,
         assets_swisstopo.job_geoadmin,
         assets_stat_tab.job_bfs_stat_tab,
         assets_stats_swiss.job,
+        assets_quartier.job,
     ],
     sensors=[
-        *assets_opendataswiss.sensors_opendataswiss,
+        *assets_opendataswiss.collected_sensors,
     ],
     schedules=[
         assets_bfs_statatlas.schedule_statatlas,

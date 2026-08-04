@@ -7,8 +7,8 @@
         {% set measure_config = upstream_cfg.get('odapi', {}).get('measure', none) %}
     {% endif %}
 
-    -- XXX: Add db index for also fast-filter measure_code
-    -- XXX: Add final CTE for all INTM macros, otherwise, will not work.
+    -- TODO: Add db index for also fast-filter measure_code
+    -- TODO: Add final CTE for all INTM macros, otherwise, will not work.
     with measure_src as (
         select *
         from {{ ref(upstream_model_name)}}

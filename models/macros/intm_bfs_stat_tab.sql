@@ -82,7 +82,6 @@
 	)
 
 
-    -- XXX: Needs refactoring for grouping column
     -- TODO: Maybe move to a global build-sum functionality for grouping
     , intm_build_total as (
         {% for indicator in indicators %}

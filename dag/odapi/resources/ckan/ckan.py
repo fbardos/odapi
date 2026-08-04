@@ -1,6 +1,7 @@
-import datetime
+import datetime as dt
 import json
 import re
+from dataclasses import dataclass
 from typing import Generator
 from typing import List
 from typing import Optional
@@ -8,6 +9,50 @@ from typing import Optional
 import requests
 from dagster import ConfigurableResource
 from dagster import get_dagster_logger
+
+
+@dataclass
+class CkanResource:
+    model_name: str
+    ckan_resource_id: str
+    delimiter: str = ','
+    _DIR_NAME: str = 'opendata_swiss'
+    _WWW_PREFIX: str = 'https://files.bardos.dev/odapi'
+
+    @property
+    def partition_name(self) -> str:
+        return f'part_{self.model_name}'
+
+    @property
+    def job_name_web(self) -> str:
+        return f'job_web_{self.model_name}'
+
+    @property
+    def job_name_sftp(self) -> str:
+        return f'job_sftp_{self.model_name}'
+
+    def filename(self, timestamp: dt.datetime, file_ending: str = '.csv.xz') -> str:
+        return (
+            f'{self.model_name}_{timestamp.strftime("%Y-%m-%dT%H-%M-%SZ")}{file_ending}'
+        )
+
+    @property
+    def dir(self) -> str:
+        return '/'.join([self._DIR_NAME, self.model_name])
+
+    def path(self, timestamp: dt.datetime, file_ending: str) -> str:
+        return '/'.join([self.dir, self.filename(timestamp, file_ending)])
+
+    @property
+    def sensor_name_web(self) -> str:
+        return f'sensor_web_{self.model_name}'
+
+    @property
+    def sensor_name_sftp(self) -> str:
+        return f'sensor_sftp_{self.model_name}'
+
+    def www_url(self, partition_key: str) -> str:
+        return '/'.join([self._WWW_PREFIX, self.dir, partition_key])
 
 
 class CkanApi(ConfigurableResource):
@@ -56,15 +101,11 @@ class CkanApi(ConfigurableResource):
         )
         return response.json()
 
-    def get_resource_modified(self, id: str) -> datetime.datetime:
+    def get_resource_modified(self, id: str) -> dt.datetime:
         resource = self.get_resource_by_id(id)
-        modified = datetime.datetime.fromisoformat(
-            resource.get('result', {}).get('modified')
-        )
+        modified = dt.datetime.fromisoformat(resource.get('result', {}).get('modified'))
         if modified.tzinfo is None:
-            modified = modified.replace(
-                tzinfo=datetime.timezone.utc
-            )  # Could be problematic
+            modified = modified.replace(tzinfo=dt.timezone.utc)  # Could be problematic
         return modified
 
     def get_resource_url(self, id: str) -> str:

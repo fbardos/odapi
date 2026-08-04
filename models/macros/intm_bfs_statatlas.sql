@@ -122,7 +122,7 @@ with _dummy as (
             {% else %}
                 , period_ref::DATE as period_ref
             {% endif %}
-                , NULL::JSONB as grouping
+                , NULL::JSON as grouping
             {% if value_col_is_text %}
                 , NULL::NUMERIC as indicator_value_numeric
                 , {{ value_col }}::TEXT as indicator_value_text
@@ -208,7 +208,7 @@ with _dummy as (
                         )
                 end as grouping
             {% else %}
-                , NULL::JSONB as grouping
+                , NULL::JSON as grouping
             {% endif %}
             -- currently not implemented, but one dimensional groups
             -- would be available in STATATLAS_V2, see group_name
@@ -268,20 +268,20 @@ with _dummy as (
 {% endif %}
 
 select
-    meas.indicator_id::SMALLINT
-    , meas.geo_code::CHAR(4)
-    , meas.geo_value::SMALLINT
-    , meas.knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE
-    , meas.knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE
-    , meas.period_type::TEXT
-    , meas.period_code::TEXT
-    , meas.period_ref_from::DATE
-    , meas.period_ref::DATE
-    , meas.grouping::JSONB
-    , meas.indicator_value_numeric::NUMERIC
-    , meas.indicator_value_text::TEXT
-    , meas.source::TEXT
-    , meas._etl_version::SMALLINT
+    meas.indicator_id::SMALLINT as indicator_id
+    , meas.geo_code::CHAR(4) as geo_code
+    , meas.geo_value::SMALLINT as geo_value
+    , meas.knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE as knowledge_date_from
+    , meas.knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE as knowledge_date_to
+    , meas.period_type::TEXT as period_type
+    , meas.period_code::TEXT as period_code
+    , meas.period_ref_from::DATE as period_ref_from
+    , meas.period_ref::DATE as period_ref
+    , meas.grouping::JSON as grouping
+    , meas.indicator_value_numeric::NUMERIC as indicator_value_numeric
+    , meas.indicator_value_text::TEXT as indicator_value_text
+    , meas.source::TEXT as source
+    , meas._etl_version::SMALLINT as _etl_version
 {% if measure_config is none %}
     from final meas
 {% else %}
