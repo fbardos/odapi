@@ -61,3 +61,8 @@ dependencies = [
     "uvicorn>=0.35.0",
     "xlsxwriter>=3.2.5",
 ]
+
+[tool.uv.workspace]
+members = [
+    'doc',
+]

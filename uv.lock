@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "odapi",
+    "odapi-doc",
+]
+
 [[package]]
 name = "agate"
 version = "1.9.1"
@@ -2665,6 +2671,21 @@ requires-dist = [
     { name = "sqlmodel", specifier = ">=0.0.24" },
     { name = "uvicorn", specifier = ">=0.35.0" },
     { name = "xlsxwriter", specifier = ">=3.2.5" },
+]
+
+[[package]]
+name = "odapi-doc"
+version = "0.1.0"
+source = { virtual = "doc" }
+dependencies = [
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extra = ["python"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mkdocs-material" },
+    { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.4" },
 ]
 
 [[package]]
