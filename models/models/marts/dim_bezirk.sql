@@ -38,7 +38,7 @@ with src as (
     select *
     from add_row_for_latest
 )
-select 
+select
     snapshot_code
     , snapshot_date
     , bezirk_bfs_id::SMALLINT as bezirk_bfs_id
