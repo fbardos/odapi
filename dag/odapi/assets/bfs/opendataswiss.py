@@ -190,13 +190,20 @@ def pipeline_factory(ckan_resource: CkanResource) -> tuple:
         )
         df['file_source'] = ckan_resource.www_url(partition_key)
 
-        df.to_sql(
-            ckan_resource.model_name,
-            duckdb.get_sqlalchemy_engine(),
-            schema='src',
-            if_exists='replace',
-            index=False,
-        )
+        # Needs proper connection handling (with closing), otherwise, downstream
+        # assets will fail because file lock on DuckDB is still set.
+        engine = duckdb.get_sqlalchemy_engine()
+        try:
+            with engine.begin() as conn:
+                df.to_sql(
+                    ckan_resource.model_name,
+                    conn,
+                    schema='src',
+                    if_exists='replace',
+                    index=False,
+                )
+        finally:
+            engine.dispose()
 
         # Insert metadata
         context.add_output_metadata(
