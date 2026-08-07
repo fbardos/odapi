@@ -3,7 +3,6 @@ from dagster import asset
 from dagster import define_asset_job
 
 from odapi.resources.duckdb.duckdb import DuckDBResource
-from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.url.geojson import QuartierBoundaries
 
 
