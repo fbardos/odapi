@@ -1,0 +1,12 @@
+data=# \c dagster
+You are now connected to database "dagster" as user "postgres".
+dagster=# DELETE FROM asset_keys ak USING (
+  SELECT asset_key, id,
+         ROW_NUMBER() OVER (PARTITION BY asset_key ORDER BY id DESC) AS rn
+  FROM asset_keys
+) x
+WHERE ak.asset_key = x.asset_key
+  AND ak.id = x.id
+  AND x.rn > 1;
+DELETE 7
+

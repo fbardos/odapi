@@ -48,14 +48,15 @@ RUN apk add --no-cache \
       zlib-static \
       xz-static \
       bzip2-static \
-      zstd-static
+      zstd-static \
+      pspg
 
 # Install Rust + cargo-pgrx
 #  Note: rustup-init script will place ~/.cargo/bin in PATH for root;
 #  pgrx expects 'cargo' and 'rustup' on PATH.
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
  && /root/.cargo/bin/rustup default stable \
- && /root/.cargo/bin/cargo install cargo-pgrx --version 0.14.1 --locked
+ && /root/.cargo/bin/cargo install cargo-pgrx --version 0.16.1 --locked
 
 # Put pgrx bin directory on PATH
 ENV PATH="/root/.cargo/bin:${PATH}"

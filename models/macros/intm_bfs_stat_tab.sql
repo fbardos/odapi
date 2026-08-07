@@ -35,27 +35,28 @@
                     {% endif %}
                 end as period_ref_from  -- can be set to start of year later if correct type is set
 				, make_date(year_to, 12, 31) as period_ref
-				{% for n in range(1, 5) %}
-					{% if grouping|length >= n %}
-						{% set group_elem = grouping[n-1] %}
-					    {% if group_elem.get('total_value', none) %}
-                            , '{{ group_elem.get("name", "") }}'::TEXT as group_{{ n }}_name
-                            , CASE
-                                WHEN {{ group_elem["column"]}} = '{{ group_elem.get("total_value", "XXX")}}' THEN 'GROUP TOTAL'
-                                ELSE {{ group_elem["column"]}}::TEXT
-                            END as group_{{ n }}_value
-                        {% elif indicator.get('build_total_value', none) %}
-                            , '{{ group_elem.get("name", "") }}'::TEXT as group_{{ n }}_name
-                            , {{ group_elem["column"]}}::TEXT as group_{{ n }}_value
-                        {% else %}
-                            , NULL::TEXT as group_{{ n }}_name
-                            , NULL::TEXT as group_{{ n }}_value
+
+
+                , jsonb_build_object(
+                    {% for group_config in grouping %}
+                        {% set group_elem = group_config %}
+                        '{{ group_elem.get("column") }}', jsonb_build_object(
+                            case
+                                when {{ group_elem["column"]}} = '{{ group_elem.get("total_value", "XXX")}}'
+                                    then '_T'
+                                else {{ group_elem["column"]}}::TEXT
+                            end,
+                            case
+                                when {{ group_elem["column"]}} = '{{ group_elem.get("total_value", "XXX")}}'
+                                    then 'GROUP TOTAL'
+                                else {{ group_elem["column"]}}::TEXT
+                            end
+                        )
+                        {% if not loop.last %}
+                            ,
                         {% endif %}
-					{% else %}
-						, NULL::TEXT as group_{{ n }}_name
-						, NULL::TEXT as group_{{ n }}_value
-					{% endif %}
-				{% endfor %}
+                        {% endfor %}
+                ) as grouping
 				{% if is_numeric %}
 					, indicator_value::NUMERIC as indicator_value_numeric
 					, NULL::TEXT as indicator_value_text
@@ -81,6 +82,7 @@
 	)
 
 
+    -- TODO: Maybe move to a global build-sum functionality for grouping
     , intm_build_total as (
         {% for indicator in indicators %}
             {% set grouping = indicator.get('grouping', []) %}

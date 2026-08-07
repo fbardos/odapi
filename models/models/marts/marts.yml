@@ -20,136 +20,111 @@ models:
   - name: dim_gemeinde
     config:
       group: *default-group
-      indexes:
-        - columns: [snapshot_year]
-          unique: false
-      grants:
-        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_gemeinde_latest
     config:
       group: *default-group
-      indexes:
-        - columns: [gemeinde_bfs_id]
-          unique: true
-      grants:
-        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk
     config:
       group: *default-group
-      indexes:
-        - columns: [snapshot_year]
-          unique: false
-      grants:
-        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_bezirk_latest
     config:
       group: *default-group
-      indexes:
-        - columns: [bezirk_bfs_id]
-          unique: true
-      grants:
-        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_kanton
     config:
       group: *default-group
-      indexes:
-        - columns: [snapshot_year]
-          unique: false
-      grants:
-        select: ["odapi_public"]
 
   # ---------------------------------------------------------------------------
   - name: dim_kanton_latest
     config:
       group: *default-group
-      indexes:
-        - columns: [kanton_bfs_id]
-          unique: true
-      grants:
-        select: ["odapi_public"]
+
+  ## ---------------------------------------------------------------------------
+  #- name: dim_source
+  #  config:
+  #    contract: {enforced: true}
+  #    group: *default-group
+  #    indexes:
+  #      - columns: [id]
+  #        unique: true
+  #      - columns: [source]
+  #        unique: true
+  #    grants:
+  #      select: ["odapi_public"]
+  #  columns:
+  #    - name: id
+  #      data_type: smallint
+  #      constraints:
+  #        - type: primary_key
+  #    - name: source
+  #      data_type: text
+  #      constraints:
+  #        - type: not_null
+  #        # prevents row explosion on MART models, RAM usage on
+  #        # mart_stab_geb_flaeche reduces from 46GB to 18 GB
+  #        - type: unique
+
+  ## ---------------------------------------------------------------------------
+  #- name: dim_group
+  #  config:
+  #    contract: {enforced: true}
+  #    group: *default-group
+  #    indexes:
+  #      - columns: [group_id]
+  #        unique: true
+  #      - columns: [group_name]
+  #        unique: true
+  #    grants:
+  #      select: ["odapi_public"]
+  #  columns:
+  #    - name: group_id
+  #      data_type: smallint
+  #      constraints:
+  #        - type: primary_key
+  #    - name: group_name
+  #      data_type: text
+  #      constraints:
+  #        - type: not_null
+  #        # prevents row explosion on MART models, RAM usage on
+  #        # mart_stab_geb_flaeche reduces from 46GB to 18 GB
+  #        - type: unique
+
+  ## ---------------------------------------------------------------------------
+  #- name: dim_group_value
+  #  config:
+  #    contract: {enforced: true}
+  #    group: *default-group
+  #    indexes:
+  #      - columns: [group_value_id]
+  #        unique: true
+  #      - columns: [group_value_name]
+  #        unique: true
+  #    grants:
+  #      select: ["odapi_public"]
+  #  columns:
+  #    - name: group_value_id
+  #      data_type: smallint
+  #      constraints:
+  #        - type: primary_key
+  #    - name: group_value_name
+  #      data_type: text
+  #      constraints:
+  #        - type: not_null
+  #        # prevents row explosion on MART models, RAM usage on
+  #        # mart_stab_geb_flaeche reduces from 46GB to 18 GB
+  #        - type: unique
 
   # ---------------------------------------------------------------------------
-  - name: dim_source
+  - name: mart_traffic_miv
     config:
-      contract: { enforced: true }
-      group: *default-group
-      indexes:
-        - columns: [id]
-          unique: true
-        - columns: [source]
-          unique: true
-      grants:
-        select: ["odapi_public"]
-    columns:
-      - name: id
-        data_type: smallint
-        constraints:
-          - type: primary_key
-      - name: source
-        data_type: text
-        constraints:
-          - type: not_null
-          # prevents row explosion on MART models, RAM usage on
-          # mart_stab_geb_flaeche reduces from 46GB to 18 GB
-          - type: unique
-
-  # ---------------------------------------------------------------------------
-  - name: dim_group
-    config:
-      contract: { enforced: true }
-      group: *default-group
-      indexes:
-        - columns: [group_id]
-          unique: true
-        - columns: [group_name]
-          unique: true
-      grants:
-        select: ["odapi_public"]
-    columns:
-      - name: group_id
-        data_type: smallint
-        constraints:
-          - type: primary_key
-      - name: group_name
-        data_type: text
-        constraints:
-          - type: not_null
-          # prevents row explosion on MART models, RAM usage on
-          # mart_stab_geb_flaeche reduces from 46GB to 18 GB
-          - type: unique
-
-  # ---------------------------------------------------------------------------
-  - name: dim_group_value
-    config:
-      contract: { enforced: true }
-      group: *default-group
-      indexes:
-        - columns: [group_value_id]
-          unique: true
-        - columns: [group_value_name]
-          unique: true
-      grants:
-        select: ["odapi_public"]
-    columns:
-      - name: group_value_id
-        data_type: smallint
-        constraints:
-          - type: primary_key
-      - name: group_value_name
-        data_type: text
-        constraints:
-          - type: not_null
-          # prevents row explosion on MART models, RAM usage on
-          # mart_stab_geb_flaeche reduces from 46GB to 18 GB
-          - type: unique
+      materialized: view
 
   # ---------------------------------------------------------------------------
   - name: mart_stab_geb_flaeche

@@ -41,6 +41,6 @@ else:
     dbt_manifest_path = dbt_path.joinpath('target', 'manifest.json')
 
 
-@dbt_assets(manifest=dbt_manifest_path)
+@dbt_assets(manifest=dbt_manifest_path, pool='duckdb_writer')
 def assets_homelab_dbt(context: AssetExecutionContext, dbt_res: DbtCliResource):
     yield from dbt_res.cli(["build"], context=context).stream()

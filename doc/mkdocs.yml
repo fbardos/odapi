@@ -1,0 +1,18 @@
+site_name: ODAPI - Open Data API
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+
+nav:
+  - Home: index.md
+  - Motivation: motivation.md
+  - Models:
+      - mart_traffic_miv: models/mart_traffic_miv.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.blocks.admonition
