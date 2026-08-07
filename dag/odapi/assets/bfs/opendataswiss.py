@@ -1,35 +1,43 @@
 import datetime as dt
 from dataclasses import dataclass
+from io import BytesIO
 
 import pandas as pd
 from dagster import AssetExecutionContext
 from dagster import AssetIn
 from dagster import AssetsDefinition
+from dagster import AssetSelection
+from dagster import DefaultSensorStatus
+from dagster import DynamicPartitionsDefinition
 from dagster import HookContext
 from dagster import MetadataValue
 from dagster import RunRequest
 from dagster import SensorDefinition
+from dagster import SensorEvaluationContext
+from dagster import SensorResult
+from dagster import SkipReason
 from dagster import asset
 from dagster import define_asset_job
 from dagster import failure_hook
 from dagster import sensor
 from pytz import timezone
 
+from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ckan.ckan import OpenDataSwiss
+from odapi.resources.duckdb.duckdb import DuckDBResource
 from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
+from odapi.resources.published_models import PublishedModels
+from odapi.resources.ssh.sftp import SFTPResource
+from odapi.resources.url import requests_info
 from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.utils import calculate_bytes_compression
+from odapi.utils.log_perf_counter import LogTime
 
-
-@dataclass
-class CkanResource:
-    model_name: str
-    ckan_resource_id: str
-
-
+PUBLISHED_MODELS = PublishedModels()
 CKAN_RESOURCES = [
+    # Rest moved to published_models.py
     CkanResource(
         model_name='bfe_minergie',
         ckan_resource_id='3ae6d523-748c-466b-8368-04569473338e',
@@ -46,79 +54,145 @@ CKAN_RESOURCES = [
         model_name='ktzh_gp_avg_haushaltsgroesse',
         ckan_resource_id='ae3cc772-38e7-4d5f-87f2-73ad8e5d07c1',
     ),
+    CkanResource(
+        model_name='bl_downloads_portal',
+        ckan_resource_id='18d024f0-ed45-49bb-9b4b-dfa97835f9a9',
+        delimiter=';',
+    ),
 ]
+CKAN_RESOURCES.extend(list(PUBLISHED_MODELS.ckan_resources))
 
 
-def opendataswiss_extract_factory(ckan_resource: CkanResource) -> AssetsDefinition:
+def pipeline_factory(ckan_resource: CkanResource) -> tuple:
+
+    # ------------------------------------------------------------------------
+    # Load from WEB
+    # ------------------------------------------------------------------------
 
     @asset(
         compute_kind='python',
         group_name='src_opendataswiss',
-        key=f'extract_{ckan_resource.model_name}',
+        key=['src', f'download_{ckan_resource.model_name}'],
+        pool='opendataswiss',
     )
-    def _asset(
+    def _asset_from_web(
         context: AssetExecutionContext,
         data_opendataswiss: OpendataswissUrlResource,
-        xcom: XcomPostgresResource,
-        extractor: ExtractHandler,
+        sftp_grab: SFTPResource,
         opendata_swiss: OpenDataSwiss,
-    ) -> str:
-        execution_date = dt.datetime.now(tz=timezone('Europe/Zurich'))
-        key = '/'.join(
-            [
-                ckan_resource.model_name,
-                f'extracted_data_{execution_date.isoformat()}.fernet',
-            ]
-        )
+        xcom: XcomPostgresResource,
+        # TODO: maybe add later RequestsInfo
+    ) -> None:
+        t = LogTime(context)
+        time = dt.datetime.now(dt.UTC)
+        data_url = opendata_swiss.get_resource_url(ckan_resource.ckan_resource_id)
+        with t.step('download_data'):
+            data = data_opendataswiss._get_raw_csv(data_url)
+        with t.step('compress_data'):
+            compressed = sftp_grab.compress_to_xz(data)
 
-        # Load data from CKAN
-        df, byte_size = data_opendataswiss.load_data(
-            opendata_swiss.get_resource_url(ckan_resource.ckan_resource_id)
-        )
-        assert isinstance(df, pd.DataFrame)
-
-        # Execute the extractor
-        compressed_size = extractor.write_data(key, df)
-
-        # Store last execution time to XCOM
-        xcom.xcom_push(
-            f'last_execution_{ckan_resource.model_name}', execution_date.isoformat()
-        )
-
-        # Insert metadata
+        # calculate metadata
+        size_decompressed = data.getbuffer().nbytes
+        size_compressed = compressed.getbuffer().nbytes
+        size_ratio = size_compressed / size_decompressed if size_decompressed else 0.0
+        size_pct = size_ratio * 100
         context.add_output_metadata(
             metadata={
-                'num_records': len(df),
-                'num_cols': len(df.columns),
-                'preview': MetadataValue.md(df.head().to_markdown()),
-                'compression': calculate_bytes_compression(byte_size, compressed_size),
-                'size_rawdata_bytes': byte_size,
-                'size_compressed_bytes': compressed_size,
+                "decompressed_size_bytes": size_decompressed,
+                "compressed_size_bytes": size_compressed,
+                "compression_ratio": round(size_ratio, 4),  # e.g. 0.1372
+                "compressed_vs_decompressed": f"{size_compressed}/{size_decompressed} ({size_pct:.2f}%)",
+                "space_saved_bytes": size_decompressed - size_compressed,
+                "space_saved_percent": (
+                    round((1 - size_ratio) * 100, 2) if size_decompressed else 0.0
+                ),
             }
         )
-        return key
 
-    return _asset
+        # write to sftp
+        with sftp_grab.connection() as conn:
+            with t.step('ensure_sftp_dir'):
+                conn.ensure_dir(ckan_resource.dir)
+            with t.step('upload_sftp_file'):
+                conn.write_file(
+                    ckan_resource.path(time, '.csv.xz'), compressed.getvalue()
+                )
+        xcom.xcom_push(f'last_execution_{ckan_resource.model_name}', time.isoformat())
 
+    _file_partition = DynamicPartitionsDefinition(name=ckan_resource.partition_name)
 
-def opendataswiss_load_extract_factory(asset_name: str) -> AssetsDefinition:
+    _job_from_web = define_asset_job(
+        name=ckan_resource.job_name_web,
+        selection=[_asset_from_web],
+    )
 
+    @sensor(
+        job=_job_from_web,
+        name=ckan_resource.sensor_name_web,
+        minimum_interval_seconds=60 * 60,
+    )
+    def _sensor_web(
+        opendata_swiss: OpenDataSwiss,
+        xcom: XcomPostgresResource,
+    ):
+        last_execution_str = xcom.xcom_pull(
+            f'last_execution_{ckan_resource.model_name}'
+        )
+        if last_execution_str is None:
+            last_execution = dt.datetime(1970, 1, 1, tzinfo=timezone('Europe/Zurich'))
+        else:
+            assert isinstance(last_execution_str, str)
+            last_execution = dt.datetime.fromisoformat(last_execution_str)
+
+        last_modified = opendata_swiss.get_resource_modified(
+            ckan_resource.ckan_resource_id
+        )
+        assert isinstance(last_modified, dt.datetime)
+
+        if last_modified > last_execution:
+            yield RunRequest(job_name=ckan_resource.job_name_web)
+        else:
+            yield SkipReason(
+                'Result: '
+                f'last execution: {last_execution} > last modified {last_modified}. '
+                'Skip.'
+            )
+
+    # ------------------------------------------------------------------------
+    # Load from SFTP
+    # ------------------------------------------------------------------------
+    # TODO: Add ntfy on_failure hook
     @asset(
         compute_kind='python',
         group_name='src_opendataswiss',
-        key=['src', asset_name],
-        ins={'upstream_object_key': AssetIn(f'extract_{asset_name}')},
+        key=['src', ckan_resource.model_name],
+        partitions_def=_file_partition,
+        deps=[_asset_from_web],
+        pool='duckdb_writer',
     )
-    def _asset(
+    def _asset_from_sftp(
         context: AssetExecutionContext,
-        extractor: ExtractHandler,
-        db: PostgresResource,
-        upstream_object_key,
+        sftp_grab: SFTPResource,
+        duckdb: DuckDBResource,
     ) -> None:
-        df = extractor.read_data(upstream_object_key)
+        partition_key = context.partition_key
+        with sftp_grab.connection() as conn:
+            file_compressed = BytesIO(
+                conn.read_file('/'.join([ckan_resource.dir, partition_key]))
+            )
+        file_uncompressed = sftp_grab.decompress_from_xz(file_compressed)
+
+        df = pd.read_csv(file_uncompressed, delimiter=ckan_resource.delimiter)
+        assert isinstance(df, pd.DataFrame)
+
+        df.columns = (
+            df.columns.str.strip().str.lower().str.replace(r"\W+", "_", regex=True)
+        )
+        df['file_source'] = ckan_resource.www_url(partition_key)
+
         df.to_sql(
-            asset_name,
-            db.get_sqlalchemy_engine(),
+            ckan_resource.model_name,
+            duckdb.get_sqlalchemy_engine(),
             schema='src',
             if_exists='replace',
             index=False,
@@ -133,69 +207,63 @@ def opendataswiss_load_extract_factory(asset_name: str) -> AssetsDefinition:
             }
         )
 
-    return _asset
-
-
-# Assets
-assets_opendataswiss_extract = [
-    opendataswiss_extract_factory(asset) for asset in CKAN_RESOURCES
-]
-assets_opendataswiss_load_extract = [
-    opendataswiss_load_extract_factory(asset.model_name) for asset in CKAN_RESOURCES
-]
-
-
-@failure_hook(required_resource_keys={'ntfy'})
-def pushover_on_failure(context: HookContext):
-    context.resources.ntfy.send_failure_message(context)
-
-
-# Jobs
-jobs_opendataswiss = [
-    define_asset_job(
-        name=asset.model_name,
-        selection=[
-            f'extract_{asset.model_name}',
-            f'src/{asset.model_name}*',
-        ],
-        hooks={pushover_on_failure},
+    _job_from_sftp = define_asset_job(
+        name=ckan_resource.job_name_sftp,
+        selection=AssetSelection.assets(_asset_from_sftp).downstream(),
     )
-    for asset in CKAN_RESOURCES
-]
 
-
-# Sensors
-def opendataswiss_sensor_factory(
-    job_name: str, asset_name: str, resource_id: str
-) -> SensorDefinition:
-
-    @sensor(name=asset_name, job_name=job_name, minimum_interval_seconds=60 * 60)
-    def _sensor(
-        opendata_swiss: OpenDataSwiss,
-        xcom: XcomPostgresResource,
-    ):
-
-        last_execution_str = xcom.xcom_pull(f'last_execution_{asset_name}')
-        if last_execution_str is None:
-            last_execution = dt.datetime(1970, 1, 1, tzinfo=timezone('Europe/Zurich'))
-        else:
-            assert isinstance(last_execution_str, str)
-            last_execution = dt.datetime.fromisoformat(last_execution_str)
-
-        last_modified = opendata_swiss.get_resource_modified(resource_id)
-        assert isinstance(last_modified, dt.datetime)
-
-        if last_modified > last_execution:
-            yield RunRequest(run_key=job_name)
-
-    return _sensor
-
-
-sensors_opendataswiss = [
-    opendataswiss_sensor_factory(
-        job_name=asset.model_name,
-        asset_name=asset.model_name,
-        resource_id=asset.ckan_resource_id,
+    @sensor(
+        job=_job_from_sftp,
+        name=ckan_resource.sensor_name_sftp,
+        required_resource_keys={'sftp_grab'},
+        default_status=DefaultSensorStatus.RUNNING,
+        minimum_interval_seconds=2 * 60,
     )
-    for asset in CKAN_RESOURCES
-]
+    def _sensor_sftp(context: SensorEvaluationContext):
+        sftp: SFTPResource = context.resources.sftp_grab
+        with sftp.connection() as conn:
+            try:
+                files = conn.list_files(ckan_resource.dir)
+            except FileNotFoundError:
+                return SkipReason('No files found on target. Skip.')
+        existing_partition_keys = set(
+            context.instance.get_dynamic_partitions(_file_partition.name)
+        )
+        new_partition_keys = [
+            file for file in files if file not in existing_partition_keys
+        ]
+
+        if not new_partition_keys:
+            return SkipReason("No new SFTP files found.")
+
+        return SensorResult(
+            dynamic_partitions_requests=[
+                _file_partition.build_add_request(new_partition_keys)
+            ],
+            run_requests=[
+                RunRequest(
+                    run_key=key,
+                    partition_key=key,
+                )
+                for key in new_partition_keys
+            ],
+        )
+
+    # ------------------------------------------------------------------------
+    # Wire UP
+    # ------------------------------------------------------------------------
+    assets = [_asset_from_web, _asset_from_sftp]
+    jobs = [_job_from_web, _job_from_sftp]
+    sensors = [_sensor_web, _sensor_sftp]
+
+    return assets, jobs, sensors
+
+
+collected_assets = []
+collected_jobs = []
+collected_sensors = []
+for asset_config in CKAN_RESOURCES:
+    assets, jobs, sensors = pipeline_factory(asset_config)
+    collected_assets.extend(assets)
+    collected_jobs.extend(jobs)
+    collected_sensors.extend(sensors)
