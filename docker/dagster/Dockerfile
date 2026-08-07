@@ -56,4 +56,4 @@ RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/
 RUN dbt deps --project-dir /opt/dbt
 
 EXPOSE 3000
-ENTRYPOINT ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-f", "odapi/definitions.py"]
+ENTRYPOINT ["uv", "run", "dagster-webserver", "-m", "odapi.definitions", "-h", "0.0.0.0", "-p", "3000"]
