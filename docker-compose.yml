@@ -5,17 +5,15 @@ x-restart-policy: &restart-policy unless-stopped
 
 x-logging: &default-logging
   options:
-    max-size: '100m'
-    max-file: '3'
+    max-size: "100m"
+    max-file: "3"
 
 x-logging-extended: &extended-logging
   options:
-    max-size: '1000m'
-    max-file: '3'
-
+    max-size: "1000m"
+    max-file: "3"
 
 services:
-
   # #######################################################################
   # Data services
   # #######################################################################
@@ -31,7 +29,9 @@ services:
       POSTGRES_USER: ${STORAGE__PSQL__USER}
       POSTGRES_PASSWORD: ${STORAGE__PSQL__PASSWORD}
       POSTGRES_DB: ${STORAGE__PSQL__DB}
-      PAGER: "less -FRX"  # used for paging psql output
+      PAGER: "less -FRX" # used for paging psql output
+      # overwrite system wide default of PAGER for data
+      PSQL_PAGER: "pspg --no-mouse --quit-if-one-screen -s 0"
     volumes:
       - data-postgis:/var/lib/postgresql/data
     logging: *extended-logging
@@ -49,12 +49,13 @@ services:
     shm_size: 24gb
     # For debugging queries, log all statements (only for DEV)
     command: >
-      -c shared_buffers=16GB
-      -c effective_cache_size=48GB
-      -c work_mem=1GB
+      -c shared_buffers=8GB
+      -c effective_cache_size=40GB
+      -c work_mem=128MB
       -c maintenance_work_mem=2GB
-      -c max_parallel_workers_per_gather=8
-      -c max_worker_processes=16
+      -c max_parallel_workers_per_gather=2
+      -c max_worker_processes=8
+      -c max_parallel_workers=8
       -c random_page_cost=1.1
       -c effective_io_concurrency=256
       -c checkpoint_timeout=30min
@@ -63,7 +64,6 @@ services:
       -c wal_compression=on
       -c log_statement=all
       -c log_min_duration_statement=1000
-
 
   data-minio:
     image: minio/minio
@@ -85,7 +85,6 @@ services:
     logging: *extended-logging
     command: server /data --console-address ":9090"
 
-
   data-redis:
     image: redis
     restart: *restart-policy
@@ -101,7 +100,7 @@ services:
       - odapi_private
       - odapi_public
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
 
   # #######################################################################
   # UTILS
@@ -123,6 +122,17 @@ services:
       - odapi_public
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  # #######################################################################
+  # Docs (mkdocs)
+  # #######################################################################
+  mkdocs:
+    build:
+      context: .
+      dockerfile: docker/mkdocs/Dockerfile
+    ports:
+      - '8001:80'
+    restart: unless-stopped
 
   # #######################################################################
   # DAGSTER

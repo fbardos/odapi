@@ -1,6 +1,7 @@
 -- Copy of dbt_expectations.expect_table_columns_to_match_ordered_list,
 -- because - unlike macros - tests cannot be referenced in other tests.
 {% test odapi_intm_columns(model, transform='upper') %}
+-- TODO: Change logic of all existing non-stats-swiss models (grouping column)
 {% set column_list = [
     'indicator_id',
     'geo_code',
@@ -11,14 +12,7 @@
     'period_code',
     'period_ref_from',
     'period_ref',
-	'group_1_name',
-	'group_1_value',
-	'group_2_name',
-	'group_2_value',
-	'group_3_name',
-	'group_3_value',
-	'group_4_name',
-	'group_4_value',
+	'grouping',
     'indicator_value_numeric',
     'indicator_value_text',
     'source',
@@ -37,7 +31,7 @@
 {% endtest %}
 
 {% test odapi_intm_pk_groups(model) %}
-    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from', 'group_1_value', 'group_2_value', 'group_3_value', 'group_4_value'] %}
+    {% set combination_of_columns = ['indicator_id', 'geo_code', 'geo_value', 'period_ref', 'knowledge_date_from', 'grouping'] %}
     {{ return(adapter.dispatch('test_unique_combination_of_columns', 'dbt_utils')(model, combination_of_columns, quote_columns=False)) }}
 {% endtest %}
 

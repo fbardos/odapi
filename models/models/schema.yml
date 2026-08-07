@@ -12,6 +12,7 @@ sources:
       - name: bfs_swissboundaries_bezirk
       - name: bfs_swissboundaries_kanton
       - name: bfs_swissboundaries_land
+      - name: bfs_quartier
       - name: bfe_minergie
       - name: ktzh_gp_bevoelkerung
       - name: ktzh_gp_auslaenderanteil
@@ -36,6 +37,15 @@ sources:
       - name: stat_tab_wirtschaft_unternehmen
       - name: stat_tab_wirtschaft_beschaeftigte
       - name: stat_tab_lw_beschaeftigte
+      - name: statswiss_whg_gebkat
+      - name: bl_downloads_portal
+      - name: traffic_miv_bs
+      - name: traffic_miv_tg
+      - name: traffic_miv_winti
+      - name: traffic_miv_stgallen
+      - name: tax_quartier_bs
+      - name: tax_quartier_zueri
+      - name: tax_quartier_winti
   - name: ktzh_gwr
     database: data
     schema: src
@@ -49,13 +59,6 @@ sources:
     tables:
       - name: ktzh_ogd_metadata
       - name: ktzh_downloads_dataset
-  - name: py_intermediate
-    database: data
-    schema: py_intermediate
-    tables:
-      - name: intm_meta_source
-      - name: intm_meta_group
-      - name: intm_meta_group_value
   - name: marts
     database: data
     schema: dbt_marts

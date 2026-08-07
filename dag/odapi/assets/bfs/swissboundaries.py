@@ -1,11 +1,12 @@
-from dagster import asset
-from dagster import ScheduleDefinition
-from dagster import define_asset_job
-from odapi.resources.postgres.postgres import PostgresResource
 from dagster import AssetExecutionContext
+from dagster import ScheduleDefinition
+from dagster import TimeWindowPartitionsDefinition
+from dagster import asset
+from dagster import define_asset_job
+
+from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.url.geojson import SwissboundariesTill2015
 from odapi.resources.url.gpkg import Swissboundaries
-from dagster import TimeWindowPartitionsDefinition
 
 
 ###############################################################################
@@ -19,7 +20,7 @@ from dagster import TimeWindowPartitionsDefinition
 def bfs_swissboundaries_2015(
     context: AssetExecutionContext,
     geo_swissboundaries_till_2016: SwissboundariesTill2015,
-    db: PostgresResource
+    db: PostgresResource,
 ):
     gdf = geo_swissboundaries_till_2016.load()
     gdf.to_postgis(
@@ -50,7 +51,7 @@ yearly_partitions_def = TimeWindowPartitionsDefinition(
 def bfs_swissboundaries_gemeinde(
     context: AssetExecutionContext,
     geo_swissboundaries: Swissboundaries,
-    db: PostgresResource
+    db: PostgresResource,
 ):
     gdf = geo_swissboundaries.load_gemeinde(year=int(context.partition_key))
     gdf['_snapshot_year'] = int(context.partition_key)
@@ -60,6 +61,7 @@ def bfs_swissboundaries_gemeinde(
         schema='src',
         if_exists='append',
     )
+
 
 ###############################################################################
 # FROM 2016: Bezirk
@@ -73,7 +75,7 @@ def bfs_swissboundaries_gemeinde(
 def bfs_swissboundaries_bezirk(
     context: AssetExecutionContext,
     geo_swissboundaries: Swissboundaries,
-    db: PostgresResource
+    db: PostgresResource,
 ):
     gdf = geo_swissboundaries.load_bezirk(year=int(context.partition_key))
     gdf['_snapshot_year'] = int(context.partition_key)
@@ -97,7 +99,7 @@ def bfs_swissboundaries_bezirk(
 def bfs_swissboundaries_kanton(
     context: AssetExecutionContext,
     geo_swissboundaries: Swissboundaries,
-    db: PostgresResource
+    db: PostgresResource,
 ):
     gdf = geo_swissboundaries.load_kanton(year=int(context.partition_key))
     gdf['_snapshot_year'] = int(context.partition_key)
@@ -121,7 +123,7 @@ def bfs_swissboundaries_kanton(
 def bfs_swissboundaries_land(
     context: AssetExecutionContext,
     geo_swissboundaries: Swissboundaries,
-    db: PostgresResource
+    db: PostgresResource,
 ):
     gdf = geo_swissboundaries.load_land(year=int(context.partition_key))
     gdf['_snapshot_year'] = int(context.partition_key)

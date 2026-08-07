@@ -4,6 +4,8 @@
 
 # ODAPI specifig
 **/.deploy/
+**/data.duckdb
+**/data*duckdb.tmp
 
 # DBT specific
 models/logs/

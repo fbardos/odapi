@@ -122,14 +122,7 @@ with _dummy as (
             {% else %}
                 , period_ref::DATE as period_ref
             {% endif %}
-                , NULL::TEXT as group_1_name
-                , NULL::TEXT as group_1_value
-                , NULL::TEXT as group_2_name
-                , NULL::TEXT as group_2_value
-                , NULL::TEXT as group_3_name
-                , NULL::TEXT as group_3_value
-                , NULL::TEXT as group_4_name
-                , NULL::TEXT as group_4_value
+                , NULL::JSON as grouping
             {% if value_col_is_text %}
                 , NULL::NUMERIC as indicator_value_numeric
                 , {{ value_col }}::TEXT as indicator_value_text
@@ -201,24 +194,24 @@ with _dummy as (
             {% endif %}
 			{% if v2_grouping|length == 1 %}
 				{% set group_elem = v2_grouping[0] %}
-                , '{{ group_elem.get("name", "") }}' as group_1_name
                 , case
                     when group_name = '{{ group_elem.get("total_value", "totvars")}}'
-                        then 'GROUP TOTAL'
-                    else group_name
-                end as group_1_value
+                        then jsonb_build_object(
+                                '{{ group_elem.get("name") }}', jsonb_build_object(
+                                    '_T', 'GROUP TOTAL'
+                                )
+                            )
+                    else jsonb_build_object(
+                            '{{ group_elem.get("name") }}', jsonb_build_object(
+                                group_name, group_name
+                            )
+                        )
+                end as grouping
             {% else %}
-                , NULL::TEXT as group_1_name
-                , NULL::TEXT as group_1_value
+                , NULL::JSON as grouping
             {% endif %}
             -- currently not implemented, but one dimensional groups
             -- would be available in STATATLAS_V2, see group_name
-            , NULL::TEXT as group_2_name
-            , NULL::TEXT as group_2_value
-            , NULL::TEXT as group_3_name
-            , NULL::TEXT as group_3_value
-            , NULL::TEXT as group_4_name
-            , NULL::TEXT as group_4_value
             -- value_col_is_text currently not implemented
             , indicator_value::NUMERIC as indicator_value_numeric
             , NULL::TEXT as indicator_value_text
@@ -275,27 +268,20 @@ with _dummy as (
 {% endif %}
 
 select
-    meas.indicator_id::SMALLINT
-    , meas.geo_code::CHAR(4)
-    , meas.geo_value::SMALLINT
-    , meas.knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE
-    , meas.knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE
-    , meas.period_type::TEXT
-    , meas.period_code::TEXT
-    , meas.period_ref_from::DATE
-    , meas.period_ref::DATE
-    , meas.group_1_name::TEXT
-    , meas.group_1_value::TEXT
-    , meas.group_2_name::TEXT
-    , meas.group_2_value::TEXT
-    , meas.group_3_name::TEXT
-    , meas.group_3_value::TEXT
-    , meas.group_4_name::TEXT
-    , meas.group_4_value::TEXT
-    , meas.indicator_value_numeric::NUMERIC
-    , meas.indicator_value_text::TEXT
-    , meas.source::TEXT
-    , meas._etl_version::SMALLINT
+    meas.indicator_id::SMALLINT as indicator_id
+    , meas.geo_code::CHAR(4) as geo_code
+    , meas.geo_value::SMALLINT as geo_value
+    , meas.knowledge_date_from::TIMESTAMP WITHOUT TIME ZONE as knowledge_date_from
+    , meas.knowledge_date_to::TIMESTAMP WITHOUT TIME ZONE as knowledge_date_to
+    , meas.period_type::TEXT as period_type
+    , meas.period_code::TEXT as period_code
+    , meas.period_ref_from::DATE as period_ref_from
+    , meas.period_ref::DATE as period_ref
+    , meas.grouping::JSON as grouping
+    , meas.indicator_value_numeric::NUMERIC as indicator_value_numeric
+    , meas.indicator_value_text::TEXT as indicator_value_text
+    , meas.source::TEXT as source
+    , meas._etl_version::SMALLINT as _etl_version
 {% if measure_config is none %}
     from final meas
 {% else %}

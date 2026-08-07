@@ -29,7 +29,7 @@ with src as (
 )
 , union_tables as (
     select
-        to_char(bound.snapshot_date, 'YYYY-MM-DD') as snapshot_code
+        strftime(bound.snapshot_date, '%Y-%m-%d') as snapshot_code
         , bound.snapshot_date
         , bound.gemeinde_bfs_id
         , bound.gemeinde_hist_bfs_id
@@ -45,35 +45,49 @@ with src as (
 select
     src.snapshot_code
     , src.snapshot_date
-    , src.gemeinde_bfs_id::SMALLINT
+    , src.gemeinde_bfs_id::SMALLINT as gemeinde_bfs_id
     , src.gemeinde_hist_bfs_id
     , src.gemeinde_name
-    , src.bezirk_bfs_id::SMALLINT
+    , src.bezirk_bfs_id::SMALLINT as bezirk_bfs_id
     , src.kanton_bfs_id
     , src.geometry
     , EXTRACT(YEAR FROM src.snapshot_date) as snapshot_year
-    , ST_Transform(src.geometry, 4326) as geom_border
     , ST_Transform(
-        ST_SetSRID(
-            ST_CoverageSimplify(src.geometry, 50, TRUE) OVER (PARTITION BY src.snapshot_code),
-            2056
-        ),
-        4326
-    ) as geom_border_simple_50m
+        src.geometry,
+        'EPSG:2056',
+        'EPSG:4326',
+        true
+    ) as geom_border
+    -- -- TODO:: In duckdb, currently no CoverageSimplify inside a window function
+    -- -- does exist. Instead, load the simplified geometries from:
+    -- -- https://www.agvchapp.bfs.admin.ch/
+    -- -- This way, the definition of the simplified border comes from an authority.
+    -- , ST_Transform(
+    --     ST_SetSRID(
+    --         ST_CoverageSimplify(src.geometry, 50, TRUE) OVER (PARTITION BY src.snapshot_code),
+    --         2056
+    --     ),
+    --     4326
+    -- ) as geom_border_simple_50m
+    -- , ST_Transform(
+    --     ST_SetSRID(
+    --         ST_CoverageSimplify(src.geometry, 100, TRUE) OVER (PARTITION BY src.snapshot_code),
+    --         2056
+    --     ),
+    --     4326
+    -- ) as geom_border_simple_100m
+    -- , ST_Transform(
+    --     ST_SetSRID(
+    --         ST_CoverageSimplify(src.geometry, 500, TRUE) OVER (PARTITION BY src.snapshot_code),
+    --         2056
+    --     ),
+    --     4326
+    -- ) as geom_border_simple_500m
     , ST_Transform(
-        ST_SetSRID(
-            ST_CoverageSimplify(src.geometry, 100, TRUE) OVER (PARTITION BY src.snapshot_code),
-            2056
-        ),
-        4326
-    ) as geom_border_simple_100m
-    , ST_Transform(
-        ST_SetSRID(
-            ST_CoverageSimplify(src.geometry, 500, TRUE) OVER (PARTITION BY src.snapshot_code),
-            2056
-        ),
-        4326
-    ) as geom_border_simple_500m
-    , ST_Transform(ST_Centroid(src.geometry), 4326) as geom_center
+        ST_Centroid(src.geometry),
+        'EPSG:2056',
+        'EPSG:4326',
+        true
+    ) as geom_center
 from union_tables src
 
