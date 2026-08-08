@@ -2,7 +2,7 @@
     relation=ref('snap_traffic_miv_stgallen'),
     cast_to='int',
     exclude=[
-        'ort_id', 
+        'ort_id',
         'bezeichnung',
         'standort',
         'datum',
