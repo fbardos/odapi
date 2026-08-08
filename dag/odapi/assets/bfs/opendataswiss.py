@@ -20,6 +20,7 @@ from dagster import asset
 from dagster import define_asset_job
 from dagster import failure_hook
 from dagster import sensor
+from dagster import success_hook
 from pytz import timezone
 
 from odapi.resources.ckan.ckan import CkanResource
@@ -61,6 +62,16 @@ CKAN_RESOURCES = [
     ),
 ]
 CKAN_RESOURCES.extend(list(PUBLISHED_MODELS.ckan_resources))
+
+
+@success_hook(required_resource_keys={'ntfy'})
+def ntfy_on_success(context: HookContext):
+    context.resources.ntfy.send_success_message(context)
+
+
+@failure_hook(required_resource_keys={'ntfy'})
+def ntfy_on_failure(context: HookContext):
+    context.resources.ntfy.send_failure_message(context)
 
 
 def pipeline_factory(ckan_resource: CkanResource) -> tuple:
@@ -124,6 +135,7 @@ def pipeline_factory(ckan_resource: CkanResource) -> tuple:
     _job_from_web = define_asset_job(
         name=ckan_resource.job_name_web,
         selection=[_asset_from_web],
+        hooks={ntfy_on_success, ntfy_on_failure},
     )
 
     @sensor(
@@ -217,6 +229,7 @@ def pipeline_factory(ckan_resource: CkanResource) -> tuple:
     _job_from_sftp = define_asset_job(
         name=ckan_resource.job_name_sftp,
         selection=AssetSelection.assets(_asset_from_sftp).downstream(),
+        hooks={ntfy_on_success, ntfy_on_failure},
     )
 
     @sensor(
