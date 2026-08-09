@@ -26,6 +26,22 @@ models:
           delimiter: ";"
 
   # --------------------------------------------------------------------------
+  # TODO: There are more possible sources...
+  - name: traffic_bicycle
+    publisher_type: MultiplePublisher
+    description: |
+      Zusammengeführte Daten aus den Verkehrszähldaten von Velos.
+    sources:
+      - name: bs
+        type: OpenDataSwiss
+        ckan_resource_id: e97fea97-a2b2-4f88-8843-8fbe10596e25
+        load:
+          delimiter: ";"
+      - name: winti
+        type: OpenDataSwiss
+        ckan_resource_id: 7eb2fb21-02b6-4a75-94a2-defe040ea0e2
+
+  # --------------------------------------------------------------------------
   - name: tax_quartier
     publisher_type: MultiplePublisher
     description: |
