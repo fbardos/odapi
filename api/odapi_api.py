@@ -57,7 +57,11 @@ load_dotenv()
 
 def get_sync_engine() -> Engine:
     return create_engine(
-        os.environ['SQLALCHEMY_DATABASE_URL_DUCKDB'], connect_args=dict(read_only=True)
+        os.environ['SQLALCHEMY_DATABASE_URL_DUCKDB'],
+        connect_args=dict(
+            read_only=True,
+            config=dict(extension_directory='/var/lib/duckdb/extensions'),
+        ),
     )
 
 
