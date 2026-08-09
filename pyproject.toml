@@ -66,3 +66,6 @@ dependencies = [
 members = [
     'doc',
 ]
+
+[tool.setuptools.package-data]
+odapi = ['published_models.yml']
