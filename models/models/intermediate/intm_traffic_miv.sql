@@ -26,9 +26,9 @@ with src_tg as (
             )
             , 'EPSG:4326'
         ) as geom
-        , dbt_valid_from        ::TIMESTAMP
-        , dbt_valid_to          ::TIMESTAMP
-        , file_source           ::TEXT
+        , dbt_valid_from        ::TIMESTAMP     as dbt_valid_from
+        , dbt_valid_to          ::TIMESTAMP     as dbt_valid_to
+        , file_source           ::TEXT          as file_source
     from {{ ref('snap_traffic_miv_tg') }}
 )
 
@@ -57,9 +57,9 @@ with src_tg as (
             )
             , 'EPSG:4326'
         ) as geom
-        , dbt_valid_from        ::TIMESTAMP
-        , dbt_valid_to          ::TIMESTAMP
-        , file_source           ::TEXT
+        , dbt_valid_from        ::TIMESTAMP     as dbt_valid_from
+        , dbt_valid_to          ::TIMESTAMP     as dbt_valid_to
+        , file_source           ::TEXT          as file_source
     from {{ ref('snap_traffic_miv_bs') }}
 )
 
@@ -88,14 +88,14 @@ with src_tg as (
             )
             , 'EPSG:4326'
         ) as geom
-        , dbt_valid_from        ::TIMESTAMP
-        , dbt_valid_to          ::TIMESTAMP
-        , file_source           ::TEXT
+        , dbt_valid_from        ::TIMESTAMP     as dbt_valid_from
+        , dbt_valid_to          ::TIMESTAMP     as dbt_valid_to
+        , file_source           ::TEXT          as file_source
     from {{ ref('snap_traffic_miv_winti') }}
 )
 
 , src_stgallen as (
-    select 
+    select
         ort_id
         , bezeichnung
         , richtung
@@ -147,9 +147,9 @@ with src_tg as (
             )
             , 'EPSG:4326'
         ) as geom
-        , dbt_valid_from        ::TIMESTAMP
-        , dbt_valid_to          ::TIMESTAMP
-        , file_source           ::TEXT
+        , dbt_valid_from        ::TIMESTAMP     as dbt_valid_from
+        , dbt_valid_to          ::TIMESTAMP     as dbt_valid_to
+        , file_source           ::TEXT          as file_source
     from src_stgallen
 )
 
