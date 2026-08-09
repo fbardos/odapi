@@ -6,7 +6,7 @@ with src_bs as (
         , tax.wohnviertel           ::SMALLINT              as quartier_bfs_id
         , tax.wohnviertel_name      ::TEXT                  as quartier
         , tax.anzahl_veranlagungen  ::INT                   as steuerpflichtige
-        , tax.steuerbares_einkommen_median::INT
+        , tax.steuerbares_einkommen_median::INT             as steuerbares_einkommen_median
         , tax.steuerbares_vermögen_median::INT              as steuerbares_vermoegen_median
         , tax.dbt_valid_from
         , tax.dbt_valid_to
