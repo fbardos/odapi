@@ -1,46 +1,44 @@
-# Use the official Python image as a base image
-FROM python:3.10-slim
+FROM python:3.12-slim
 
-# Set environment variables to avoid Python writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install dependencies needed for PostgreSQL
-RUN apt-get update && \
-    apt-get install -y libpq-dev gcc && \
-    apt-get install -y --no-install-recommends \
+# System dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpq-dev \
+        gcc \
         git \
         build-essential \
-        wget \
         gdal-bin \
-        libgdal-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+        libgdal-dev \
+        gnupg \
+        libgpgme-dev \
+        pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install miniconda
-ENV CONDA_DIR=/opt/conda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py310_24.7.1-0-Linux-x86_64.sh -O ~/miniconda.sh \
-    && /bin/bash ~/miniconda.sh -b -p $CONDA_DIR \
-    && rm ~/miniconda.sh
-ENV PATH=$CONDA_DIR/bin:$PATH
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Must be placed after conda install, otherwise, will load wrong version
-COPY ./environment.yml /tmp/environment.yml
-RUN conda env create --solver libmamba -f /tmp/environment.yml && conda clean -ay
-
-# Change shell
-SHELL ["conda", "run", "-n", "odapi", "/bin/bash", "-c"]
-
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the rest of the application code into the container
+# Copy dependency definitions first so Docker can cache this layer
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies, but not the project itself yet
+RUN uv sync \
+    --frozen \
+    --no-dev \
+    --no-install-project
+
+# Copy application
 COPY api/ .
 
-# Expose the port FastAPI will run on
+# Install the project itself
+RUN uv sync \
+    --frozen \
+    --no-dev
+
 EXPOSE 80
 
-# Run the FastAPI application using uvicorn
-CMD ["conda", "run", "--no-capture-output", "-n", "odapi", "uvicorn", "odapi:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]
-
-
+CMD ["/app/.venv/bin/uvicorn", "odapi_api:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]
