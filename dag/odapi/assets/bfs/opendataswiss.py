@@ -161,7 +161,13 @@ def pipeline_factory(ckan_resource: CkanResource) -> tuple:
         )
         assert isinstance(last_modified, dt.datetime)
 
-        if last_modified > last_execution:
+        if last_modified > dt.datetime.now(tz=dt.timezone.utc):
+            yield SkipReason(
+                'Result: '
+                f'last modified {last_modified} is set in the future. '
+                'Skip.'
+            )
+        elif last_modified > last_execution:
             yield RunRequest(job_name=ckan_resource.job_name_web)
         else:
             yield SkipReason(
