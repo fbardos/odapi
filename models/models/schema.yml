@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: src
     database: data
-    schema: src
+    schema: data
     tables:
       - name: bfs_statatlas
       - name: bfs_statatlas_v2
@@ -40,22 +40,38 @@ sources:
       - name: statswiss_whg_gebkat
       - name: bl_downloads_portal
       - name: traffic_miv_bs
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_bs
       - name: traffic_miv_tg
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_tg
       - name: traffic_miv_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_winti
       - name: traffic_miv_stgallen
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_stgallen
       - name: tax_quartier_bs
       - name: tax_quartier_zueri
       - name: tax_quartier_winti
   - name: ktzh_gwr
     database: data
-    schema: src
+    schema: data
     tables:
       - name: ktzh_gwr_apartments
       - name: ktzh_gwr_houses
       - name: ktzh_gwr_entrance
   - name: ktzh_metadata
     database: data
-    schema: src
+    schema: data
     tables:
       - name: ktzh_ogd_metadata
       - name: ktzh_downloads_dataset

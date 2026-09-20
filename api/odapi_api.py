@@ -2,83 +2,63 @@ import datetime as dt
 import io
 import os
 import re
-import tempfile
 import textwrap
-from abc import ABC
-from dataclasses import dataclass
+from collections.abc import Iterator
 from enum import Enum
-from pathlib import Path as FilePath
 from typing import Optional
-from typing import Union
+from typing import cast
 
-import geopandas as gpd
-import networkx as nx
 import pandas as pd
-import pyarrow.parquet as pq
-import pytest
+from clickhouse_connect.dbapi.connection import Connection as ClickHouseDbapiConnection
 from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import HTTPException
-from fastapi import Path
 from fastapi import Query
 from fastapi import Request
 from fastapi import Response
-from fastapi import status
-from fastapi.responses import FileResponse
-from fastapi.responses import JSONResponse
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRoute
-from fastapi.testclient import TestClient
-
-# from tabulate import tabulate
-from geoalchemy2 import Geometry
-from shapely import wkb
-from sqlalchemy import SMALLINT
-from sqlalchemy import TEXT
-from sqlalchemy import Column
 from sqlalchemy import MetaData
-from sqlalchemy import Table
 from sqlalchemy import create_engine
 from sqlalchemy import inspect
-from sqlalchemy import literal
-from sqlalchemy import or_
-from sqlalchemy import select
-from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
-from starlette.background import BackgroundTask
-
-from odapi.resources.published_models import PublishedModels
 
 # DATABASE ###################################################################
 load_dotenv()
 
 
+DATABASE_NAME = 'data_marts'
+
+
+SYNC_ENGINE = create_engine(
+    os.environ['SQLALCHEMY_DATABASE_URL_CLICKHOUSE'],
+)
+
+
 def get_sync_engine() -> Engine:
-    return create_engine(
-        os.environ['SQLALCHEMY_DATABASE_URL_DUCKDB'],
-        connect_args=dict(
-            read_only=True,
-            config=dict(extension_directory='/var/lib/duckdb/extensions'),
-        ),
-    )
+    return SYNC_ENGINE
 
 
-def get_metadata():
-    return MetaData(schema='dbt')
+def get_metadata() -> MetaData:
+    return MetaData(schema=DATABASE_NAME)
 
 
-SAFE_IDENTIFIER = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+SAFE_IDENTIFIER = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
+
 
 COMMON_INTERNAL_COLUMNS_VALIDITY = {
     'dbt_valid_from',
     'dbt_valid_to',
 }
+
+
 COMMON_INTERNAL_COLUMNS_FILE_SOURCE = {
     # TODO: Add ckan source (ID + URL)
     'file_source',
 }
+
 
 COMMON_INTERNAL_COLUMNS_GEOM = {
     'geom',
@@ -95,14 +75,22 @@ def build_select_columns(
     show_geometry: bool,
     requested_columns: Optional[list[str]] = None,
     exclude_columns: Optional[list[str]] = None,
-    schema_name: str = 'dbt_marts',
+    schema_name: str = DATABASE_NAME,
 ) -> str:
     inspector = inspect(engine)
-    table_columns = inspector.get_columns(table_name, schema=schema_name)
-    existing_column_names = [col['name'] for col in table_columns]
+
+    table_columns = inspector.get_columns(
+        table_name,
+        schema=schema_name,
+    )
+
+    existing_column_names = [column['name'] for column in table_columns]
+
     existing_column_set = set(existing_column_names)
+
     if requested_columns:
         unknown_columns = set(requested_columns) - existing_column_set
+
         if unknown_columns:
             raise HTTPException(
                 status_code=400,
@@ -113,15 +101,14 @@ def build_select_columns(
             )
 
         selected_columns = requested_columns
+
     else:
         selected_columns = existing_column_names
 
-    if exclude_columns:
-        exclude_set = set(exclude_columns)
-    else:
-        exclude_set = set()
+    exclude_set = set(exclude_columns or [])
 
     unknown_excluded_columns = exclude_set - existing_column_set
+
     if unknown_excluded_columns:
         raise HTTPException(
             status_code=400,
@@ -133,8 +120,10 @@ def build_select_columns(
 
     if not show_validity:
         exclude_set |= COMMON_INTERNAL_COLUMNS_VALIDITY
+
     if not show_file_source:
         exclude_set |= COMMON_INTERNAL_COLUMNS_FILE_SOURCE
+
     if not show_geometry:
         exclude_set |= COMMON_INTERNAL_COLUMNS_GEOM
 
@@ -151,6 +140,57 @@ def build_select_columns(
     preparer = engine.dialect.identifier_preparer
 
     return ', '.join(preparer.quote(column) for column in selected_columns)
+
+
+def stream_clickhouse_query(
+    engine: Engine,
+    sql: str,
+    parameters: dict[str, object],
+    output_format: str,
+) -> Iterator[bytes]:
+    with engine.connect() as connection:
+        dbapi_connection = cast(
+            ClickHouseDbapiConnection,
+            connection.connection.driver_connection,
+        )
+
+        stream = dbapi_connection.client.raw_stream(
+            query=sql,
+            parameters=parameters,
+            settings={
+                'format_csv_null_representation': '',
+            },
+            fmt=output_format,
+        )
+
+        try:
+            while True:
+                chunk = stream.read(1024 * 1024)
+
+                if not chunk:
+                    break
+
+                yield chunk
+
+        finally:
+            stream.close()
+
+
+def query_clickhouse_dataframe(
+    engine: Engine,
+    sql: str,
+    parameters: dict[str, object],
+) -> pd.DataFrame:
+    with engine.connect() as connection:
+        dbapi_connection = cast(
+            ClickHouseDbapiConnection,
+            connection.connection.driver_connection,
+        )
+
+        return dbapi_connection.client.query_df(
+            query=sql,
+            parameters=parameters,
+        )
 
 
 # CUSTOM CLASSES #############################################################
@@ -187,13 +227,15 @@ class CsvResponse(Response):
         content: io.BytesIO,
         filename: str = 'odapi_data.csv',
         status_code: int = 200,
-        *args,
-        **kwargs,
-    ):
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         super().__init__(
             content=content.getvalue(),
             status_code=status_code,
-            headers={'Content-Disposition': f'attachment; filename={filename}'},
+            headers={
+                'Content-Disposition': f'attachment; filename={filename}',
+            },
             media_type=self.media_type,
             *args,
             **kwargs,
@@ -208,13 +250,15 @@ class XlsxResponse(Response):
         content: io.BytesIO,
         filename: str = 'odapi_data.xlsx',
         status_code: int = 200,
-        *args,
-        **kwargs,
-    ):
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         super().__init__(
             content=content.getvalue(),
             status_code=status_code,
-            headers={'Content-Disposition': f'attachment; filename={filename}'},
+            headers={
+                'Content-Disposition': f'attachment; filename={filename}',
+            },
             media_type=self.media_type,
             *args,
             **kwargs,
@@ -222,21 +266,22 @@ class XlsxResponse(Response):
 
 
 class GeoparquetResponse(Response):
-    # media_type = 'application/x-parquet'
-    media_type = 'application/octet-stream'
+    media_type = 'application/vnd.apache.parquet'
 
     def __init__(
         self,
         content: io.BytesIO,
         filename: str = 'odapi_data.parquet',
         status_code: int = 200,
-        *args,
-        **kwargs,
-    ):
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         super().__init__(
             content=content.getvalue(),
             status_code=status_code,
-            headers={'Content-Disposition': f'attachment; filename={filename}'},
+            headers={
+                'Content-Disposition': f'attachment; filename={filename}',
+            },
             media_type=self.media_type,
             *args,
             **kwargs,
@@ -246,12 +291,16 @@ class GeoparquetResponse(Response):
 class TxtResponose(Response):
     media_type = 'text/plain'
 
-    # def __init__(self, content: str, filename: str = 'odapi_data.txt', status_code: int = 200, *args, **kwargs):
-    def __init__(self, content: str, status_code: int = 200, *args, **kwargs):
+    def __init__(
+        self,
+        content: str,
+        status_code: int = 200,
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         super().__init__(
             content=content,
             status_code=status_code,
-            # headers={'Content-Disposition': f'attachment; filename={filename}'},
             media_type=self.media_type,
             *args,
             **kwargs,
@@ -263,7 +312,7 @@ app = FastAPI(
     title='ODAPI - Open Data API',
     docs_url='/',
     summary='Merged data for different cantons and municipalities in Switzerland.',
-    description=textwrap.dedent("""
+    description=textwrap.dedent('''
         ## IMPORTANT
 
         * This API is under heavy development. Endpoints and responses **can and will change in the future**.
@@ -273,45 +322,60 @@ app = FastAPI(
 
         * [Documentation](https://odapi.bardos.dev/docs).
         * Source code [on Github](https://github.com/fbardos/odapi).
-    """),
+        '''),
 )
 
 
-def get_response_class(request: Request):
+def get_response_class(
+    request: Request,
+) -> Optional[type[Response]]:
     route = request.scope.get('route')
+
     if isinstance(route, APIRoute):
         return route.response_class
+
     return None
 
 
-# MODELS #####################################################################
-@app.get(
-    '/models/tsv',
-    tags=['Models'],
-    summary='Get all available models (TSV)',
-    response_class=TxtResponose,
-)
-@app.get(
-    '/models',
-    tags=['Models'],
-    summary='Get all available models (Default, JSON)',
-    response_class=JSONResponse,
-)
-def get_models(request: Request):
-    model_resources = PublishedModels().model_resources
-    match get_response_class(request):
-        case cls if cls is TxtResponose:
-            df = pd.DataFrame(model_resources)
-            df = df[['name', 'publisher_type']]
-            buffer = io.StringIO()
-            df.to_csv(buffer, sep="\t", index=False, encoding="utf-8")
-            buffer.seek(0)
-            return StreamingResponse(
-                iter([buffer.getvalue()]),
-                media_type='text/csv',
-            )
-        case _:
-            return model_resources
+# # MODELS ###################################################################
+# @app.get(
+#     '/models/tsv',
+#     tags=['Models'],
+#     summary='Get all available models (TSV)',
+#     response_class=TxtResponose,
+# )
+# @app.get(
+#     '/models',
+#     tags=['Models'],
+#     summary='Get all available models (Default, JSON)',
+#     response_class=JSONResponse,
+# )
+# def get_models(request: Request) -> object:
+#     model_resources = PublishedModels().model_resources
+#
+#     match get_response_class(request):
+#         case cls if cls is TxtResponose:
+#             df = pd.DataFrame(model_resources)
+#             df = df[['name', 'publisher_type']]
+#
+#             buffer = io.StringIO()
+#
+#             df.to_csv(
+#                 buffer,
+#                 sep='\t',
+#                 index=False,
+#                 encoding='utf-8',
+#             )
+#
+#             buffer.seek(0)
+#
+#             return StreamingResponse(
+#                 iter([buffer.getvalue()]),
+#                 media_type='text/csv',
+#             )
+#
+#         case _:
+#             return model_resources
 
 
 # MODEL ######################################################################
@@ -320,6 +384,8 @@ def get_models(request: Request):
 # TODO: JOIN gemeinde (on data)
 # TODO: JOIN country (on data)
 # TODO: JOIN license
+
+
 @app.get(
     '/model/{model_name}/xlsx',
     tags=['Model'],
@@ -348,146 +414,184 @@ def get_model(
     model_name: str,
     request: Request,
     db_sync: Engine = Depends(get_sync_engine),
-    limit: Optional[int] = Query(None, ge=1),
-    offset: int = Query(0, ge=0),
+    limit: Optional[int] = Query(
+        None,
+        ge=1,
+    ),
+    offset: int = Query(
+        0,
+        ge=0,
+    ),
     knowledge_date: Optional[dt.date] = Query(
         None,
-        examples=[dt.date.today().strftime('%Y-%m-%d')],
-        description='Optional. Allows to query a different state of the data in the past. Format: ISO-8601',
+        examples=[
+            dt.date.today().strftime('%Y-%m-%d'),
+        ],
+        description=(
+            'Optional. Allows to query a different state of the data '
+            'in the past. Format: ISO-8601'
+        ),
     ),
     show_validity: bool = Query(False),
     show_file_source: bool = Query(False),
     show_geometry: bool = Query(False),
-):
+) -> Response:
+    schema_name = DATABASE_NAME
 
-    def quote_duckdb_string(value: str) -> str:
-        return "'" + value.replace("'", "''") + "'"
-
-    schema_name = 'dbt_marts'
     if not SAFE_IDENTIFIER.fullmatch(model_name):
-        raise HTTPException(status_code=400, detail='Invalid model_name')
+        raise HTTPException(
+            status_code=400,
+            detail='Invalid model_name',
+        )
 
     try:
-        # Make sure, table exists
         inspector = inspect(db_sync)
-        if not inspector.has_table(model_name, schema=schema_name):
-            raise HTTPException(status_code=404, detail='Model/table not found')
 
-        # quote identifiers safely
+        if not inspector.has_table(
+            model_name,
+            schema=schema_name,
+        ):
+            raise HTTPException(
+                status_code=404,
+                detail='Model/table not found',
+            )
+
         preparer = db_sync.dialect.identifier_preparer
+
         quoted_schema = preparer.quote_schema(schema_name)
         quoted_table = preparer.quote(model_name)
 
-        params = {'offset': offset}
-
-        where_clauses = []
-        limit_clause = ''
-        if limit is not None:
-            limit_clause = 'LIMIT :limit'
-            params['limit'] = limit
-        if knowledge_date is not None:
-            where_clauses.append("""
-                :knowledge_date BETWEEN dbt_valid_from
-                AND COALESCE(dbt_valid_to, 'infinity'::timestamptz)
-            """)
-            params['knowledge_date'] = knowledge_date
-
-        where_sql = ''
-        if where_clauses:
-            where_sql = 'WHERE ' + ' AND '.join(where_clauses)
-
         selected_columns_sql = build_select_columns(
-            engine=db_sync.engine,
-            table_name=quoted_table,
+            engine=db_sync,
+            table_name=model_name,
             show_validity=show_validity,
             show_file_source=show_file_source,
             show_geometry=show_geometry,
+            schema_name=schema_name,
         )
-        sql = text(f'''
-            SELECT {selected_columns_sql}
+
+        parameters: dict[str, object] = {
+            'offset': offset,
+        }
+
+        where_clauses: list[str] = []
+
+        if knowledge_date is not None:
+            where_clauses.append('''
+                dbt_valid_from <= toDateTime({knowledge_date:Date})
+                AND (
+                    dbt_valid_to IS NULL
+                    OR toDateTime({knowledge_date:Date}) <= dbt_valid_to
+                )
+                ''')
+
+            parameters['knowledge_date'] = knowledge_date
+
+        where_sql = ''
+
+        if where_clauses:
+            where_sql = 'WHERE ' + ' AND '.join(where_clauses)
+
+        if limit is not None:
+            limit_sql = '''
+                LIMIT {limit:UInt64}
+                OFFSET {offset:UInt64}
+            '''
+
+            parameters['limit'] = limit
+
+        elif offset > 0:
+            limit_sql = '''
+                LIMIT 18446744073709551615
+                OFFSET {offset:UInt64}
+            '''
+
+        else:
+            limit_sql = ''
+
+        sql = f'''
+            SELECT
+                {selected_columns_sql}
             FROM {quoted_schema}.{quoted_table}
             {where_sql}
-            {limit_clause}
-            OFFSET :offset
-        ''')
+            {limit_sql}
+        '''
 
-        try:
-            with db_sync.connect() as conn:
-                compiled_query = sql.bindparams(**params).compile(
-                    dialect=db_sync.dialect,
-                    compile_kwargs={'literal_binds': True},
-                )
+        response_class = get_response_class(request)
 
-                response_class = get_response_class(request)
+        if response_class is TxtResponose:
+            return StreamingResponse(
+                stream_clickhouse_query(
+                    engine=db_sync,
+                    sql=sql,
+                    parameters=parameters,
+                    output_format='TabSeparatedWithNames',
+                ),
+                media_type='text/tab-separated-values',
+                headers={
+                    'Content-Disposition': ('attachment; filename=export.tsv'),
+                },
+            )
 
-                match response_class:
-                    case cls if cls is TxtResponose:
-                        suffix = '.tsv'
-                        media_type = 'text/tab-separated-values'
-                        filename = 'export.tsv'
-                        copy_options = '''
-                            FORMAT CSV,
-                            DELIMITER '\t',
-                            HEADER TRUE,
-                            NULLSTR ''
-                        '''
+        if response_class is CsvResponse:
+            return StreamingResponse(
+                stream_clickhouse_query(
+                    engine=db_sync,
+                    sql=sql,
+                    parameters=parameters,
+                    output_format='CSVWithNames',
+                ),
+                media_type='text/csv',
+                headers={
+                    'Content-Disposition': ('attachment; filename=export.csv'),
+                },
+            )
 
-                    case cls if cls is CsvResponse:
-                        suffix = '.csv'
-                        media_type = 'text/csv'
-                        filename = 'export.csv'
-                        copy_options = '''
-                            FORMAT CSV,
-                            HEADER TRUE
-                        '''
+        if response_class is GeoparquetResponse:
+            return StreamingResponse(
+                stream_clickhouse_query(
+                    engine=db_sync,
+                    sql=sql,
+                    parameters=parameters,
+                    output_format='Parquet',
+                ),
+                media_type='application/vnd.apache.parquet',
+                headers={
+                    'Content-Disposition': ('attachment; filename=export.parquet'),
+                },
+            )
 
-                    case _:
-                        suffix = '.parquet'
-                        media_type = 'application/vnd.apache.parquet'
-                        filename = 'export.parquet'
-                        copy_options = '''
-                            FORMAT PARQUET
-                        '''
+        if response_class is XlsxResponse:
+            dataframe = query_clickhouse_dataframe(
+                engine=db_sync,
+                sql=sql,
+                parameters=parameters,
+            )
 
-                fd, output_path = tempfile.mkstemp(
-                    prefix='duckdb_export_',
-                    suffix=suffix,
-                )
-                os.close(fd)
+            buffer = io.BytesIO()
 
-                quoted_output_path = quote_duckdb_string(output_path)
+            dataframe.to_excel(
+                buffer,
+                index=False,
+            )
 
-                copy_sql = f'''
-                    COPY (
-                        {compiled_query}
-                    )
-                    TO {quoted_output_path}
-                    WITH (
-                        {copy_options}
-                    )
-                '''
+            buffer.seek(0)
 
-                try:
-                    raw_connection = conn.connection.driver_connection
-                    raw_connection.execute('LOAD spatial')
-                    raw_connection.execute(copy_sql)
+            return XlsxResponse(
+                content=buffer,
+                filename='export.xlsx',
+            )
 
-                    return FileResponse(
-                        path=output_path,
-                        media_type=media_type,
-                        filename=filename,
-                        background=BackgroundTask(
-                            lambda: FilePath(output_path).unlink(missing_ok=True)
-                        ),
-                    )
-
-                except Exception:
-                    FilePath(output_path).unlink(missing_ok=True)
-                    raise
-        finally:
-            db_sync.dispose()
+        raise HTTPException(
+            status_code=500,
+            detail='Unsupported response format',
+        )
 
     except HTTPException:
         raise
+
     except SQLAlchemyError as err:
-        raise HTTPException(status_code=500, detail='Database error') from err
+        raise HTTPException(
+            status_code=500,
+            detail='Database error',
+        ) from err

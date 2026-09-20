@@ -5,19 +5,26 @@ from dataclasses import dataclass
 from typing import Generator
 from typing import List
 from typing import Optional
+from typing import Sequence
 
 import requests
 from dagster import ConfigurableResource
 from dagster import get_dagster_logger
+from dlt.common.schema.typing import TWriteDispositionConfig
 
 
 @dataclass
 class CkanResource:
     model_name: str
     ckan_resource_id: str
+    primary_key_column: str | None = None
+    dlt_write_disposition: TWriteDispositionConfig | None = None
+    dataset_url: str = ''  # cosmetic, used for easier navigation later
     delimiter: str = ','
     _DIR_NAME: str = 'opendata_swiss'
     _WWW_PREFIX: str = 'https://files.bardos.dev/odapi'
+    _DEFAULT_TIMESTAMP_FORMAT = '%Y-%m-%dT%H-%M-%SZ'
+    _DEFAULT_TIMESTAMP_REGEX = r'\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z'
 
     @property
     def partition_name(self) -> str:
@@ -32,8 +39,18 @@ class CkanResource:
         return f'job_sftp_{self.model_name}'
 
     def filename(self, timestamp: dt.datetime, file_ending: str = '.csv.xz') -> str:
-        return (
-            f'{self.model_name}_{timestamp.strftime("%Y-%m-%dT%H-%M-%SZ")}{file_ending}'
+        return f'{self.model_name}_{timestamp.strftime(self._DEFAULT_TIMESTAMP_FORMAT)}{file_ending}'
+
+    def extract_timestamp_from_filename(self, filename: str) -> dt.datetime:
+        match = re.search(
+            self._DEFAULT_TIMESTAMP_REGEX,
+            filename,
+        )
+        if not match:
+            raise ValueError(f'No timestamp found in filename: {filename}')
+        return dt.datetime.strptime(
+            match.group(),
+            self._DEFAULT_TIMESTAMP_FORMAT,
         )
 
     @property
@@ -53,6 +70,14 @@ class CkanResource:
 
     def www_url(self, partition_key: str) -> str:
         return '/'.join([self._WWW_PREFIX, self.dir, partition_key])
+
+    @property
+    def asset_name(self) -> str:
+        return f'odch_{self.model_name}'
+
+    @property
+    def dlt_pipeline_name(self) -> str:
+        return f'pipe_{self.model_name}'
 
 
 class CkanApi(ConfigurableResource):
