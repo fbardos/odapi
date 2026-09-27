@@ -65,6 +65,7 @@ dependencies = [
     "sdmx1>=2.26.0",
     "sqlalchemy>=2.0.41",
     "sqlmodel>=0.0.24",
+    "thrift>=0.24.0",
     "uvicorn>=0.35.0",
     "xlsxwriter>=3.2.5",
 ]
