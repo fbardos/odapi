@@ -61,6 +61,7 @@ COMMON_INTERNAL_COLUMNS_FILE_SOURCE = {
 
 
 COMMON_INTERNAL_COLUMNS_GEOM = {
+    'geometry',
     'geom',
     'lat',
     'lon',

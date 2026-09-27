@@ -1,0 +1,26 @@
+snapshots:
+  - name: snap_traffic_bicycle_bs
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - sitecode
+        - sitename
+        - lanecode
+        - valuesapproved
+        - valuesedited
+        - total
+        - year
+        - month
+        - day
+        - weekday
+        - hourfrom
+        - date
+        - timefrom
+        - timeto
+        - dayofyear
+        - geo_point_2d
+      # cannot be used together with invalidate hard deletes
+      # and historical backfills (paritions)
+      updated_at: _partition_datetime

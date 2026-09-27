@@ -13,3 +13,10 @@ curl -s 'https://odapi.bardos.dev/model/mart_traffic_miv'
 ```
 
 Traffic statistics for motorized vehicles, following the [SWISS10-Definition](https://www.astra.admin.ch/dam/astra/de/dokumente/standards_fuer_nationalstrassen/astra_13012_verkehrszaehler2009v105.pdf.download.pdf/astra_13012_verkehrszaehler.pdf) in different municipalities and cantons.
+
+## Sources
+
+| Publisher   | Level  | Information                                                                                                         |
+| ----------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
+| Basel-Stadt | Canton | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr)                      |
+| Thurgau     | Canton | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr-nach-fahrzeugklassen) |

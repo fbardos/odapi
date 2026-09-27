@@ -1,0 +1,7 @@
+models:
+  - name: stgn_traffic_bicycle_zueri
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - standort_id
+            - datum

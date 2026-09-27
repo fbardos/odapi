@@ -94,39 +94,52 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
         xcom: XcomPostgresResource,
         # TODO: maybe add later RequestsInfo
     ) -> None:
+        if ckan_resource.file_type == 'csv':
+            needs_compression = True
+        else:
+            needs_compression = False
+
         t = LogTime(context)
         time = dt.datetime.now(dt.UTC)
         data_url = opendata_swiss.get_resource_url(ckan_resource.ckan_resource_id)
         with t.step('download_data'):
             data = data_opendataswiss._get_raw_bytes(data_url)
-        with t.step('compress_data'):
-            compressed = sftp_grab.compress_to_xz(data)
+        if needs_compression:
+            with t.step('compress_data'):
+                compressed = sftp_grab.compress_to_xz(data)
 
-        # calculate metadata
-        size_decompressed = data.getbuffer().nbytes
-        size_compressed = compressed.getbuffer().nbytes
-        size_ratio = size_compressed / size_decompressed if size_decompressed else 0.0
-        size_pct = size_ratio * 100
-        context.add_output_metadata(
-            metadata={
-                "decompressed_size_bytes": size_decompressed,
-                "compressed_size_bytes": size_compressed,
-                "compression_ratio": round(size_ratio, 4),  # e.g. 0.1372
-                "compressed_vs_decompressed": f"{size_compressed}/{size_decompressed} ({size_pct:.2f}%)",
-                "space_saved_bytes": size_decompressed - size_compressed,
-                "space_saved_percent": (
-                    round((1 - size_ratio) * 100, 2) if size_decompressed else 0.0
-                ),
-            }
-        )
+            # calculate metadata
+            size_decompressed = data.getbuffer().nbytes
+            size_compressed = compressed.getbuffer().nbytes
+            size_ratio = (
+                size_compressed / size_decompressed if size_decompressed else 0.0
+            )
+            size_pct = size_ratio * 100
+            context.add_output_metadata(
+                metadata={
+                    "decompressed_size_bytes": size_decompressed,
+                    "compressed_size_bytes": size_compressed,
+                    "compression_ratio": round(size_ratio, 4),  # e.g. 0.1372
+                    "compressed_vs_decompressed": f"{size_compressed}/{size_decompressed} ({size_pct:.2f}%)",
+                    "space_saved_bytes": size_decompressed - size_compressed,
+                    "space_saved_percent": (
+                        round((1 - size_ratio) * 100, 2) if size_decompressed else 0.0
+                    ),
+                }
+            )
+        else:
+            compressed = data
 
         # write to sftp
         with sftp_grab.connection() as conn:
             with t.step('ensure_sftp_dir'):
                 conn.ensure_dir(ckan_resource.dir)
             with t.step('upload_sftp_file'):
+                filetype = ckan_resource.filetype_ending
+                compression = '.xz' if needs_compression else ''
                 conn.write_file(
-                    ckan_resource.path(time, '.csv.xz'), compressed.getvalue()
+                    ckan_resource.path(time, f'{filetype}{compression}'),
+                    compressed.getvalue(),
                 )
         xcom.xcom_push(f'last_execution_{ckan_resource.model_name}', time.isoformat())
 

@@ -1,0 +1,22 @@
+snapshots:
+  - name: snap_traffic_miv_bs
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - values_approved
+        - values_edited
+        - total
+        - bus
+        - mr
+        - pw
+        - p_wx
+        - lief
+        - liefx
+        - liefx_auflx
+        - lw
+        - l_wx
+        - sattelzug
+        - andere
+      invalidate_hard_deletes: True

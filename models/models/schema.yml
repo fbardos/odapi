@@ -59,6 +59,21 @@ sources:
           dagster:
             asset_key:
               - dlt_traffic_miv_stgallen
+      - name: traffic_bicycle_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_winti
+      - name: traffic_bicycle_zueri
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zueri
+      - name: traffic_bicycle_bs
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_bs
       - name: tax_quartier_bs
       - name: tax_quartier_zueri
       - name: tax_quartier_winti
@@ -103,6 +118,10 @@ groups:
       name: fbardos
       github: fbardos
   - name: seeds
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: dba
     owner:
       name: fbardos
       github: fbardos

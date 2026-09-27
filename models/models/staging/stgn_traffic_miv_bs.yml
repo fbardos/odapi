@@ -1,0 +1,11 @@
+models:
+  - name: stgn_traffic_miv_bs
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - zst_nr_numerischx
+            - site_code
+            - direction_name
+            - lane_code
+            - date
+            - hour_from

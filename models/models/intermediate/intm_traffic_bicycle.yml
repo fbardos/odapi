@@ -1,0 +1,4 @@
+version: 2
+
+models:
+  - name: intm_traffic_bicycle

@@ -55,3 +55,7 @@ models:
       +materialized: table
       +schema: marts
       +group: marts
+    dba:
+      +group: dba
+      +materialized: view
+      +schema: dba

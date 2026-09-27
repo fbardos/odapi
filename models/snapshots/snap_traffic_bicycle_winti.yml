@@ -1,0 +1,19 @@
+snapshots:
+  - name: snap_traffic_bicycle_winti
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - gemeinde_bfs_nr
+        - gemeinde
+        - anlage_name
+        - anlage_typ
+        - zeit_bis
+        - richtung_name
+        - lat
+        - lon
+        - anzahl
+      # cannot be used together with invalidate hard deletes
+      # and historical backfills (paritions)
+      updated_at: _partition_datetime

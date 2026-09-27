@@ -9,6 +9,7 @@ import dlt
 import paramiko
 import polars as pl
 import pyarrow as pa
+from dagster import AssetExecutionContext
 from dagster import DefaultSensorStatus
 from dagster import RunRequest
 from dagster import SensorEvaluationContext
@@ -21,6 +22,7 @@ from dagster_dlt.dlt_event_iterator import DltEventType
 from dlt.extract.resource import DltResource
 from dlt.sources.helpers.transform import add_row_hash_to_table
 
+from odapi.ops.add_meta_columns import add_meta_columns
 from odapi.ops.ckan_grab_from_web import ckan_grab_pipeline_factory
 from odapi.ops.ckan_ingest_from_sftp import ckan_ingest_factory
 from odapi.resources.ckan.ckan import CkanResource
@@ -39,6 +41,7 @@ asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
     write_disposition='replace',
 )
 def _resource(
+    context: AssetExecutionContext,
     sftp_grab: SFTPResource,
     remote_path: str,
     batch_size: int = 100_000,
@@ -56,18 +59,26 @@ def _resource(
                 )
 
                 while batches := reader.next_batches(1):
-                    for dataframe in batches:
+                    for idx, dataframe in enumerate(batches):
                         dataframe = dataframe.lazy().collect()
-                        yield dataframe
+                        yield add_meta_columns(
+                            dataframe,
+                            context=context,
+                            record_offset=idx * batch_size,
+                            file_source=CKAN.www_url_from_remote_path(remote_path),
+                            publisher=CKAN.publisher,
+                        )
 
 
 @dlt.source
 def _source(
+    context: AssetExecutionContext,
     sftp_grab: SFTPResource,
     remote_path: str,
 ) -> list[DltResource]:
     return [
         _resource(
+            context=context,
             sftp_grab=sftp_grab,
             remote_path=remote_path,
         ),

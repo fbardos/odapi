@@ -21,6 +21,7 @@ from dagster_dlt import dlt_assets
 from dagster_dlt.dlt_event_iterator import DltEventType
 from dlt.extract.resource import DltResource
 from dlt.sources.helpers.transform import add_row_hash_to_table
+from pyproj import Transformer
 
 from odapi.ops.add_meta_columns import add_meta_columns
 from odapi.ops.ckan_grab_from_web import ckan_grab_pipeline_factory
@@ -29,8 +30,11 @@ from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ssh.sftp import SFTPResource
 
 CKAN = CkanResource(
-    model_name='traffic_miv_tg',
-    ckan_resource_id='545207e3-37f4-4458-a0cf-9c28e33e8bff',
+    publisher='Gemeinde Zürich',
+    model_name='traffic_bicycle_zueri',
+    ckan_resource_id='ae513ca8-edf4-4b94-8611-bb70b5cfa09c',
+    file_type='parquet',
+    dataset_url='https://opendata.swiss/de/dataset/daten-der-automatischen-fussganger-und-velozahlung-viertelstundenwerte',
 )
 
 asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
@@ -49,25 +53,28 @@ def _resource(
 
     with sftp_grab.connection() as conn:
         with conn.open(remote_path, 'rb') as remote_file:
-            with lzma.LZMAFile(remote_file, mode='rb') as decompressed_file:
-                reader = pl.read_csv_batched(
-                    decompressed_file,
-                    separator=';',
-                    encoding='utf8',
-                    batch_size=batch_size,
-                    infer_schema_length=10_000,
-                )
+            df = pl.read_parquet(remote_file)
 
-                while batches := reader.next_batches(1):
-                    for idx, dataframe in enumerate(batches):
-                        dataframe = dataframe.lazy().collect()
-                        yield add_meta_columns(
-                            dataframe,
-                            context=context,
-                            record_offset=idx * batch_size,
-                            file_source=CKAN.www_url_from_remote_path(remote_path),
-                            publisher=CKAN.publisher,
-                        )
+            # Clickhouse currently has no possibility to transform geometries
+            # to another CRS. So, this must be already done here.
+            # Default CRS in Clickhouse by convention: EPSG:4326
+            transformer = Transformer.from_crs('EPSG:2056', 'EPSG:4326', always_xy=True)
+            e, n = transformer.transform(
+                df['OST'].to_numpy(),
+                df['NORD'].to_numpy(),
+            )
+            df = df.with_columns(pl.Series('lon', e), pl.Series('lat', n)).drop(
+                'OST', 'NORD'
+            )
+
+            for idx, batch in enumerate(df.iter_slices(n_rows=batch_size)):
+                yield add_meta_columns(
+                    batch,
+                    context=context,
+                    record_offset=idx * batch_size,
+                    file_source=CKAN.www_url_from_remote_path(remote_path),
+                    publisher=CKAN.publisher,
+                )
 
 
 @dlt.source

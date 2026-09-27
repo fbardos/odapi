@@ -2,8 +2,10 @@ import datetime as dt
 import json
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Generator
 from typing import List
+from typing import Literal
 from typing import Optional
 from typing import Sequence
 
@@ -17,8 +19,10 @@ from dlt.common.schema.typing import TWriteDispositionConfig
 class CkanResource:
     model_name: str
     ckan_resource_id: str
+    publisher: str | None = None
     primary_key_column: str | None = None
     dlt_write_disposition: TWriteDispositionConfig | None = None
+    file_type: Literal['csv', 'parquet'] = 'csv'
     dataset_url: str = ''  # cosmetic, used for easier navigation later
     delimiter: str = ','
     _DIR_NAME: str = 'opendata_swiss'
@@ -71,6 +75,10 @@ class CkanResource:
     def www_url(self, partition_key: str) -> str:
         return '/'.join([self._WWW_PREFIX, self.dir, partition_key])
 
+    def www_url_from_remote_path(self, remote_path: str) -> str:
+        partition = Path(remote_path).name
+        return self.www_url(partition_key=partition)
+
     @property
     def asset_name(self) -> str:
         return f'odch_{self.model_name}'
@@ -78,6 +86,10 @@ class CkanResource:
     @property
     def dlt_pipeline_name(self) -> str:
         return f'pipe_{self.model_name}'
+
+    @property
+    def filetype_ending(self) -> str:
+        return f'.{self.file_type}'
 
 
 class CkanApi(ConfigurableResource):

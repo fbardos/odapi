@@ -29,8 +29,10 @@ from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ssh.sftp import SFTPResource
 
 CKAN = CkanResource(
-    model_name='traffic_miv_tg',
-    ckan_resource_id='545207e3-37f4-4458-a0cf-9c28e33e8bff',
+    publisher='Gemeinde Winterthur',
+    model_name='traffic_bicycle_winti',
+    ckan_resource_id='7eb2fb21-02b6-4a75-94a2-defe040ea0e2',
+    dataset_url='https://opendata.swiss/de/dataset/verkehrszahldaten-veloverkehr-in-winterthur',
 )
 
 asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
@@ -52,7 +54,7 @@ def _resource(
             with lzma.LZMAFile(remote_file, mode='rb') as decompressed_file:
                 reader = pl.read_csv_batched(
                     decompressed_file,
-                    separator=';',
+                    separator=',',
                     encoding='utf8',
                     batch_size=batch_size,
                     infer_schema_length=10_000,

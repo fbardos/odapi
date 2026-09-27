@@ -1,4 +1,4 @@
-{% snapshot snap_traffic_miv_winti %}
+{% snapshot snap_traffic_bicycle_winti %}
 with src as (
     select
         *
@@ -8,7 +8,7 @@ with src as (
             , 'richtung'
             , 'spur_nr'
         ]) }} as sk
-    from {{ ref('stgn_traffic_miv_winti') }}
+    from {{ ref('stgn_traffic_bicycle_winti') }}
 )
 
 select * from src

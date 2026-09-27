@@ -1,14 +1,12 @@
-{% snapshot snap_traffic_miv_stgallen %}
+{% snapshot snap_traffic_bicycle_zueri %}
 with src as (
     select
         *
         , {{ dbt_utils.generate_surrogate_key([
-            'ort_id'
+            'standort_id'
             , 'datum'
-            , 'richtung'
-            , 'swiss10_group'
         ]) }} as sk
-    from {{ ref('stgn_traffic_miv_stgallen') }}
+    from {{ ref('stgn_traffic_bicycle_zueri') }}
 )
 
 select * from src

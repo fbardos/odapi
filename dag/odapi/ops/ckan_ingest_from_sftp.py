@@ -51,6 +51,7 @@ def ckan_ingest_factory(
         remote_path = '/'.join([ckan.dir, context.partition_key])
 
         source = dlt_source(
+            context=context,
             sftp_grab=sftp_grab,
             remote_path=remote_path,
         )

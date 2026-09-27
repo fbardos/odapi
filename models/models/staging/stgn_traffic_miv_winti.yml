@@ -1,0 +1,9 @@
+models:
+  - name: stgn_traffic_miv_winti
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - anlage_nr
+            - zeit_von
+            - richtung
+            - spur_nr

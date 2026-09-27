@@ -29,8 +29,11 @@ from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ssh.sftp import SFTPResource
 
 CKAN = CkanResource(
-    model_name='traffic_miv_tg',
-    ckan_resource_id='545207e3-37f4-4458-a0cf-9c28e33e8bff',
+    publisher='Kanton Basel-Stadt',
+    model_name='traffic_bicycle_bs',
+    ckan_resource_id='647cc45f-ab28-470f-9665-4c9352092ada',
+    file_type='parquet',
+    dataset_url='https://opendata.swiss/de/dataset/verkehrszahldaten-velos-und-fussganger',
 )
 
 asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
@@ -49,25 +52,27 @@ def _resource(
 
     with sftp_grab.connection() as conn:
         with conn.open(remote_path, 'rb') as remote_file:
-            with lzma.LZMAFile(remote_file, mode='rb') as decompressed_file:
-                reader = pl.read_csv_batched(
-                    decompressed_file,
-                    separator=';',
-                    encoding='utf8',
-                    batch_size=batch_size,
-                    infer_schema_length=10_000,
-                )
+            df = pl.read_parquet(remote_file)
 
-                while batches := reader.next_batches(1):
-                    for idx, dataframe in enumerate(batches):
-                        dataframe = dataframe.lazy().collect()
-                        yield add_meta_columns(
-                            dataframe,
-                            context=context,
-                            record_offset=idx * batch_size,
-                            file_source=CKAN.www_url_from_remote_path(remote_path),
-                            publisher=CKAN.publisher,
-                        )
+            df = (
+                df
+                # Basel bug on spring DST transition:
+                # the nonexistent hour becomes a zero-length UTC interval.
+                # https://github.com/opendatabs/data-processing/pull/618
+                .filter(pl.col('datetimefrom') < pl.col('datetimeto')).with_columns(
+                    pl.col('datetimefrom').alias('datetimefrom_utc'),
+                    pl.col('datetimeto').alias('datetimeto_utc'),
+                )
+            )
+
+            for idx, batch in enumerate(df.iter_slices(n_rows=batch_size)):
+                yield add_meta_columns(
+                    batch,
+                    context=context,
+                    record_offset=idx * batch_size,
+                    file_source=CKAN.www_url_from_remote_path(remote_path),
+                    publisher=CKAN.publisher,
+                )
 
 
 @dlt.source
