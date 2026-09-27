@@ -1,7 +1,8 @@
 select
-    {{ dbt_utils.star(from=ref('intm_traffic_bicycle'), except=['zeit_von']) }}
-    -- will otherwise not be tz-aware in csv export
-    , formatDateTime(zeit_von, '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS zeit_von
+    {{ dbt_utils.star(from=ref('intm_traffic_bicycle'), except=['geometry']) }}
+    -- geometry should not be nullable according to tests
+    -- this will allow fastapi to export a geoparquet instead of just parquet
+    , assumeNotNull(geometry) as geometry
     , geometry.1 as lon
     , geometry.2 as lat
 from {{ ref('intm_traffic_bicycle') }}
