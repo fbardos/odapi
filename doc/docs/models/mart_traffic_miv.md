@@ -14,9 +14,18 @@ curl -s 'https://odapi.bardos.dev/model/mart_traffic_miv'
 
 Traffic statistics for motorized vehicles, following the [SWISS10-Definition](https://www.astra.admin.ch/dam/astra/de/dokumente/standards_fuer_nationalstrassen/astra_13012_verkehrszaehler2009v105.pdf.download.pdf/astra_13012_verkehrszaehler.pdf) in different municipalities and cantons.
 
+## Table Information
+
+| Topic       | Value                                                         |
+| ----------- | ------------------------------------------------------------- |
+| Primary Key | Combination of `anlage_id`, `richtung`, `spur` and `zeit_von` |
+| Language    | German                                                        |
+
 ## Sources
 
-| Publisher   | Level  | Information                                                                                                         |
-| ----------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
-| Basel-Stadt | Canton | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr)                      |
-| Thurgau     | Canton | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr-nach-fahrzeugklassen) |
+| Publisher   | Level        | Information                                                                                                                |
+| ----------- | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Basel-Stadt | Canton       | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr)                             |
+| Thurgau     | Canton       | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr-nach-fahrzeugklassen)        |
+| St.Gallen   | Municipality | [Dataset](https://opendata.swiss/de/dataset/verkehrszahlung-miv-stadt-st-gallen-nach-fahrzeugkategorien-swiss10-2019-2022) |
+| Winterthur  | Municipality | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr-in-winterthur)               |
