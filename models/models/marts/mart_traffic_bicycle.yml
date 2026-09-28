@@ -2,3 +2,5 @@ version: 2
 
 models:
   - name: mart_traffic_bicycle
+    config:
+      materialized: table
