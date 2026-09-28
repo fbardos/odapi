@@ -5,14 +5,9 @@ theme:
   palette:
     scheme: slate
 
-nav:
-  - Home: index.md
-  - Motivation: motivation.md
-  - Models:
-      - mart_traffic_miv: models/mart_traffic_miv.md
-
 plugins:
   - search
+  - awesome-nav
 
 markdown_extensions:
   - pymdownx.blocks.admonition

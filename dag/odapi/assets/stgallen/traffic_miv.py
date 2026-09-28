@@ -30,6 +30,7 @@ from odapi.resources.ssh.sftp import SFTPResource
 
 CKAN = CkanResource(
     model_name='traffic_miv_stgallen',
+    dataset_url='https://opendata.swiss/de/dataset/verkehrszahlung-miv-stadt-st-gallen-nach-fahrzeugkategorien-swiss10-2019-2022',
     ckan_resource_id='03783536-d200-4f57-9e89-0484f1af4097',
 )
 
