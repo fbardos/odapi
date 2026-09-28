@@ -3,10 +3,18 @@ from pathlib import Path
 
 from dagster import AssetExecutionContext
 from dagster import get_dagster_logger
+from dagster_dbt import DagsterDbtTranslator
+from dagster_dbt import DagsterDbtTranslatorSettings
 from dagster_dbt import DbtCliResource
 from dagster_dbt import DbtProject
 from dagster_dbt import dbt_assets
 from dotenv import load_dotenv
+
+dbt_translator = DagsterDbtTranslator(
+    settings=DagsterDbtTranslatorSettings(
+        enable_duplicate_source_asset_keys=True,
+    ),
+)
 
 ################################################################################
 # DBT
@@ -41,6 +49,6 @@ else:
     dbt_manifest_path = dbt_path.joinpath('target', 'manifest.json')
 
 
-@dbt_assets(manifest=dbt_manifest_path)
+@dbt_assets(manifest=dbt_manifest_path, dagster_dbt_translator=dbt_translator)
 def assets_homelab_dbt(context: AssetExecutionContext, dbt_res: DbtCliResource):
     yield from dbt_res.cli(["build"], context=context).stream()

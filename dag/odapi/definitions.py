@@ -13,7 +13,7 @@ import odapi.assets.bfs.statatlas_v2 as assets_bfs_statatlas_v2
 import odapi.assets.bfs.stats_swiss as assets_stats_swiss
 import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 import odapi.assets.swisstopo.api as assets_swisstopo
-from odapi.assets.dbt import dbt_cmd
+from odapi.assets.dbt_assets import dbt_cmd
 from odapi.resources.ckan.ckan import OpenDataSwiss
 from odapi.resources.clickhouse.clickhouse import ClickHouseResource
 from odapi.resources.crypto.fernet import FernetCipher
