@@ -1,6 +1,6 @@
 version: 2
 
 models:
-  - name: mart_ener_elec
+  - name: mart_traffic_miv
     config:
       materialized: table
