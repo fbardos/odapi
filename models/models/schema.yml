@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: src
     database: data
-    schema: src
+    schema: data
     tables:
       - name: bfs_statatlas
       - name: bfs_statatlas_v2
@@ -40,22 +40,83 @@ sources:
       - name: statswiss_whg_gebkat
       - name: bl_downloads_portal
       - name: traffic_miv_bs
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_bs
       - name: traffic_miv_tg
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_tg
       - name: traffic_miv_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_winti
       - name: traffic_miv_stgallen
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_miv_stgallen
+      - name: traffic_bicycle_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_winti
+      - name: traffic_bicycle_zueri
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zueri
+      - name: traffic_bicycle_bs
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_bs
+      - name: ener_elec_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_winti
+      - name: ener_elec_zueri
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri
+      - name: ener_elec_bs
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_bs
+      - name: bfs_gemeinde_g1
+        meta:
+          dagster:
+            asset_key:
+              - dlt_bfs_raumgliederung_generalisiert
+      - name: bfs_bezirk_g1
+        meta:
+          dagster:
+            asset_key:
+              - dlt_bfs_raumgliederung_generalisiert
+      - name: bfs_kanton_g1
+        meta:
+          dagster:
+            asset_key:
+              - dlt_bfs_raumgliederung_generalisiert
       - name: tax_quartier_bs
       - name: tax_quartier_zueri
       - name: tax_quartier_winti
   - name: ktzh_gwr
     database: data
-    schema: src
+    schema: data
     tables:
       - name: ktzh_gwr_apartments
       - name: ktzh_gwr_houses
       - name: ktzh_gwr_entrance
   - name: ktzh_metadata
     database: data
-    schema: src
+    schema: data
     tables:
       - name: ktzh_ogd_metadata
       - name: ktzh_downloads_dataset
@@ -87,6 +148,10 @@ groups:
       name: fbardos
       github: fbardos
   - name: seeds
+    owner:
+      name: fbardos
+      github: fbardos
+  - name: dba
     owner:
       name: fbardos
       github: fbardos

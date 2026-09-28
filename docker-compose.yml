@@ -65,6 +65,27 @@ services:
       -c log_statement=all
       -c log_min_duration_statement=1000
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:26.8
+    container_name: clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9001:9000"
+    environment:
+      CLICKHOUSE_DB: ${STORAGE__CLICKHOUSE__DB}
+      CLICKHOUSE_USER: ${STORAGE__CLICKHOUSE__USER}
+      CLICKHOUSE_PASSWORD: ${STORAGE__CLICKHOUSE__PASSWORD}
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    networks:
+      - odapi_private
+      - odapi_public
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
   data-minio:
     image: minio/minio
     restart: *restart-policy
@@ -239,6 +260,7 @@ volumes:
       device: /mnt/storagebox/docker/volumes/odapi-data-minio/_data
   data-postgis:
   utils-pgadmin:
+  clickhouse-data:
 
 # #######################################################################
 # Networks

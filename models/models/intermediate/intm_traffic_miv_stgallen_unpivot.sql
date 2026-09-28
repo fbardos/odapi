@@ -13,15 +13,14 @@
         'ort_richtung_id',
         'klasse',
         'name_d',
-        'swiss10group',
-        'file_source',
+        'swiss10_group',
         'dbt_updated_at',
         'dbt_valid_from',
         'dbt_valid_to'
     ],
     remove=[
-        'swiss7group',
-        'swiss6group',
+        'swiss7_group',
+        'swiss6_group',
         'tagestotal',
         'sk',
         'dbt_scd_id'

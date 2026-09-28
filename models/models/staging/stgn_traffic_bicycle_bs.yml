@@ -1,0 +1,12 @@
+models:
+  - name: stgn_traffic_bicycle_bs
+    config:
+      materialized: table
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - zst_id
+            - datetimefrom_utc
+            - directionname
+            - lanename # lanecode can be NULL
+            - traffictype

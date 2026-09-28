@@ -25,7 +25,7 @@ from pytz import timezone
 
 from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ckan.ckan import OpenDataSwiss
-from odapi.resources.duckdb.duckdb import DuckDBResource
+from odapi.resources.clickhouse.clickhouse import ClickHouseResource
 from odapi.resources.extract.extract_handler import ExtractHandler
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
@@ -74,7 +74,7 @@ def ntfy_on_failure(context: HookContext):
     context.resources.ntfy.send_failure_message(context)
 
 
-def pipeline_factory(ckan_resource: CkanResource) -> tuple:
+def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
 
     # ------------------------------------------------------------------------
     # Load from WEB
@@ -94,39 +94,55 @@ def pipeline_factory(ckan_resource: CkanResource) -> tuple:
         xcom: XcomPostgresResource,
         # TODO: maybe add later RequestsInfo
     ) -> None:
+        if ckan_resource.file_type == 'csv':
+            needs_compression = True
+        else:
+            needs_compression = False
+
         t = LogTime(context)
         time = dt.datetime.now(dt.UTC)
         data_url = opendata_swiss.get_resource_url(ckan_resource.ckan_resource_id)
         with t.step('download_data'):
-            data = data_opendataswiss._get_raw_csv(data_url)
-        with t.step('compress_data'):
-            compressed = sftp_grab.compress_to_xz(data)
+            data = data_opendataswiss._get_raw_bytes(data_url)
+        if needs_compression:
+            with t.step('compress_data'):
+                compressed = sftp_grab.compress_to_xz(data)
 
-        # calculate metadata
-        size_decompressed = data.getbuffer().nbytes
-        size_compressed = compressed.getbuffer().nbytes
-        size_ratio = size_compressed / size_decompressed if size_decompressed else 0.0
-        size_pct = size_ratio * 100
-        context.add_output_metadata(
-            metadata={
-                "decompressed_size_bytes": size_decompressed,
-                "compressed_size_bytes": size_compressed,
-                "compression_ratio": round(size_ratio, 4),  # e.g. 0.1372
-                "compressed_vs_decompressed": f"{size_compressed}/{size_decompressed} ({size_pct:.2f}%)",
-                "space_saved_bytes": size_decompressed - size_compressed,
-                "space_saved_percent": (
-                    round((1 - size_ratio) * 100, 2) if size_decompressed else 0.0
-                ),
-            }
-        )
+            # calculate metadata
+            size_decompressed = data.getbuffer().nbytes
+            size_compressed = compressed.getbuffer().nbytes
+            size_ratio = (
+                size_compressed / size_decompressed if size_decompressed else 0.0
+            )
+            size_pct = size_ratio * 100
+            context.add_output_metadata(
+                metadata={
+                    "decompressed_size_bytes": size_decompressed,
+                    "compressed_size_bytes": size_compressed,
+                    "compression_ratio": round(size_ratio, 4),  # e.g. 0.1372
+                    "compressed_vs_decompressed": f"{size_compressed}/{size_decompressed} ({size_pct:.2f}%)",
+                    "space_saved_bytes": size_decompressed - size_compressed,
+                    "space_saved_percent": (
+                        round((1 - size_ratio) * 100, 2) if size_decompressed else 0.0
+                    ),
+                }
+            )
+        else:
+            compressed = data
 
         # write to sftp
+        # TODO: Do only upload when checksum of file has changed
+        # Some data provider do update the resource updated_at every day, even
+        # when no new data has arrived.
         with sftp_grab.connection() as conn:
             with t.step('ensure_sftp_dir'):
                 conn.ensure_dir(ckan_resource.dir)
             with t.step('upload_sftp_file'):
+                filetype = ckan_resource.filetype_ending
+                compression = '.xz' if needs_compression else ''
                 conn.write_file(
-                    ckan_resource.path(time, '.csv.xz'), compressed.getvalue()
+                    ckan_resource.path(time, f'{filetype}{compression}'),
+                    compressed.getvalue(),
                 )
         xcom.xcom_push(f'last_execution_{ckan_resource.model_name}', time.isoformat())
 
@@ -176,120 +192,4 @@ def pipeline_factory(ckan_resource: CkanResource) -> tuple:
                 'Skip.'
             )
 
-    # ------------------------------------------------------------------------
-    # Load from SFTP
-    # ------------------------------------------------------------------------
-    # TODO: Add ntfy on_failure hook
-    @asset(
-        compute_kind='python',
-        group_name='src_opendataswiss',
-        key=['src', ckan_resource.model_name],
-        partitions_def=_file_partition,
-        deps=[_asset_from_web],
-        pool='duckdb_writer',
-    )
-    def _asset_from_sftp(
-        context: AssetExecutionContext,
-        sftp_grab: SFTPResource,
-        duckdb: DuckDBResource,
-    ) -> None:
-        partition_key = context.partition_key
-        with sftp_grab.connection() as conn:
-            file_compressed = BytesIO(
-                conn.read_file('/'.join([ckan_resource.dir, partition_key]))
-            )
-        file_uncompressed = sftp_grab.decompress_from_xz(file_compressed)
-
-        df = pd.read_csv(file_uncompressed, delimiter=ckan_resource.delimiter)
-        assert isinstance(df, pd.DataFrame)
-
-        df.columns = (
-            df.columns.str.strip().str.lower().str.replace(r"\W+", "_", regex=True)
-        )
-        df['file_source'] = ckan_resource.www_url(partition_key)
-
-        # Needs proper connection handling (with closing), otherwise, downstream
-        # assets will fail because file lock on DuckDB is still set.
-        engine = duckdb.get_sqlalchemy_engine()
-        try:
-            with engine.begin() as conn:
-                df.to_sql(
-                    ckan_resource.model_name,
-                    conn,
-                    schema='src',
-                    if_exists='replace',
-                    index=False,
-                )
-        finally:
-            engine.dispose()
-
-        # Insert metadata
-        context.add_output_metadata(
-            metadata={
-                'num_records': len(df.index),
-                'num_cols': len(df.columns),
-                'preview': MetadataValue.md(df.head().to_markdown()),
-            }
-        )
-
-    _job_from_sftp = define_asset_job(
-        name=ckan_resource.job_name_sftp,
-        selection=AssetSelection.assets(_asset_from_sftp).downstream(),
-        hooks={ntfy_on_success, ntfy_on_failure},
-    )
-
-    @sensor(
-        job=_job_from_sftp,
-        name=ckan_resource.sensor_name_sftp,
-        required_resource_keys={'sftp_grab'},
-        default_status=DefaultSensorStatus.RUNNING,
-        minimum_interval_seconds=2 * 60,
-    )
-    def _sensor_sftp(context: SensorEvaluationContext):
-        sftp: SFTPResource = context.resources.sftp_grab
-        with sftp.connection() as conn:
-            try:
-                files = conn.list_files(ckan_resource.dir)
-            except FileNotFoundError:
-                return SkipReason('No files found on target. Skip.')
-        existing_partition_keys = set(
-            context.instance.get_dynamic_partitions(_file_partition.name)
-        )
-        new_partition_keys = [
-            file for file in files if file not in existing_partition_keys
-        ]
-
-        if not new_partition_keys:
-            return SkipReason("No new SFTP files found.")
-
-        return SensorResult(
-            dynamic_partitions_requests=[
-                _file_partition.build_add_request(new_partition_keys)
-            ],
-            run_requests=[
-                RunRequest(
-                    run_key=key,
-                    partition_key=key,
-                )
-                for key in new_partition_keys
-            ],
-        )
-
-    # ------------------------------------------------------------------------
-    # Wire UP
-    # ------------------------------------------------------------------------
-    assets = [_asset_from_web, _asset_from_sftp]
-    jobs = [_job_from_web, _job_from_sftp]
-    sensors = [_sensor_web, _sensor_sftp]
-
-    return assets, jobs, sensors
-
-
-collected_assets = []
-collected_jobs = []
-collected_sensors = []
-for asset_config in CKAN_RESOURCES:
-    assets, jobs, sensors = pipeline_factory(asset_config)
-    collected_assets.extend(assets)
-    collected_jobs.extend(jobs)
-    collected_sensors.extend(sensors)
+    return _asset_from_web, _job_from_web, _sensor_web, _file_partition

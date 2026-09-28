@@ -1,26 +1,4 @@
 {% snapshot snap_traffic_miv_tg %}
-{{
-    config(
-        target_schema='snapshots',
-        strategy='check',
-        unique_key='sk',
-        check_cols=[
-            'reg_bus'
-            , 'bus'
-            , 'mr'
-            , 'pw'
-            , 'pw_'
-            , 'lief'
-            , 'lief_'
-            , 'lief_aufl_'
-            , 'lw'
-            , 'lw_'
-            , 'sattelzug'
-        ],
-        invalidate_hard_deletes=True,
-    )
-}}
-
 with src as (
     select
         *

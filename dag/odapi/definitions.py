@@ -2,9 +2,10 @@ from dagster import Definitions
 from dagster import EnvVar
 from dagster import load_asset_checks_from_package_module
 from dagster import load_assets_from_package_module
+from dagster import load_definitions_from_package_module
+from dagster_dlt import DagsterDltResource
 
 import odapi.assets as assets
-import odapi.assets.bfs.opendataswiss as assets_opendataswiss
 import odapi.assets.bfs.quartier as assets_quartier
 import odapi.assets.bfs.stat_tab as assets_stat_tab
 import odapi.assets.bfs.statatlas as assets_bfs_statatlas
@@ -14,6 +15,7 @@ import odapi.assets.bfs.swissboundaries as assets_swissboundaries
 import odapi.assets.swisstopo.api as assets_swisstopo
 from odapi.assets.dbt import dbt_cmd
 from odapi.resources.ckan.ckan import OpenDataSwiss
+from odapi.resources.clickhouse.clickhouse import ClickHouseResource
 from odapi.resources.crypto.fernet import FernetCipher
 from odapi.resources.duckdb.duckdb import DuckDBResource
 from odapi.resources.extract.extract_handler import ExtractHandler
@@ -48,13 +50,16 @@ db = PostgresResource(
     sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
 )
 
-defs = Definitions(
-    assets=load_assets_from_package_module(assets),
-    asset_checks=load_asset_checks_from_package_module(assets),
+defs = load_definitions_from_package_module(
+    package_module=assets,
     resources={
         # Global resources
         'dbt_res': dbt_cmd,
         'db': db,
+        'dlt': DagsterDltResource(),
+        'clickhouse': ClickHouseResource(
+            sqlalchemy_connection_string=EnvVar('CLICKHOUSE__SQLALCHEMY_DATABASE_URI')
+        ),
         'duckdb': DuckDBResource(database=EnvVar('DUCKDB__PATH')),
         'xcom': XcomPostgresResource(
             sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
@@ -103,27 +108,8 @@ defs = Definitions(
         ),
         'stat_tab': StatTabResource(),
         'stats_swiss': StatsSwissResource(),
+        # TODO: maybe use pandera in the future, less overhead and designed for polars
+        # https://pandera.readthedocs.io/en/stable/index.html
         'great_expectations': GreatExpectationsResource(),
     },
-    jobs=[
-        *assets_opendataswiss.collected_jobs,
-        assets_bfs_statatlas.job_statatlas,
-        assets_bfs_statatlas_v2.job_statatlas_v2,
-        assets_swissboundaries.job_bfs_swissboundaries,
-        assets_swisstopo.job_geoadmin,
-        assets_stat_tab.job_bfs_stat_tab,
-        assets_stats_swiss.job,
-        assets_quartier.job,
-    ],
-    sensors=[
-        *assets_opendataswiss.collected_sensors,
-    ],
-    schedules=[
-        assets_bfs_statatlas.schedule_statatlas,
-        assets_bfs_statatlas_v2.schedule_statatlas_v2,
-        assets_swissboundaries.schedule_bfs_swissboundaries,
-        assets_swisstopo.schedule_geoadmin,
-        assets_stat_tab.schedule_stat_tab,
-        assets_stats_swiss.schedule,
-    ],
 )
