@@ -1,12 +1,16 @@
 # mart_traffic_bicycle
 
+Traffic statistics for bicycles, in different municipalities and cantons.
+
 Example Query:
 
 ```bash
 curl -s 'https://odapi.bardos.dev/model/mart_traffic_bicycle'
 ```
 
-Traffic statistics for bicycles, in different municipalities and cantons.
+## Downstream Usage
+
+- [Showcase Dashboard on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/Velo-data-fetch-API-034Wsy6pKetQW6IBFLWuK7/latest).
 
 ## Table Information
 
