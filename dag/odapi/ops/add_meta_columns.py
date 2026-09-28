@@ -37,5 +37,5 @@ def add_meta_columns(
             eager=True,
         ).alias('_record'),
         pl.lit(partition_datetime(context)).alias('_partition_datetime'),
-        *[pl.lit(value).alias(name) for name, value in columns.items()],
+        *[pl.lit(value).alias(name) for name, value in columns.items() if value],
     )

@@ -74,6 +74,21 @@ sources:
           dagster:
             asset_key:
               - dlt_traffic_bicycle_bs
+      - name: ener_elec_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_winti
+      - name: ener_elec_zueri
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri
+      - name: ener_elec_bs
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_bs
       - name: bfs_gemeinde_g1
         meta:
           dagster:

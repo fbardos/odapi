@@ -21,6 +21,8 @@ class CkanResource:
     ckan_resource_id: str
     publisher: str | None = None
     primary_key_column: str | None = None
+    geom_level: Literal['municipality', 'canton', 'nation'] | None = None
+    geom_id: int | None = None
     dlt_write_disposition: TWriteDispositionConfig | None = None
     file_type: Literal['csv', 'parquet'] = 'csv'
     dataset_url: str = ''  # cosmetic, used for easier navigation later

@@ -131,6 +131,9 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
             compressed = data
 
         # write to sftp
+        # TODO: Do only upload when checksum of file has changed
+        # Some data provider do update the resource updated_at every day, even
+        # when no new data has arrived.
         with sftp_grab.connection() as conn:
             with t.step('ensure_sftp_dir'):
                 conn.ensure_dir(ckan_resource.dir)

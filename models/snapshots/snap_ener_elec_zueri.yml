@@ -1,0 +1,14 @@
+version: 2
+
+snapshots:
+  - name: snap_ener_elec_zueri
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - bruttolastgang_kwh
+        - status
+      # cannot be used together with invalidate hard deletes
+      # and historical backfills (paritions)
+      updated_at: _partition_datetime
