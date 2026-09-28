@@ -74,6 +74,21 @@ sources:
           dagster:
             asset_key:
               - dlt_traffic_bicycle_bs
+      - name: bfs_gemeinde_g1
+        meta:
+          dagster:
+            asset_key:
+              - dlt_bfs_raumgliederung_generalisiert
+      - name: bfs_bezirk_g1
+        meta:
+          dagster:
+            asset_key:
+              - dlt_bfs_raumgliederung_generalisiert
+      - name: bfs_kanton_g1
+        meta:
+          dagster:
+            asset_key:
+              - dlt_bfs_raumgliederung_generalisiert
       - name: tax_quartier_bs
       - name: tax_quartier_zueri
       - name: tax_quartier_winti
