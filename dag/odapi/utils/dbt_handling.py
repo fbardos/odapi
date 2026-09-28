@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
-from odapi.assets.dbt import dbt_manifest_path
+from odapi.assets.dbt_assets import dbt_manifest_path
 
 
 @dataclass
