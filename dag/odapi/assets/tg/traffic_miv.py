@@ -31,6 +31,7 @@ from odapi.resources.ssh.sftp import SFTPResource
 CKAN = CkanResource(
     model_name='traffic_miv_tg',
     ckan_resource_id='545207e3-37f4-4458-a0cf-9c28e33e8bff',
+    dataset_url='https://opendata.swiss/de/dataset/verkehrszahldaten-motorisierter-individualverkehr-nach-fahrzeugklassen',
 )
 
 asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
