@@ -1,12 +1,16 @@
 # mart_ener_elec
 
+Data about the electricity distributed in a municipality or canton, in a 15 minute interval.
+
 Example Query:
 
 ```bash
 curl -s 'https://odapi.bardos.dev/model/mart_ener_elec'
 ```
 
-Data about the electricity distributed in a municipality or canton, in a 15 minute interval.
+## Downstream Usage
+
+- [Showcase Dashboard on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/martenerelec-034WuQ6CGYGcCMkKNBrn11/latest)
 
 ## Table Information
 
