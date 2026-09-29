@@ -15,4 +15,6 @@ snapshots:
         - lw
         - lwx
         - sattelzug
-      invalidate_hard_deletes: True
+      # Do not invalidate. The data from ODS TG does only
+      # contain the last 14 days, not all data.
+      #invalidate_hard_deletes: True
