@@ -5,6 +5,7 @@ import posixpath
 import re
 from contextlib import contextmanager
 from io import BytesIO
+from typing import Generator
 from typing import Iterator
 from typing import Optional
 
@@ -225,7 +226,7 @@ class SFTPResource(ConfigurableResource):
         return transport, sftp_client
 
     @contextmanager
-    def connection(self):
+    def connection(self) -> Iterator[SFTPSession]:
         transport: Optional[paramiko.Transport] = None
         sftp_client: Optional[paramiko.SFTPClient] = None
 
