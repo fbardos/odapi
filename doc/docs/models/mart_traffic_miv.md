@@ -1,5 +1,7 @@
 # mart_traffic_miv
 
+Traffic statistics for motorized vehicles, following the [SWISS10-Definition](https://www.astra.admin.ch/dam/astra/de/dokumente/standards_fuer_nationalstrassen/astra_13012_verkehrszaehler2009v105.pdf.download.pdf/astra_13012_verkehrszaehler.pdf) in different municipalities and cantons.
+
 /// note | TL;DR
 
 - Combined data from Canton Basel-Stadt, City of Zurich and Winterthur
@@ -12,7 +14,9 @@ Example Query:
 curl -s 'https://odapi.bardos.dev/model/mart_traffic_miv'
 ```
 
-Traffic statistics for motorized vehicles, following the [SWISS10-Definition](https://www.astra.admin.ch/dam/astra/de/dokumente/standards_fuer_nationalstrassen/astra_13012_verkehrszaehler2009v105.pdf.download.pdf/astra_13012_verkehrszaehler.pdf) in different municipalities and cantons.
+## Downstream Usage
+
+- [Showcase Dashboard on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/marttrafficmiv-034VjNNgWmJtvAM3066e9N/latest)
 
 ## Table Information
 

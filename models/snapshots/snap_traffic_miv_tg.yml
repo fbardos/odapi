@@ -5,15 +5,14 @@ snapshots:
       strategy: check
       unique_key: sk
       check_cols:
-        - reg_bus
         - bus
         - mr
         - pw
-        - pw_
+        - pwx
         - lief
-        - lief_
-        - lief_aufl_
+        - liefx
+        - liefxauflx
         - lw
-        - lw_
+        - lwx
         - sattelzug
       invalidate_hard_deletes: True
