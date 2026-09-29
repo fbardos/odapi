@@ -30,8 +30,3 @@ models:
   - name: dim_kanton_latest
     config:
       group: *default-group
-
-  # ---------------------------------------------------------------------------
-  - name: mart_traffic_miv
-    config:
-      materialized: view
