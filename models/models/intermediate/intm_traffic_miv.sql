@@ -6,15 +6,8 @@ with src_tg as (
         toString(code) as anlage_id
         , toString(richtung) as richtung
         , toString(spur_code) as spur
-        , parseDateTimeOrNull(
-            concat(toString(toDate(datum)), ' ', nullIf(trim(zeit_von), '')),
-            '%Y-%m-%d %H:%i:%s'
-        ) as zeit_von
-
-        , parseDateTimeOrNull(
-            concat(toString(toDate(datum)), ' ', nullIf(trim(zeit_bis), '')),
-            '%Y-%m-%d %H:%i:%s'
-        ) as zeit_bis
+        , parseDateTimeBestEffort(zeit_von, 'UTC') as zeit_von
+        , parseDateTimeBestEffort(zeit_bis, 'UTC') as zeit_bis
         , toInt32(mr) as mr
         , toInt32(pw) as pw
         , toInt32(pwx) as pw_p
