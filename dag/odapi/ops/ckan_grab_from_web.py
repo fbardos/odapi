@@ -1,6 +1,9 @@
 import datetime as dt
+import hashlib
+import stat
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 
 import pandas as pd
 from dagster import AssetExecutionContext
@@ -31,6 +34,7 @@ from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
 from odapi.resources.published_models import PublishedModels
 from odapi.resources.ssh.sftp import SFTPResource
+from odapi.resources.ssh.sftp import SFTPSession
 from odapi.resources.url import requests_info
 from odapi.resources.url.csv import OpendataswissUrlResource
 from odapi.resources.utils import calculate_bytes_compression
@@ -94,6 +98,39 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
         xcom: XcomPostgresResource,
         # TODO: maybe add later RequestsInfo
     ) -> None:
+
+        def differs_from_latest(
+            sftp: SFTPSession,
+            data: BytesIO,
+            remote_dir: str,
+        ) -> bool:
+            files = [
+                entry
+                for entry in sftp.listdir_attr(remote_dir)
+                if stat.S_ISREG(entry.st_mode)
+            ]
+
+            if not files:
+                return True
+
+            latest = max(files, key=lambda entry: entry.filename)
+            latest_path = f'{remote_dir.rstrip("/")}/{latest.filename}'
+
+            if data.getbuffer().nbytes != latest.st_size:
+                return True
+
+            local_hash = hashlib.sha256(data.getbuffer()).digest()
+            context.log.debug(f'New file hash: {local_hash}')
+
+            remote_hash = hashlib.sha256()
+            with sftp.open(latest_path, 'rb') as remote_file:
+                while chunk := remote_file.read(1024 * 1024):
+                    remote_hash.update(chunk)
+            remote_hash = remote_hash.digest()
+            context.log.debug(f'Remote file hash: {local_hash}')
+
+            return local_hash != remote_hash
+
         if ckan_resource.file_type == 'csv':
             needs_compression = True
         else:
@@ -131,19 +168,31 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
             compressed = data
 
         # write to sftp
-        # TODO: Do only upload when checksum of file has changed
-        # Some data provider do update the resource updated_at every day, even
-        # when no new data has arrived.
         with sftp_grab.connection() as conn:
             with t.step('ensure_sftp_dir'):
                 conn.ensure_dir(ckan_resource.dir)
+            with t.step('check_if_file_does_differ'):
+                file_has_changed = differs_from_latest(
+                    sftp=conn,
+                    data=compressed,
+                    remote_dir=ckan_resource.dir
+                )
             with t.step('upload_sftp_file'):
                 filetype = ckan_resource.filetype_ending
                 compression = '.xz' if needs_compression else ''
-                conn.write_file(
-                    ckan_resource.path(time, f'{filetype}{compression}'),
-                    compressed.getvalue(),
-                )
+                if file_has_changed:
+                    context.log.info('File does differ. Upload new file.')
+                    context.add_output_metadata({'file_has_changed': 1})
+                    conn.write_file(
+                        ckan_resource.path(time, f'{filetype}{compression}'),
+                        compressed.getvalue(),
+                    )
+                else:
+                    context.add_output_metadata({'file_has_changed': 0})
+                    context.log.info(
+                        'File has not changed from the already uploadet one. '
+                        'Skip upload'
+                    )
         xcom.xcom_push(f'last_execution_{ckan_resource.model_name}', time.isoformat())
 
     _file_partition = DynamicPartitionsDefinition(name=ckan_resource.partition_name)
