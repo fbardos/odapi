@@ -7,7 +7,7 @@ Analysts.
 | Target            | URL                                                                  |
 | ----------------- | -------------------------------------------------------------------- |
 | API Endpoint      | [https://odapi.bardos.dev](https://odapi.bardos.dev)                 |
-| API Documentation | [https://odapi.bardos.dev/docs](https://odapi.bardos.dev)            |
+| API Documentation | [https://odapi.bardos.dev/docs](https://odapi.bardos.dev/docs)       |
 | Source Code       | [https://github.com/fbardos/odapi](https://github.com/fbardos/odapi) |
 
 ## Features
