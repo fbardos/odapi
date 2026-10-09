@@ -68,6 +68,7 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:26.8
     container_name: clickhouse
+    user: '101:101'
     restart: unless-stopped
     profiles:
       - dev
@@ -96,7 +97,16 @@ services:
 
       # Public dataset and metadata endpoints.
       # Block SQL query submission and authentication overrides.
-      - 'traefik.http.routers.odapi-data.rule=Host(`odapi.bardos.dev`) && Method(`GET`) && (Path(`/tables`) || Path(`/columns`) || PathRegexp(`^/marts/[A-Za-z_][A-Za-z0-9_]*(?:[.](?:csv|json|parquet))?$`)) && !QueryRegexp(`query`, `(?s)^.*$`) && !QueryRegexp(`user`, `(?s)^.*$`) && !QueryRegexp(`password`, `(?s)^.*$`) && !QueryRegexp(`session_id`, `(?s)^.*$`) && !QueryRegexp(`role`, `(?s)^.*$`) && !QueryRegexp(`database`, `(?s)^.*$`)'
+      - >-
+        traefik.http.routers.odapi-data.rule=Host(`odapi.bardos.dev`)
+        && Method(`GET`)
+        && (Path(`/tables`) || Path(`/columns`) || PathRegexp(`^/marts/[A-Za-z_][A-Za-z0-9_]*(?:[.](?:csv|json|parquet))?$`))
+        && !QueryRegexp(`query`, `(?s)^.*$`)
+        && !QueryRegexp(`user`, `(?s)^.*$`)
+        && !QueryRegexp(`password`, `(?s)^.*$`)
+        && !QueryRegexp(`session_id`, `(?s)^.*$`)
+        && !QueryRegexp(`role`, `(?s)^.*$`)
+        && !QueryRegexp(`database`, `(?s)^.*$`)
 
       - "traefik.http.routers.odapi-data.priority=1000"
       - "traefik.http.routers.odapi-data.entrypoints=websecure"
@@ -127,16 +137,32 @@ services:
       - "traefik.http.middlewares.odapi-body.buffering.maxRequestBodyBytes=1"
       - "traefik.http.routers.odapi-data.middlewares=odapi-identity,odapi-limit,odapi-body,odapi-rewrite"
 
-      # Redirect the domain root to the table catalog.
-      - "traefik.http.routers.odapi-root.rule=Host(`odapi.bardos.dev`) && Path(`/`) && Method(`GET`)"
-      - "traefik.http.routers.odapi-root.priority=1000"
-      - "traefik.http.routers.odapi-root.entrypoints=websecure"
-      - "traefik.http.routers.odapi-root.tls=true"
-      - "traefik.http.routers.odapi-root.service=odapi-clickhouse"
-      - "traefik.http.routers.odapi-root.middlewares=odapi-root-redirect"
-      - "traefik.http.middlewares.odapi-root-redirect.redirectregex.regex=^https://odapi[.]bardos[.]dev/.*$"
-      - "traefik.http.middlewares.odapi-root-redirect.redirectregex.replacement=https://odapi.bardos.dev/tables"
-      - "traefik.http.middlewares.odapi-root-redirect.redirectregex.permanent=false"
+
+      # Browser preview: redirect to the existing API with a Pretty format.
+      - >-
+        traefik.http.routers.odapi-browser.rule=Host(`odapi.bardos.dev`)
+        && Method(`GET`)
+        && HeaderRegexp(`Accept`, `text/html`)
+        && (Path(`/tables`) || Path(`/columns`) || PathRegexp(`^/marts/[A-Za-z_][A-Za-z0-9_]*$`))
+        && !QueryRegexp(`format`, `^.*$`)
+        && !QueryRegexp(`output_format`, `^.*$`)
+
+      - 'traefik.http.routers.odapi-browser.priority=1100'
+      - 'traefik.http.routers.odapi-browser.entrypoints=websecure'
+      - 'traefik.http.routers.odapi-browser.tls=true'
+      - 'traefik.http.routers.odapi-browser.tls.certresolver=myresolver'
+      - 'traefik.http.routers.odapi-browser.service=noop@internal'
+
+      # Preserve existing query parameters and append the Pretty format.
+      - 'traefik.http.middlewares.odapi-browser-with-query.redirectregex.regex=^https://odapi[.]bardos[.]dev(/(?:tables|columns|marts/[A-Za-z_][A-Za-z0-9_]*))[?](.+)$'
+      - 'traefik.http.middlewares.odapi-browser-with-query.redirectregex.replacement=https://odapi.bardos.dev$${1}?$${2}&format=PrettySpaceNoEscapes'
+
+      # Handle requests without query parameters.
+      - 'traefik.http.middlewares.odapi-browser-no-query.redirectregex.regex=^https://odapi[.]bardos[.]dev(/(?:tables|columns|marts/[A-Za-z_][A-Za-z0-9_]*))$'
+      - 'traefik.http.middlewares.odapi-browser-no-query.redirectregex.replacement=https://odapi.bardos.dev$${1}?format=PrettySpaceNoEscapes'
+
+      # Both middlewares are defined immediately above.
+      - 'traefik.http.routers.odapi-browser.middlewares=odapi-browser-with-query,odapi-browser-no-query'
 
   data-minio:
     image: minio/minio
@@ -199,7 +225,7 @@ services:
   # #######################################################################
   # Docs (mkdocs)
   # #######################################################################
-  mkdocs:
+  docs:
     build:
       context: .
       dockerfile: docker/mkdocs/Dockerfile
@@ -209,7 +235,8 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.odapidocs.entrypoints: websecure
-      traefik.http.routers.odapidocs.rule: "Host(`odapi.bardos.dev`) && PathPrefix(`/docs`)"
+      traefik.http.routers.odapidocs.rule: "Host(`odapi.bardos.dev`)"
+      traefik.http.routers.odapidocs.priority: 1
       traefik.http.routers.odapidocs.tls: true
       traefik.http.routers.odapidocs.tls.certresolver: myresolver
       traefik.docker.network: traefik_traefik_public

@@ -10,6 +10,8 @@ SETTINGS
     format_tsv_null_representation = '' READONLY,
     default_format = 'TabSeparatedWithNames',
     output_format_parquet_geometadata = 1,
+    output_format_pretty_max_rows = 100 READONLY,
+    output_format_pretty_fallback_to_vertical = 0 READONLY,
     max_execution_time = 120 READONLY,
     max_memory_usage = 2000000000 READONLY,
     max_threads = 2 READONLY,

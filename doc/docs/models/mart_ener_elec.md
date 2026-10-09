@@ -5,7 +5,7 @@ Data about the electricity distributed in a municipality or canton, in a 15 minu
 Example Query:
 
 ```bash
-curl -Gs 'https://odapi.bardos.dev/marts/mart_ener_elec'
+curl -Gs 'https://odapi.bardos.dev/marts/mart_ener_elec' \
   --data-urlencode 'limit=5'
 ```
 

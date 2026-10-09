@@ -6,8 +6,8 @@ Analysts.
 
 | Target            | URL                                                                  |
 | ----------------- | -------------------------------------------------------------------- |
-| API Endpoint      | [https://odapi.bardos.dev](https://odapi.bardos.dev)                 |
-| API Documentation | [https://odapi.bardos.dev/docs](https://odapi.bardos.dev/docs)       |
+| API Endpoint      | [https://odapi.bardos.dev](https://odapi.bardos.dev/tables)          |
+| API Documentation | [https://odapi.bardos.dev](https://odapi.bardos.dev)                 |
 | Source Code       | [https://github.com/fbardos/odapi](https://github.com/fbardos/odapi) |
 
 ## Data Visualisation
@@ -58,5 +58,4 @@ To make downstream usage easier:
 - Orchestrator: [Dagster](https://dagster.io/)
 - E, in ETL: [DLT](https://dlthub.com/)
 - T, in ETL: [DBT](https://www.getdbt.com/)
-- Database: [Clickhouse](https://clickhouse.com/)
-- REST API: [FastAPI](https://fastapi.tiangolo.com/)
+- Database / API: [Clickhouse](https://clickhouse.com/)

@@ -20,7 +20,7 @@ RUN uv run \
     --strict \
     --clean \
     --config-file doc/mkdocs.yml \
-    --site-dir /app/site/docs
+    --site-dir /app/site
 
 
 FROM nginx:stable-alpine
