@@ -8,7 +8,7 @@ SETTINGS
     http_allow_filters_as_unrecognized_url_parameters = 0 READONLY,
     format_csv_null_representation = '' READONLY,
     format_tsv_null_representation = '' READONLY,
-    default_format = 'TabSeparatedWithNames',
+    default_format = 'PrettySpaceNoEscapes',
     output_format_parquet_geometadata = 1,
     output_format_pretty_max_rows = 100 READONLY,
     output_format_pretty_fallback_to_vertical = 0 READONLY,
