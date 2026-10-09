@@ -1,0 +1,20 @@
+<clickhouse>
+    <!-- Enable REST-style table URLs -->
+    <http_allow_path_requests>1</http_allow_path_requests>
+
+    <!-- Require explicit privileges for sensitive system tables -->
+    <access_control_improvements>
+        <select_from_system_db_requires_grant>true</select_from_system_db_requires_grant>
+        <select_from_information_schema_requires_grant>true</select_from_information_schema_requires_grant>
+    </access_control_improvements>
+
+    <!-- Dedicated anonymous HTTP listener -->
+    <protocols>
+        <public_api>
+            <type>http</type>
+            <host>0.0.0.0</host>
+            <port>8124</port>
+            <default_session_user>public_api</default_session_user>
+        </public_api>
+    </protocols>
+</clickhouse>

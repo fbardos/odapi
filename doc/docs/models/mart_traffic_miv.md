@@ -11,7 +11,8 @@ Traffic statistics for motorized vehicles, following the [SWISS10-Definition](ht
 Example Query:
 
 ```bash
-curl -s 'https://odapi.bardos.dev/model/mart_traffic_miv'
+curl -Gs 'https://odapi.bardos.dev/marts/mart_traffic_miv'
+  --data-urlencode 'limit=5'
 ```
 
 ## Downstream Usage
