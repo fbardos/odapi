@@ -92,31 +92,17 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik"
+      - "traefik.docker.network=traefik_traefik_public"
 
       # Public dataset and metadata endpoints.
       # Block SQL query submission and authentication overrides.
-      - >-
-        traefik.http.routers.odapi.rule=
-        Host(`odapi.bardos.dev`)
-        && Method(`GET`)
-        && (
-          Path(`/tables`)
-          || Path(`/columns`)
-          || PathRegexp(`^/marts/[A-Za-z_][A-Za-z0-9_]*(?:[.](?:csv|json|parquet))?$`)
-        )
-        && !QueryRegexp(`query`, `(?s)^.*$`)
-        && !QueryRegexp(`user`, `(?s)^.*$`)
-        && !QueryRegexp(`password`, `(?s)^.*$`)
-        && !QueryRegexp(`session_id`, `(?s)^.*$`)
-        && !QueryRegexp(`role`, `(?s)^.*$`)
-        && !QueryRegexp(`database`, `(?s)^.*$`)
+      - 'traefik.http.routers.odapi-data.rule=Host(`odapi.bardos.dev`) && Method(`GET`) && (Path(`/tables`) || Path(`/columns`) || PathRegexp(`^/marts/[A-Za-z_][A-Za-z0-9_]*(?:[.](?:csv|json|parquet))?$`)) && !QueryRegexp(`query`, `(?s)^.*$`) && !QueryRegexp(`user`, `(?s)^.*$`) && !QueryRegexp(`password`, `(?s)^.*$`) && !QueryRegexp(`session_id`, `(?s)^.*$`) && !QueryRegexp(`role`, `(?s)^.*$`) && !QueryRegexp(`database`, `(?s)^.*$`)'
 
-      - "traefik.http.routers.odapi.priority=1000"
-      - "traefik.http.routers.odapi.entrypoints=websecure"
-      - "traefik.http.routers.odapi.tls=true"
-      - "traefik.http.routers.odapi.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.odapi.service=odapi-clickhouse"
+      - "traefik.http.routers.odapi-data.priority=1000"
+      - "traefik.http.routers.odapi-data.entrypoints=websecure"
+      - "traefik.http.routers.odapi-data.tls=true"
+      - "traefik.http.routers.odapi-data.tls.certresolver=myresolver"
+      - "traefik.http.routers.odapi-data.service=odapi-clickhouse"
       - "traefik.http.services.odapi-clickhouse.loadbalancer.server.port=8124"
 
       # Translate /marts/table to /data_marts/table.
@@ -139,7 +125,7 @@ services:
 
       # Limit request bodies, not downloaded response sizes.
       - "traefik.http.middlewares.odapi-body.buffering.maxRequestBodyBytes=1"
-      - "traefik.http.routers.odapi.middlewares=odapi-identity,odapi-limit,odapi-body,odapi-rewrite"
+      - "traefik.http.routers.odapi-data.middlewares=odapi-identity,odapi-limit,odapi-body,odapi-rewrite"
 
       # Redirect the domain root to the table catalog.
       - "traefik.http.routers.odapi-root.rule=Host(`odapi.bardos.dev`) && Path(`/`) && Method(`GET`)"
@@ -218,7 +204,7 @@ services:
       context: .
       dockerfile: docker/mkdocs/Dockerfile
     networks:
-      - traefik_traefik_public
+      - proxy
     restart: unless-stopped
     labels:
       traefik.enable: true

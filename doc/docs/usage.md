@@ -10,7 +10,7 @@ This allows filters and the control of the output format.
 The published tables can be found with:
 
 ```bash
-curl -s 'https://odapi.bardos.dev'
+curl -s 'https://odapi.bardos.dev/tables'
 ```
 
 ### List of columns
@@ -47,7 +47,7 @@ Just add the filetype at the end of the table name:
 
 ```bash
 curl -Gs 'https://odapi.bardos.dev/marts/mart_traffic_bicycle.csv' \
-  --data-urlencode 'limit=5' \
+  --data-urlencode 'limit=5'
 ```
 
 The default is a CSV without column names. If you need the column names, you can
