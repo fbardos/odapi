@@ -12,6 +12,7 @@ RUN apt-get update \
         build-essential \
         gdal-bin \
         libgdal-dev \
+        swig \
         gnupg \
         libgpgme-dev \
         pkg-config \
@@ -29,16 +30,20 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync \
     --frozen \
     --no-dev \
-    --no-install-project
+    --no-install-project \
+    --no-build-isolation-package gpg
 
 # Copy application
 COPY api/ .
+COPY dag/ /tmp/odapi
+COPY pyproject.toml /tmp/odapi
 
 # Install the project itself
-RUN uv sync \
-    --frozen \
-    --no-dev
+RUN uv pip install --no-deps /tmp/odapi
+
+ENV VIRTUAL_ENV=/app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 80
 
-CMD ["/app/.venv/bin/uvicorn", "odapi_api:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]
+CMD ["uvicorn", "odapi_api:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]

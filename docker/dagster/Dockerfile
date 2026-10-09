@@ -7,10 +7,18 @@ ENV DBT__ABSOLUTE_PATH=${DBT__ABSOLUTE_PATH}
 ARG DBT__PROFILES_PATH=/root/.dbt
 ENV DBT__PROFILES_PATH=${DBT__PROFILES_PATH}
 ENV DAGSTER_HOME=/opt/dagster/app
+ENV DLT_PROJECT_DIR=${DAGSTER_HOME}
+ENV DLT_CONFIG_FOLDER=.dlt
 
-RUN mkdir -p /opt/dagster/dagster_home /opt/dagster/app /root/.dbt
+RUN mkdir -p \
+    /opt/dagster/dagster_home \
+    /opt/dagster/app \
+    /opt/dagster/app/.dlt \
+    /root/.dbt
 COPY ./docker/dagster/dagster.yaml /opt/dagster/app/
 COPY ./docker/.deploy/.dbt/profiles.yml /root/.dbt/
+COPY ./docker/.deploy/.dlt/config.toml /opt/dagster/app/.dlt/
+COPY ./docker/.deploy/.dlt/secrets.toml /opt/dagster/app/.dlt/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -19,6 +27,10 @@ RUN apt-get update \
     wget \
     gdal-bin \
     libgdal-dev \
+    gnupg \
+    swig \
+    libgpgme-dev \
+    pkg-config \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -46,11 +58,13 @@ COPY ./docker/dagster/dagster.yaml /opt/dagster/app/
 COPY ./docker/.deploy/.env /opt/dagster/app
 
 WORKDIR ${DAGSTER_HOME}
+# RUN uv venv .venv && \
+#     uv sync --frozen --all-groups  # read from uv.lock
 RUN uv venv .venv && \
-    uv sync --frozen --all-groups  # read from uv.lock
+    uv sync --frozen --all-groups --no-build-isolation-package gpg
 RUN uv pip install --no-deps .
 ENV PATH="${DAGSTER_HOME}/.venv/bin:${PATH}"
-RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/dbt.py
+RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/dbt_assets.py
 
 # Load DBT deps
 RUN dbt deps --project-dir /opt/dbt

@@ -70,12 +70,13 @@ services:
     container_name: clickhouse
     restart: unless-stopped
     ports:
-      - "8123:8123"
-      - "9001:9000"
+      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:9001:9000"
     environment:
       CLICKHOUSE_DB: ${STORAGE__CLICKHOUSE__DB}
       CLICKHOUSE_USER: ${STORAGE__CLICKHOUSE__USER}
       CLICKHOUSE_PASSWORD: ${STORAGE__CLICKHOUSE__PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     volumes:
       - clickhouse-data:/var/lib/clickhouse
     networks:
@@ -151,9 +152,19 @@ services:
     build:
       context: .
       dockerfile: docker/mkdocs/Dockerfile
-    ports:
-      - '8001:80'
+    # ports:
+    #   - '8001:80'
+    networks:
+      - traefik_traefik_public
     restart: unless-stopped
+    labels:
+      traefik.enable: true
+      traefik.http.routers.odapidocs.entrypoints: websecure
+      traefik.http.routers.odapidocs.rule: "Host(`odapi.bardos.dev`) && PathPrefix(`/docs`)"
+      traefik.http.routers.odapidocs.tls: true
+      traefik.http.routers.odapidocs.tls.certresolver: myresolver
+      traefik.docker.network: traefik_traefik_public
+      traefik.http.services.odapidocs.loadbalancer.server.port: 80
 
   # #######################################################################
   # DAGSTER
@@ -166,6 +177,16 @@ services:
         - git_token
     restart: *restart-policy
     init: true
+    entrypoint:
+      - uv
+      - run
+      - dagster-webserver
+      - -m
+      - odapi.definitions
+      - -h
+      - 0.0.0.0
+      - -p
+      - '3000'
     profiles:
       - prod
     environment:
@@ -194,10 +215,12 @@ services:
     restart: *restart-policy
     init: true
     entrypoint:
+      - uv
+      - run
       - dagster-daemon
       - run
-      - -f
-      - "odapi/definitions.py"
+      - -m
+      - odapi.definitions
     profiles:
       - prod
     environment:
@@ -220,7 +243,7 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
-    user: "1000:1000"                 # OWASP Rule #3
+    user: "997:997"                 # OWASP Rule #3
     security_opt:
       - no-new-privileges:true        # OWASP Rule #4
     restart: *restart-policy

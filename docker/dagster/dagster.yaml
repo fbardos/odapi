@@ -9,9 +9,6 @@ run_coordinator:
   module: dagster.core.run_coordinator
   class: QueuedRunCoordinator
 
-run_queue:
-  max_concurrent_runs: 1 # this is needed until DuckDB Quack
-
 local_artifact_storage:
   module: dagster.core.storage.root
   class: LocalArtifactStorage
@@ -74,6 +71,8 @@ event_log_storage:
       port: 5432
 
 concurrency:
+  runs:
+    max_concurrent_runs: 1 # this is needed until DuckDB Quack
   pools:
     granularity: "op"
     default_limit: 1
