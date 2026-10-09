@@ -69,22 +69,88 @@ services:
     image: clickhouse/clickhouse-server:26.8
     container_name: clickhouse
     restart: unless-stopped
+    profiles:
+      - dev
+      - prod
     ports:
-      - "8123:8123"
-      - "9001:9000"
+      - "127.0.0.1:8123:8123"
+      - "127.0.0.1:8124:8124"
+      - "127.0.0.1:9001:9000"
+    expose:
+      - "8124"
     environment:
       CLICKHOUSE_DB: ${STORAGE__CLICKHOUSE__DB}
       CLICKHOUSE_USER: ${STORAGE__CLICKHOUSE__USER}
       CLICKHOUSE_PASSWORD: ${STORAGE__CLICKHOUSE__PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     volumes:
       - clickhouse-data:/var/lib/clickhouse
+      - ./api/public-api.xml:/etc/clickhouse-server/config.d/public-api.xml:ro
     networks:
       - odapi_private
       - odapi_public
-    ulimits:
-      nofile:
-        soft: 262144
-        hard: 262144
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+
+      # Public dataset and metadata endpoints.
+      # Block SQL query submission and authentication overrides.
+      - >-
+        traefik.http.routers.odapi.rule=
+        Host(`odapi.bardos.dev`)
+        && Method(`GET`)
+        && (
+          Path(`/tables`)
+          || Path(`/columns`)
+          || PathRegexp(`^/marts/[A-Za-z_][A-Za-z0-9_]*(?:[.](?:csv|json|parquet))?$`)
+        )
+        && !QueryRegexp(`query`, `(?s)^.*$`)
+        && !QueryRegexp(`user`, `(?s)^.*$`)
+        && !QueryRegexp(`password`, `(?s)^.*$`)
+        && !QueryRegexp(`session_id`, `(?s)^.*$`)
+        && !QueryRegexp(`role`, `(?s)^.*$`)
+        && !QueryRegexp(`database`, `(?s)^.*$`)
+
+      - "traefik.http.routers.odapi.priority=1000"
+      - "traefik.http.routers.odapi.entrypoints=websecure"
+      - "traefik.http.routers.odapi.tls=true"
+      - "traefik.http.routers.odapi.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.odapi.service=odapi-clickhouse"
+      - "traefik.http.services.odapi-clickhouse.loadbalancer.server.port=8124"
+
+      # Translate /marts/table to /data_marts/table.
+      - "traefik.http.middlewares.odapi-rewrite.replacepathregex.regex=^/marts/(.+)$"
+      - "traefik.http.middlewares.odapi-rewrite.replacepathregex.replacement=/data_marts/$$1"
+
+      # Remove credentials and force the public identity.
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.Authorization="
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.X-ClickHouse-User=public_api"
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.X-ClickHouse-Key="
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.X-ClickHouse-Role="
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.X-ClickHouse-Database="
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.X-ClickHouse-Quota="
+      - "traefik.http.middlewares.odapi-identity.headers.customrequestheaders.Cookie="
+
+      # Request rate limiting (per client IP by default).
+      - "traefik.http.middlewares.odapi-limit.ratelimit.average=30"
+      - "traefik.http.middlewares.odapi-limit.ratelimit.period=1m"
+      - "traefik.http.middlewares.odapi-limit.ratelimit.burst=10"
+
+      # Limit request bodies, not downloaded response sizes.
+      - "traefik.http.middlewares.odapi-body.buffering.maxRequestBodyBytes=1"
+      - "traefik.http.routers.odapi.middlewares=odapi-identity,odapi-limit,odapi-body,odapi-rewrite"
+
+      # Redirect the domain root to the table catalog.
+      - "traefik.http.routers.odapi-root.rule=Host(`odapi.bardos.dev`) && Path(`/`) && Method(`GET`)"
+      - "traefik.http.routers.odapi-root.priority=1000"
+      - "traefik.http.routers.odapi-root.entrypoints=websecure"
+      - "traefik.http.routers.odapi-root.tls=true"
+      - "traefik.http.routers.odapi-root.service=odapi-clickhouse"
+      - "traefik.http.routers.odapi-root.middlewares=odapi-root-redirect"
+      - "traefik.http.middlewares.odapi-root-redirect.redirectregex.regex=^https://odapi[.]bardos[.]dev/.*$"
+      - "traefik.http.middlewares.odapi-root-redirect.redirectregex.replacement=https://odapi.bardos.dev/tables"
+      - "traefik.http.middlewares.odapi-root-redirect.redirectregex.permanent=false"
 
   data-minio:
     image: minio/minio
@@ -152,7 +218,7 @@ services:
       context: .
       dockerfile: docker/mkdocs/Dockerfile
     ports:
-      - '8001:80'
+      - "8001:80"
     restart: unless-stopped
 
   # #######################################################################
@@ -213,41 +279,6 @@ services:
     depends_on:
       - data-postgis
 
-  # #######################################################################
-  # API
-  # #######################################################################
-  api:
-    build:
-      context: .
-      dockerfile: api/Dockerfile
-    user: "1000:1000"                 # OWASP Rule #3
-    security_opt:
-      - no-new-privileges:true        # OWASP Rule #4
-    restart: *restart-policy
-    deploy:
-      resources:
-        limits:
-          cpus: 8
-          memory: 64g
-    profiles:
-      - dev
-      - prod
-    expose:
-      - 80
-    networks:
-      - odapi_public
-      - odapi_private
-      - traefik_traefik_public
-    depends_on:
-      - data-postgis
-    labels:
-      traefik.enable: true
-      traefik.http.routers.odapi.entrypoints: websecure
-      traefik.http.routers.odapi.rule: Host(`odapi.bardos.dev`)
-      traefik.http.routers.odapi.tls: true
-      traefik.http.routers.odapi.tls.certresolver: myresolver
-      traefik.docker.network: traefik_traefik_public
-
 # #######################################################################
 # VOLUMES
 # #######################################################################
@@ -268,8 +299,9 @@ volumes:
 networks:
   odapi_public:
   odapi_private:
-  traefik_traefik_public:
-    external: true
+  proxy:
+    name: ${PROXY_NETWORK_NAME:-proxy-dev}
+    external: ${PROXY_NETWORK_EXTERNAL:-false}
 
 # #######################################################################
 # Secrets
