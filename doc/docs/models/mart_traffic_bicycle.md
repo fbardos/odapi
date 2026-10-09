@@ -5,7 +5,8 @@ Traffic statistics for bicycles, in different municipalities and cantons.
 Example Query:
 
 ```bash
-curl -s 'https://odapi.bardos.dev/model/mart_traffic_bicycle'
+curl -Gs 'https://odapi.bardos.dev/marts/mart_traffic_bicycle'
+  --data-urlencode 'limit=5'
 ```
 
 ## Downstream Usage
