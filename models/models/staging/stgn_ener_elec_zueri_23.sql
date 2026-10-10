@@ -9,7 +9,7 @@ with src as (
         , geom_id                           ::UInt16        as geom_id
         , _record                           ::UInt32        as _record
         , _partition_datetime
-    from {{ source('src', 'ener_elec_zueri')}}
+    from {{ source('src', 'ener_elec_zueri_23')}}
     where
         -- one row contains NULL values
         zeitpunkt is not null

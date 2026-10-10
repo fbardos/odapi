@@ -1,7 +1,7 @@
 version: 2
 
 snapshots:
-  - name: snap_ener_elec_zueri
+  - name: snap_ener_elec_zueri_23
     config:
       target_schema: snapshots
       strategy: check

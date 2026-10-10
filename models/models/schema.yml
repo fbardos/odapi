@@ -94,11 +94,46 @@ sources:
           dagster:
             asset_key:
               - dlt_ener_elec_winti_19
-      - name: ener_elec_zueri
+      - name: ener_elec_zueri_26
         meta:
           dagster:
             asset_key:
-              - dlt_ener_elec_zueri
+              - dlt_ener_elec_zueri_26
+      - name: ener_elec_zueri_25
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_25
+      - name: ener_elec_zueri_24
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_24
+      - name: ener_elec_zueri_23
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_23
+      - name: ener_elec_zueri_22
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_22
+      - name: ener_elec_zueri_21
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_21
+      - name: ener_elec_zueri_20
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_20
+      - name: ener_elec_zueri_19
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_zueri_19
       - name: ener_elec_bs
         meta:
           dagster:

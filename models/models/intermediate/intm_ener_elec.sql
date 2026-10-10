@@ -23,7 +23,91 @@ with src_bs as (
         , dbt_valid_to
         , geom_level
         , geom_id
-    from {{ ref('snap_ener_elec_zueri') }}
+    from {{ ref('snap_ener_elec_zueri_19') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_20') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_21') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_22') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_23') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_24') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_25') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_zueri_26') }}
 )
 
 , src_winti as (

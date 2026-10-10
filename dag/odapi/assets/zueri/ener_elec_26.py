@@ -31,7 +31,7 @@ from odapi.resources.ssh.sftp import SFTPResource
 # TODO: There are more years as separate ressources (philosophy of ODAPI to make them available)
 CKAN = CkanResource(
     publisher='Gemeinde Zürich',
-    model_name='ener_elec_zueri',
+    model_name='ener_elec_zueri_26',
     ckan_resource_id='cb517b5b-d701-4976-86de-9e63c476707e',
     dataset_url='https://opendata.swiss/de/dataset/viertelstundenwerte-zum-bruttolastgang-elektrische-energie-der-stadt-zurich1',
     geom_level='municipality',

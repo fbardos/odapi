@@ -69,7 +69,11 @@ def ckan_ingest_factory(
         job=job,
         name=ckan.sensor_name_sftp,
         required_resource_keys={'sftp_grab'},
-        default_status=dg.DefaultSensorStatus.RUNNING,
+        # Default should be STOPPED, because, when merging assets
+        # from multiple Jobs in PROD, the runs will fail, until
+        # the execution of the last job, because data got already
+        # downloaded on DEV.
+        default_status=dg.DefaultSensorStatus.STOPPED,
         minimum_interval_seconds=2 * 60,
     )
     def _sensor_sftp(
