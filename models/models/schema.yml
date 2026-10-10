@@ -79,6 +79,21 @@ sources:
           dagster:
             asset_key:
               - dlt_ener_elec_winti
+      - name: ener_elec_winti_13
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_winti_13
+      - name: ener_elec_winti_16
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_winti_16
+      - name: ener_elec_winti_19
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ener_elec_winti_19
       - name: ener_elec_zueri
         meta:
           dagster:

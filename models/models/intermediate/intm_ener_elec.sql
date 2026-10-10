@@ -38,6 +38,42 @@ with src_bs as (
         , geom_level
         , geom_id
     from {{ ref('snap_ener_elec_winti') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_winti_19') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_winti_16') }}
+    UNION ALL
+    select
+        zeitpunkt
+        , bruttolastgang_kwh
+        -- TODO: Add geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+        , geom_level
+        , geom_id
+    from {{ ref('snap_ener_elec_winti_13') }}
 )
 
 , union_publisher as (

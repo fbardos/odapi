@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: stgn_ener_elec_winti_16
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - zeitpunkt
