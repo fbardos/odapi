@@ -210,7 +210,7 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
         context: SensorEvaluationContext,
         opendata_swiss: OpenDataSwiss,
     ):
-        if context.cursor is None:
+        if context.cursor is None or context.cursor == '':
             last_execution = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
         else:
             assert isinstance(context.cursor, str)
