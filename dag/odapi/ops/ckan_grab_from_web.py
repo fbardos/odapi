@@ -95,7 +95,6 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
         data_opendataswiss: OpendataswissUrlResource,
         sftp_grab: SFTPResource,
         opendata_swiss: OpenDataSwiss,
-        xcom: XcomPostgresResource,
         # TODO: maybe add later RequestsInfo
     ) -> None:
 
@@ -193,7 +192,6 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
                         'File has not changed from the already uploadet one. '
                         'Skip upload'
                     )
-        xcom.xcom_push(f'last_execution_{ckan_resource.model_name}', time.isoformat())
 
     _file_partition = DynamicPartitionsDefinition(name=ckan_resource.partition_name)
 
@@ -209,17 +207,14 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
         minimum_interval_seconds=60 * 60,
     )
     def _sensor_web(
+        context: SensorEvaluationContext,
         opendata_swiss: OpenDataSwiss,
-        xcom: XcomPostgresResource,
     ):
-        last_execution_str = xcom.xcom_pull(
-            f'last_execution_{ckan_resource.model_name}'
-        )
-        if last_execution_str is None:
-            last_execution = dt.datetime(1970, 1, 1, tzinfo=timezone('Europe/Zurich'))
+        if context.cursor is None:
+            last_execution = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
         else:
-            assert isinstance(last_execution_str, str)
-            last_execution = dt.datetime.fromisoformat(last_execution_str)
+            assert isinstance(context.cursor, str)
+            last_execution = dt.datetime.fromisoformat(context.cursor)
 
         last_modified = opendata_swiss.get_resource_modified(
             ckan_resource.ckan_resource_id
@@ -233,6 +228,8 @@ def ckan_grab_pipeline_factory(ckan_resource: CkanResource) -> tuple:
                 'Skip.'
             )
         elif last_modified > last_execution:
+            sensor_checktime = dt.datetime.now(tz=dt.timezone.utc)
+            context.update_cursor(sensor_checktime.isoformat())
             yield RunRequest(job_name=ckan_resource.job_name_web)
         else:
             yield SkipReason(
