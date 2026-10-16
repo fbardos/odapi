@@ -19,7 +19,7 @@ CKAN = CkanResource(
     file_type='parquet',
     dataset_url='https://opendata.swiss/de/dataset/ogd-portal-tagliche-nutzung-nach-datensatz-seit-januar-2024',
     geom_level='canton',
-    geom_id=13  # Basel-Land
+    geom_id=13,  # Basel-Land
 )
 
 asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)

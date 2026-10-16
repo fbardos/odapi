@@ -1,0 +1,14 @@
+version: 2
+
+snapshots:
+  - name: snap_ogd_usage_zh_dataset
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - publisher
+        - datensatz_titel
+        - anzahl_klicks
+        - anzahl_besuchende
+      invalidate_hard_deletes: True
