@@ -8,13 +8,18 @@ import pandas as pd
 import requests
 from dagster import ConfigurableResource
 
+from odapi.resources.url.requests_info import RequestsInfo
+
 
 class UrlResource(ConfigurableResource):
+    resource_request_info: RequestsInfo
 
     # only needed to calculate size of raw data
     def _get_raw_bytes(self, url: str) -> io.BytesIO:
         buffer = io.BytesIO()
-        buffer.write(requests.get(url).content)
+        buffer.write(
+            requests.get(url, headers=self.resource_request_info.headers).content
+        )
         buffer.seek(0)
         return buffer
 

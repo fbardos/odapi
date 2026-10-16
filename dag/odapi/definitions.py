@@ -65,7 +65,9 @@ defs = load_definitions_from_package_module(
             sqlalchemy_connection_string=EnvVar('POSTGRES__SQLALCHEMY_DATABASE_URI')
         ),
         'opendata_swiss': OpenDataSwiss(),
-        'data_opendataswiss': OpendataswissUrlResource(),
+        'data_opendataswiss': OpendataswissUrlResource(
+            resource_request_info=RequestsInfo(user_from='ODAPI - Open Data API'),
+        ),
         # do not make bucket name hardcoded already in the resource...
         'minio': Minio(
             endpoint_url=EnvVar('MINIO__ENDPOINT_URL'),
