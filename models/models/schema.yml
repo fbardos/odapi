@@ -42,19 +42,19 @@ sources:
       - name: bfs_odch_meta___meta
         meta:
           dagster:
-            asset_key: ["bfs_odch_meta", "meta"]
+            asset_key: ["dlt_bfs_opendata_swiss_meta"]
       - name: bfs_odch_meta___meta__groups
         meta:
           dagster:
-            asset_key: ["bfs_odch_meta", "meta__groups"]
+            asset_key: ["dlt_bfs_opendata_swiss_meta"]
       - name: bfs_odch_meta___meta__keywords__de
         meta:
           dagster:
-            asset_key: ["bfs_odch_meta", "meta__keywords__de"]
+            asset_key: ["dlt_bfs_opendata_swiss_meta"]
       - name: bfs_odch_meta___meta__tags
         meta:
           dagster:
-            asset_key: ["bfs_odch_meta", "meta__tags"]
+            asset_key: ["dlt_bfs_opendata_swiss_meta"]
       - name: traffic_miv_bs
         meta:
           dagster:

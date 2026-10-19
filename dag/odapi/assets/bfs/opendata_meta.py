@@ -108,7 +108,7 @@ def asset(
 
 job = dg.define_asset_job(
     name='bfs_opendata_swiss_meta',
-    selection=dg.AssetSelection.assets(asset),
+    selection=dg.AssetSelection.assets(asset).downstream(),
     tags={'scd2_pipeline': 'bfs_odch_meta'},
 )
 
