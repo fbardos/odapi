@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: mart_ogd_usage
+    config:
+      materialized: table
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - date
+            - dataset_id
+            - resource_id

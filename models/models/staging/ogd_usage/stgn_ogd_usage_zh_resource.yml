@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stgn_ogd_usage_zh_resource
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - datum
+            - datensatz_id
+            - ressourcen_id
+            - download_url

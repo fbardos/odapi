@@ -1,0 +1,16 @@
+version: 2
+
+snapshots:
+  - name: snap_ogd_usage_zh_resource
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - publisher
+        - datensatz_titel
+        - ressourcen_titel
+        - anzahl_klicks
+        - anzahl_besuchende
+        - anzahl_downloads
+      invalidate_hard_deletes: True

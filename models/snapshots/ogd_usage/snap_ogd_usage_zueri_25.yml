@@ -1,0 +1,14 @@
+version: 2
+
+snapshots:
+  - name: snap_ogd_usage_zueri_25
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - distinct_ips
+        - datastore_search_sql_query
+        - hit_count
+        - index_level_0
+      invalidate_hard_deletes: True

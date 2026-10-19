@@ -1,0 +1,13 @@
+version: 2
+
+snapshots:
+  - name: snap_ogd_usage_bl
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - dataset_title
+        - visitors
+        - interactions
+      invalidate_hard_deletes: True

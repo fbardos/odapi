@@ -39,6 +39,22 @@ sources:
       - name: stat_tab_lw_beschaeftigte
       - name: statswiss_whg_gebkat
       - name: bl_downloads_portal
+      - name: bfs_odch_meta___meta
+        meta:
+          dagster:
+            asset_key: ["bfs_odch_meta", "meta"]
+      - name: bfs_odch_meta___meta__groups
+        meta:
+          dagster:
+            asset_key: ["bfs_odch_meta", "meta__groups"]
+      - name: bfs_odch_meta___meta__keywords__de
+        meta:
+          dagster:
+            asset_key: ["bfs_odch_meta", "meta__keywords__de"]
+      - name: bfs_odch_meta___meta__tags
+        meta:
+          dagster:
+            asset_key: ["bfs_odch_meta", "meta__tags"]
       - name: traffic_miv_bs
         meta:
           dagster:
@@ -139,6 +155,31 @@ sources:
           dagster:
             asset_key:
               - dlt_ener_elec_bs
+      - name: ogd_usage_zueri_25
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ogd_usage_zueri_25
+      - name: ogd_usage_zueri_26
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ogd_usage_zueri_26
+      - name: ogd_usage_zh_dataset
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ogd_usage_zh_dataset
+      - name: ogd_usage_zh_resource
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ogd_usage_zh_resource
+      - name: ogd_usage_bl
+        meta:
+          dagster:
+            asset_key:
+              - dlt_ogd_usage_bl
       - name: bfs_gemeinde_g1
         meta:
           dagster:
