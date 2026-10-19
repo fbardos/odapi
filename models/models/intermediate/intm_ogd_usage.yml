@@ -8,3 +8,4 @@ models:
             - date
             - dataset_id
             - resource_id
+            - dbt_valid_from
