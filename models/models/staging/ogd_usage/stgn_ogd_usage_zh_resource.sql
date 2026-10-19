@@ -4,7 +4,7 @@
 select
     datum
     , datensatz_id
-    , publisher
+    , any(publisher) as publisher -- can change in one day
     , any(datensatz_titel) as datensatz_titel -- can change in one day
     , ressourcen_id
     , any(ressourcen_titel) as ressourcen_titel -- can change in one day
