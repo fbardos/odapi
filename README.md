@@ -10,6 +10,9 @@ Analysts.
 | API Documentation | [https://odapi.bardos.dev](https://odapi.bardos.dev)                 |
 | Source Code       | [https://github.com/fbardos/odapi](https://github.com/fbardos/odapi) |
 
+
+![ODAPI Architecture](https://odapi.bardos.dev/images/odapi_architecture.png?ref=github)
+
 ## Data Visualisation
 
 To see the data currently available in the API, use one of the dashboards for the published MARTs:
