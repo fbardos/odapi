@@ -10,6 +10,8 @@ Analysts.
 | API Documentation | [https://odapi.bardos.dev](https://odapi.bardos.dev)                 |
 | Source Code       | [https://github.com/fbardos/odapi](https://github.com/fbardos/odapi) |
 
+![ODAPI Architecture](images/odapi_architecture.png)
+
 ## Features
 
 - Merged datasets: from different authorities in Switzerland
