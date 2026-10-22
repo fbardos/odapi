@@ -11,6 +11,10 @@ curl -Gs 'https://odapi.bardos.dev/marts/mart_ogd_usage' \
   --data-urlencode 'limit=5'
 ```
 
+## Downstream Usage
+
+- [Showcase Dashboard on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/martogdusage-034kD6dp4pVrSMcvst4c9o/latest)
+
 ## Table Information
 
 | Topic       | Value                                |
