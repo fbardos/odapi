@@ -17,6 +17,7 @@ To see the data currently available in the API, use one of the dashboards for th
 - [Dashboard mart_traffic_bicycle on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/Velo-data-fetch-API-034Wsy6pKetQW6IBFLWuK7/latest)
 - [Dashboard mart_traffic_miv on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/marttrafficmiv-034VjNNgWmJtvAM3066e9N/latest)
 - [Dashboard mart_ener_elec on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/martenerelec-034WuQ6CGYGcCMkKNBrn11/latest)
+- [Dashboard mart_ogd_usage](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/martogdusage-034kD6dp4pVrSMcvst4c9o/latest)
 
 ## Features
 
