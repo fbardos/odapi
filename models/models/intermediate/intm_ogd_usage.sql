@@ -30,6 +30,9 @@ with odch_meta as (
         , src.publisher
         , src.dbt_valid_from
         , src.dbt_valid_to
+        -- TODO: Should be loaded from STGN
+        , 'municipality'            ::String            as geom_level
+        , 261                       ::UInt16            as geom_id
     from {{ ref('snap_ogd_usage_zueri_25') }} src
         left join odch_meta od on
             src.dataset_name = extract(od.url, '[^/]+$')
@@ -50,13 +53,16 @@ with odch_meta as (
         , src.publisher
         , src.dbt_valid_from
         , src.dbt_valid_to
+        -- TODO: Should be loaded from STGN
+        , 'municipality'            ::String            as geom_level
+        , 261                       ::UInt16            as geom_id
     from {{ ref('snap_ogd_usage_zueri_26') }} src
         left join odch_meta od on
             src.dataset_name = extract(od.url, '[^/]+$')
     group by all
 )
 
-, src_zh_resource as (
+, src_zh as (
     select
         src.datum                   ::DATE              as date
         , src.datensatz_id          ::Nullable(String)  as dataset_id
@@ -70,6 +76,9 @@ with odch_meta as (
         , src.ckan_publisher                            as publisher
         , src.dbt_valid_from
         , src.dbt_valid_to
+        -- TODO: Should be loaded from STGN
+        , 'canton'                  ::String            as geom_level
+        , 1                         ::UInt16            as geom_id
     from {{ ref('intm_ogd_usage_zh') }} src
         left join odch_meta od on
             -- FIX: Concat will be wrong for other publishers
@@ -91,6 +100,9 @@ with odch_meta as (
         , src.publisher
         , src.dbt_valid_from
         , src.dbt_valid_to
+        -- TODO: Should be loaded from STGN
+        , 'canton'                  ::String            as geom_level
+        , 13                        ::UInt16            as geom_id
     from {{ ref('snap_ogd_usage_bl') }} src
         left join odch_meta od on
             concat(src.dataset_id, '@kanton-basel-landschaft') = od.identifier
@@ -103,7 +115,7 @@ with odch_meta as (
     UNION ALL
     select * from src_zueri_26
     UNION ALL
-    select * from src_zh_resource
+    select * from src_zh
     UNION ALL
     select * from src_bl
 )
