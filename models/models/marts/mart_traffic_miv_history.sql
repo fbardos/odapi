@@ -1,7 +1,8 @@
-select *
-from {{ ref('intm_traffic_miv') }}
+select
+    mart.*
+from {{ ref('intm_traffic_miv') }} mart
 order by
-    zeit_von desc
-    , anlage_id
-    , richtung
-    , spur
+    mart.zeit_von desc
+    , mart.anlage_id
+    , mart.richtung
+    , mart.spur

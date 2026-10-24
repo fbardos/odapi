@@ -185,13 +185,29 @@ with src_tg as (
 )
 
 , union_data as (
-    select * from src_tg
+    select
+        *
+        , 'canton'                  ::String            as geom_level
+        , 20                        ::UInt16            as geom_id
+    from src_tg
     union all
-    select * from src_bs
+    select
+        *
+        , 'canton'                  ::String            as geom_level
+        , 12                        ::UInt16            as geom_id
+    from src_bs
     union all
-    select * from src_winti
+    select
+        *
+        , 'municipality'            ::String            as geom_level
+        , 230                       ::UInt16            as geom_id
+    from src_winti
     union all
-    select * from intm_stgallen
+    select
+        *
+        , 'municipality'            ::String            as geom_level
+        , 3203                      ::UInt16            as geom_id
+    from intm_stgallen
 )
 
 select
