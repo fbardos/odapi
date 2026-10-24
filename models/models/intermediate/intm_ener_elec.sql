@@ -2,7 +2,6 @@ with src_bs as (
     select
         zeitpunkt_utc as zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -16,7 +15,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -28,7 +26,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -40,7 +37,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -52,7 +48,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -64,7 +59,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -76,7 +70,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -88,7 +81,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -100,7 +92,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -114,7 +105,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -126,7 +116,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -138,7 +127,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -150,7 +138,6 @@ with src_bs as (
     select
         zeitpunkt
         , bruttolastgang_kwh
-        -- TODO: Add geometry
         , file_source
         , publisher
         , dbt_valid_from
