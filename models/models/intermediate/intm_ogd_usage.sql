@@ -68,7 +68,7 @@ with odch_meta as (
         , src.datensatz_id          ::Nullable(String)  as dataset_id
         , src.ressourcen_id         ::Nullable(String)  as resource_id
         , sum(src.anzahl_downloads)                     as downloads
-        , sum(src.anzahl_besuchende)                    as visits
+        , sum(src.anzahl_besuchende::Nullable(UInt32))  as visits
         , od.topics                                     as topics
         , od.keywords                                   as keywords
         , od.title__de                                  as datensatz
@@ -92,7 +92,7 @@ with odch_meta as (
         , src.dataset_id            ::Nullable(String)  as dataset_id
         , NULL                      ::Nullable(String)  as resource_id
         , sum(src.interactions)                         as downloads
-        , sum(src.visitors)                             as visits
+        , sum(src.visitors::Nullable(UInt32))           as visits
         , od.topics                                     as topics
         , od.keywords                                   as keywords
         , od.title__de                                  as datensatz
