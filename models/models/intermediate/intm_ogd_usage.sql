@@ -67,7 +67,7 @@ with odch_meta as (
         , od.keywords                                   as keywords
         , od.title__de                                  as datensatz
         , src.file_source
-        , src.publisher
+        , src.ckan_publisher                            as publisher
         , src.dbt_valid_from
         , src.dbt_valid_to
     from {{ ref('intm_ogd_usage_zh') }} src
