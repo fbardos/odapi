@@ -56,7 +56,7 @@ RUN apk add --no-cache \
 #  pgrx expects 'cargo' and 'rustup' on PATH.
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y \
  && /root/.cargo/bin/rustup default stable \
- && /root/.cargo/bin/cargo install cargo-pgrx --version 0.16.1 --locked
+ && /root/.cargo/bin/cargo install cargo-pgrx --version 0.19.3 --locked
 
 # Put pgrx bin directory on PATH
 ENV PATH="/root/.cargo/bin:${PATH}"
