@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: stgn_traffic_bicycle_zh_24
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list:
+            - anlage_nr
+            - zeit_von
+            - spur_richtung

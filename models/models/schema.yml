@@ -90,6 +90,36 @@ sources:
           dagster:
             asset_key:
               - dlt_traffic_bicycle_bs
+      - name: traffic_bicycle_zh_16
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zh_16
+      - name: traffic_bicycle_zh_21
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zh_21
+      - name: traffic_bicycle_zh_22
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zh_22
+      - name: traffic_bicycle_zh_23
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zh_23
+      - name: traffic_bicycle_zh_24
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zh_24
+      - name: traffic_bicycle_zh_25
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_zh_25
       - name: ener_elec_winti
         meta:
           dagster:

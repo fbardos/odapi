@@ -19,6 +19,34 @@ with src_zueri as (
     from {{ ref('snap_traffic_bicycle_zueri') }}
 )
 
+, intm_zueri as (
+    select
+        standort_id
+        , zeit_von
+        , 'in'::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , velo_in as velos
+        , geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from src_zueri
+    UNION ALL
+    select
+        standort_id
+        , zeit_von
+        , 'out' as richtung
+        , 2::Nullable(UInt8) as spur_id
+        , velo_out as velos
+        , geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from src_zueri
+)
+
 , src_winti as (
     select
         anlage_nr::String as standort_id
@@ -54,33 +82,84 @@ with src_zueri as (
         traffictype = 'Velo'
 )
 
-
-, intm_zueri as (
+, src_zh as (
     select
-        standort_id
+        anlage_nr::String as standort_id
         , zeit_von
-        , 'in'::String as richtung
-        , 1 as spur_id
-        , velo_in as velos
-        , geometry
+        , spur_richtung::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
         , dbt_valid_to
-    from src_zueri
+    from {{ ref('snap_traffic_bicycle_zh_16') }}
     UNION ALL
     select
-        standort_id
+        anlage_nr::String as standort_id
         , zeit_von
-        , 'out' as richtung
-        , 2 as spur_id
-        , velo_out as velos
-        , geometry
+        , spur_richtung::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
         , dbt_valid_to
-    from src_zueri
+    from {{ ref('snap_traffic_bicycle_zh_21') }}
+    UNION ALL
+    select
+        anlage_nr::String as standort_id
+        , zeit_von
+        , spur_richtung::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from {{ ref('snap_traffic_bicycle_zh_22') }}
+    UNION ALL
+    select
+        anlage_nr::String as standort_id
+        , zeit_von
+        , spur_richtung::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from {{ ref('snap_traffic_bicycle_zh_23') }}
+    UNION ALL
+    select
+        anlage_nr::String as standort_id
+        , zeit_von
+        , spur_richtung::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from {{ ref('snap_traffic_bicycle_zh_24') }}
+    UNION ALL
+    select
+        anlage_nr::String as standort_id
+        , zeit_von
+        , spur_richtung::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from {{ ref('snap_traffic_bicycle_zh_25') }}
 )
 
 , union_publisher as (
@@ -89,6 +168,8 @@ with src_zueri as (
     select * from src_winti
     UNION ALL
     select * from src_bs
+    UNION ALL
+    select * from src_zh
 )
 
 select *
