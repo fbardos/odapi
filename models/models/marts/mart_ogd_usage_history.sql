@@ -1,5 +1,5 @@
 select
-    *
+    mart.*
     , coalesce(dkant.geometry, dgem.geometry) as geometry
 from {{ ref('intm_ogd_usage') }} mart
     left join {{ ref('dim_kanton_g1_latest') }} dkant on
