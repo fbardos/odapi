@@ -89,7 +89,8 @@ with src_zueri as (
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
         , anzahl as velos
-        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        -- lon and lat got mixed up upstream, fix here
+        , accurateCastOrNull(tuple(lat, lon), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -102,7 +103,8 @@ with src_zueri as (
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
         , anzahl as velos
-        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        -- lon and lat got mixed up upstream, fix here
+        , accurateCastOrNull(tuple(lat, lon), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -115,7 +117,8 @@ with src_zueri as (
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
         , anzahl as velos
-        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        -- lon and lat got mixed up upstream, fix here
+        , accurateCastOrNull(tuple(lat, lon), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -128,7 +131,8 @@ with src_zueri as (
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
         , anzahl as velos
-        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        -- lon and lat got mixed up upstream, fix here
+        , accurateCastOrNull(tuple(lat, lon), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -141,7 +145,8 @@ with src_zueri as (
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
         , anzahl as velos
-        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        -- lon and lat got mixed up upstream, fix here
+        , accurateCastOrNull(tuple(lat, lon), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
@@ -154,7 +159,8 @@ with src_zueri as (
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
         , anzahl as velos
-        , accurateCastOrNull(tuple(lon, lat), 'Point') as geometry
+        -- lon and lat got mixed up upstream, fix here
+        , accurateCastOrNull(tuple(lat, lon), 'Point') as geometry
         , file_source
         , publisher
         , dbt_valid_from
