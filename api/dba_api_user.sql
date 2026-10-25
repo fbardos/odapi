@@ -12,9 +12,12 @@ SETTINGS
     output_format_parquet_geometadata = 1,
     output_format_pretty_max_rows = 100 READONLY,
     output_format_pretty_fallback_to_vertical = 0 READONLY,
+    output_format_parquet_parallel_encoding = 1 READONLY,
+    output_format_parquet_compression_method = 'snappy' READONLY,
+    output_format_parquet_write_bloom_filter = 0 READONLY,
     max_execution_time = 120 READONLY,
-    max_memory_usage = 2000000000 READONLY,
-    max_threads = 2 READONLY,
+    max_memory_usage = 8000000000 READONLY,
+    max_threads = 8 READONLY,
     max_concurrent_queries_for_user = 4 READONLY;
 
 GRANT SELECT ON data_marts.* TO public_api;
