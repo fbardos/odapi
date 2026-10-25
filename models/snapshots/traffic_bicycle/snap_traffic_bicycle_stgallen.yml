@@ -1,0 +1,13 @@
+version: 2
+
+snapshots:
+  - name: snap_traffic_bicycle_stgallen
+    config:
+      target_schema: snapshots
+      strategy: check
+      unique_key: sk
+      check_cols:
+        - anzahl
+      # cannot be used together with invalidate hard deletes
+      # and historical backfills (paritions)
+      updated_at: _partition_datetime

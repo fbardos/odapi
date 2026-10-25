@@ -120,6 +120,11 @@ sources:
           dagster:
             asset_key:
               - dlt_traffic_bicycle_zh_25
+      - name: traffic_bicycle_stgallen
+        meta:
+          dagster:
+            asset_key:
+              - dlt_traffic_bicycle_stgallen
       - name: ener_elec_winti
         meta:
           dagster:

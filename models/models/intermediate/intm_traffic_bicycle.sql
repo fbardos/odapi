@@ -168,6 +168,22 @@ with src_zueri as (
     from {{ ref('snap_traffic_bicycle_zh_25') }}
 )
 
+, src_stgallen as (
+    select
+        anlage_name::String as standort_id
+        , zeit_von
+        , 'unknown'::String as richtung
+        , 1::Nullable(UInt8) as spur_id
+        , anzahl as velos
+        -- lon and lat got mixed up upstream, fix here
+        , geometry
+        , file_source
+        , publisher
+        , dbt_valid_from
+        , dbt_valid_to
+    from {{ ref('snap_traffic_bicycle_stgallen') }}
+)
+
 , union_publisher as (
     select * from intm_zueri
     UNION ALL
@@ -176,6 +192,8 @@ with src_zueri as (
     select * from src_bs
     UNION ALL
     select * from src_zh
+    UNION ALL
+    select * from src_stgallen
 )
 
 select *
