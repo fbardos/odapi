@@ -25,5 +25,7 @@ curl -Gs 'https://odapi.bardos.dev/marts/mart_traffic_bicycle' \
 | Publisher   | Level        | Information                                                                                                         |
 | ----------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Basel-Stadt | Canton       | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-velos-und-fussganger)                                 |
+| Zurich      | Canton       | [Dataset](https://opendata.swiss/en/dataset/verkehrszahldaten-veloverkehr-kanton-zurich)                            |
 | Winterthur  | Municipality | [Dataset](https://opendata.swiss/de/dataset/verkehrszahldaten-veloverkehr-in-winterthur)                            |
 | Zurich      | Municipality | [Dataset](https://opendata.swiss/de/dataset/daten-der-automatischen-fussganger-und-velozahlung-viertelstundenwerte) |
+| St.Gallen   | Municipality | [Dataset](https://opendata.swiss/de/dataset/velozahlungen-stadt-st-gallen-ab-2016)                                  |
