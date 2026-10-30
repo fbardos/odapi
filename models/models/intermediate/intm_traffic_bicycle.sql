@@ -5,6 +5,8 @@ with src_zueri as (
     -- for additional information about richtung in/out, spur, ...
     select
         standort_id::String as standort_id
+        -- TODO: Use DIM for stations of Zurich in the future
+        , standort_id::String as standort
         -- TODO: Make sure UTC
         , datum as zeit_von
         , velo_in
@@ -22,6 +24,7 @@ with src_zueri as (
 , intm_zueri as (
     select
         standort_id
+        , standort
         , zeit_von
         , 'in'::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -35,6 +38,7 @@ with src_zueri as (
     UNION ALL
     select
         standort_id
+        , standort
         , zeit_von
         , 'out' as richtung
         , 2::Nullable(UInt8) as spur_id
@@ -50,6 +54,7 @@ with src_zueri as (
 , src_winti as (
     select
         anlage_nr::String as standort_id
+        , anlage_name::String as standort
         -- XXX: Make sure UTC
         , zeit_von
         , richtung_name as richtung
@@ -66,6 +71,7 @@ with src_zueri as (
 , src_bs as (
     select
         zst_id::String as standort_id
+        , sitename::String as standort
         , datetimefrom_utc as zeit_von
         , directionname as richtung
         , lanecode as spur_id
@@ -85,6 +91,8 @@ with src_zueri as (
 , src_zh as (
     select
         anlage_nr::String as standort_id
+        -- FIX: Currently, anlage_name is always NULL
+        , anlage_nr::String || ' ' || gemeinde as standort
         , zeit_von
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -99,6 +107,8 @@ with src_zueri as (
     UNION ALL
     select
         anlage_nr::String as standort_id
+        -- FIX: Currently, anlage_name is always NULL
+        , anlage_nr::String || ' ' || gemeinde as standort
         , zeit_von
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -113,6 +123,8 @@ with src_zueri as (
     UNION ALL
     select
         anlage_nr::String as standort_id
+        -- FIX: Currently, anlage_name is always NULL
+        , anlage_nr::String || ' ' || gemeinde as standort
         , zeit_von
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -127,6 +139,8 @@ with src_zueri as (
     UNION ALL
     select
         anlage_nr::String as standort_id
+        -- FIX: Currently, anlage_name is always NULL
+        , anlage_nr::String || ' ' || gemeinde as standort
         , zeit_von
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -141,6 +155,8 @@ with src_zueri as (
     UNION ALL
     select
         anlage_nr::String as standort_id
+        -- FIX: Currently, anlage_name is always NULL
+        , anlage_nr::String || ' ' || gemeinde as standort
         , zeit_von
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -155,6 +171,8 @@ with src_zueri as (
     UNION ALL
     select
         anlage_nr::String as standort_id
+        -- FIX: Currently, anlage_name is always NULL
+        , anlage_nr::String || ' ' || gemeinde as standort
         , zeit_von
         , spur_richtung::String as richtung
         , 1::Nullable(UInt8) as spur_id
@@ -171,6 +189,7 @@ with src_zueri as (
 , src_stgallen as (
     select
         anlage_name::String as standort_id
+        , anlage_name::String as standort
         , zeit_von
         , 'unknown'::String as richtung
         , 1::Nullable(UInt8) as spur_id
