@@ -3,13 +3,16 @@ import hashlib
 import lzma
 import posixpath
 import re
+import stat
 from contextlib import contextmanager
+from contextlib import nullcontext
 from io import BytesIO
 from typing import Generator
 from typing import Iterator
 from typing import Optional
 
 import paramiko
+from dagster import AssetExecutionContext
 from dagster import ConfigurableResource
 from dagster import ResourceDependency
 from dagster import TimeWindow
@@ -257,3 +260,40 @@ class SFTPResource(ConfigurableResource):
     def decompress_from_xz(self, data: BytesIO) -> BytesIO:
         data.seek(0)
         return BytesIO(lzma.decompress(data.read()))
+
+    def differs_from_latest(
+        self,
+        context: AssetExecutionContext,
+        data: BytesIO,
+        remote_dir: str,
+        sftp_session: SFTPSession | None = None,
+    ) -> bool:
+        """Compares file object with the latest stored file on SFTP path."""
+
+        # reuse existing SFTP sesssion without closing it if present
+        with (
+            nullcontext(sftp_session) if sftp_session is not None else self.connection()
+        ) as conn:
+            files = [
+                entry
+                for entry in conn.listdir_attr(remote_dir)
+                if stat.S_ISREG(entry.st_mode)
+            ]
+            if not files:
+                return True
+            latest = max(files, key=lambda entry: entry.filename)
+            latest_path = f'{remote_dir.rstrip("/")}/{latest.filename}'
+
+            if data.getbuffer().nbytes != latest.st_size:
+                return True
+            local_hash = hashlib.sha256(data.getbuffer()).digest()
+            context.log.debug(f'New file hash: {local_hash}')
+
+            remote_hash = hashlib.sha256()
+            with conn.open(latest_path, 'rb') as remote_file:
+                while chunk := remote_file.read(1024 * 1024):
+                    remote_hash.update(chunk)
+            remote_hash = remote_hash.digest()
+            context.log.debug(f'Remote file hash: {local_hash}')
+
+            return local_hash != remote_hash
