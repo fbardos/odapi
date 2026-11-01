@@ -61,7 +61,7 @@ WORKDIR ${DAGSTER_HOME}
 # RUN uv venv .venv && \
 #     uv sync --frozen --all-groups  # read from uv.lock
 RUN uv venv .venv && \
-    uv sync --frozen --all-groups --no-build-isolation-package gpg
+    uv sync --frozen --all-groups --no-install-project --no-build-isolation-package gpg
 RUN uv pip install --no-deps .
 ENV PATH="${DAGSTER_HOME}/.venv/bin:${PATH}"
 RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/odapi/assets/dbt_assets.py

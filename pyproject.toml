@@ -70,6 +70,16 @@ dependencies = [
     "xlsxwriter>=3.2.5",
 ]
 
+[tool.uv]
+package = true
+
+[tool.setuptools]
+package-dir = {"" = "dag"}
+
+[tool.setuptools.packages.find]
+where = ["dag"]
+include = ["odapi", "odapi.*"]
+
 [tool.uv.workspace]
 members = [
     'doc',
