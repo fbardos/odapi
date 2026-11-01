@@ -1,41 +1,17 @@
 import datetime as dt
 import io
-import lzma
-from collections.abc import Iterator
-from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Literal
 
 import dagster as dg
 import dlt
 import geopandas as gpd
 import pandas as pd
-import paramiko
-import polars as pl
 import pyarrow as pa
 import requests
 from dagster import AssetExecutionContext
-from dagster import DefaultSensorStatus
-from dagster import RunRequest
-from dagster import SensorEvaluationContext
-from dagster import SensorResult
-from dagster import SkipReason
 from dagster import TimeWindowPartitionsDefinition
 from dagster import build_schedule_from_partitioned_job
-from dagster_dlt import DagsterDltResource
-from dagster_dlt import DagsterDltTranslator
-from dagster_dlt import dlt_assets
-from dagster_dlt.dlt_event_iterator import DltEventType
-from dlt.extract.resource import DltResource
-from dlt.sources.helpers.transform import add_row_hash_to_table
-
-from odapi.ops.add_meta_columns import add_meta_columns
-from odapi.ops.ckan_grab_from_web import ckan_grab_pipeline_factory
-from odapi.ops.ckan_ingest_from_sftp import ckan_ingest_factory
-from odapi.resources.ckan.ckan import CkanResource
-from odapi.resources.ssh.sftp import SFTPResource
 
 
 @dataclass
@@ -45,7 +21,7 @@ class SimplifiedBordersConfig:
 
     _API_BASE_URL: str = 'https://www.agvchapp.bfs.admin.ch/api/boundaries/divisions'
 
-    def make_request(self, duedate: dt.date) -> requests.Response: 
+    def make_request(self, duedate: dt.date) -> requests.Response:
         return requests.get(
             self._API_BASE_URL,
             params=dict(
@@ -53,9 +29,10 @@ class SimplifiedBordersConfig:
                 resolution=self.resolution,
                 dissolve=True,
                 date=duedate.strftime('%d-%m-%Y'),
-            )
+            ),
         )
-    
+
+
 @dlt.resource(
     write_disposition='replace',
 )
@@ -87,8 +64,9 @@ def _resource(
         pa.array(
             gdf.geometry.to_wkb(),
             type=pa.binary(),
-        )
+        ),
     )
+
 
 @dlt.source
 def dlt_source(
@@ -132,6 +110,7 @@ PARTITION_DEF = TimeWindowPartitionsDefinition(
     end_offset=1,
 )
 
+
 @dg.asset(
     name=f'dlt_bfs_raumgliederung_generalisiert',
     partitions_def=PARTITION_DEF,
@@ -142,6 +121,7 @@ def _asset(
 ) -> dg.MaterializeResult:
     load_info = dlt_pipeline.run(dlt_source(context=context))
     return dg.MaterializeResult(metadata={'dlt_load_info': str(load_info)})
+
 
 job = dg.define_asset_job(
     name='bfs_borders_simplified',

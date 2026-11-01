@@ -1,22 +1,22 @@
 from collections.abc import Iterator
 
+import dagster as dg
 import dlt
 import polars as pl
-from dagster import AssetExecutionContext
 from dlt.extract.resource import DltResource
 
 from odapi.ops.add_meta_columns import add_meta_columns
 from odapi.ops.ckan_grab_from_web import ckan_grab_pipeline_factory
 from odapi.ops.ckan_ingest_from_sftp import ckan_ingest_factory
+from odapi.ops.odapi_translator import OdapiTranslator
 from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ssh.sftp import SFTPResource
 
 # TODO: There are more years as separate ressources (philosophy of ODAPI to make them available)
 CKAN = CkanResource(
+    translator=OdapiTranslator(model_name='ogd_usage_bl', file_type='parquet'),
     publisher='Kanton Basel-Land',
-    model_name='ogd_usage_bl',
     ckan_resource_id='1e3b7c5d-3f4a-4afa-979e-8c15cf70367e',
-    file_type='parquet',
     dataset_url='https://opendata.swiss/de/dataset/ogd-portal-tagliche-nutzung-nach-datensatz-seit-januar-2024',
     geom_level='canton',
     geom_id=13,  # Basel-Land
@@ -26,11 +26,11 @@ asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
 
 
 @dlt.resource(
-    name=CKAN.model_name,
+    name=CKAN.translator.model_name,
     write_disposition='replace',
 )
 def _resource(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     sftp_grab: SFTPResource,
     remote_path: str,
     batch_size: int = 100_000,
@@ -54,7 +54,7 @@ def _resource(
                     df,
                     context=context,
                     record_offset=idx * batch_size,
-                    file_source=CKAN.www_url_from_remote_path(remote_path),
+                    file_source=CKAN.translator.www_url_from_remote_path(remote_path),
                     publisher=CKAN.publisher,
                     geom_level=CKAN.geom_level,
                     geom_id=CKAN.geom_id,
@@ -63,7 +63,7 @@ def _resource(
 
 @dlt.source
 def _source(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     sftp_grab: SFTPResource,
     remote_path: str,
 ) -> list[DltResource]:

@@ -1,21 +1,23 @@
 from collections.abc import Iterator
 
+import dagster as dg
 import dlt
 import polars as pl
-from dagster import AssetExecutionContext
 from dlt.extract.resource import DltResource
 
 from odapi.ops.add_meta_columns import add_meta_columns
 from odapi.ops.ckan_grab_from_web import ckan_grab_pipeline_factory
 from odapi.ops.ckan_ingest_from_sftp import ckan_ingest_factory
+from odapi.ops.odapi_translator import OdapiTranslator
 from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ssh.sftp import SFTPResource
 
 CKAN = CkanResource(
+    translator=OdapiTranslator(
+        model_name='traffic_bicycle_stgallen', file_type='parquet'
+    ),
     publisher='Stadt St.Gallen',
-    model_name='traffic_bicycle_stgallen',
     ckan_resource_id='f8d4fdc3-3357-43de-9beb-a74c62cbfa66',
-    file_type='parquet',
     dataset_url='https://opendata.swiss/de/dataset/velozahlungen-stadt-st-gallen-ab-2016',
 )
 
@@ -23,11 +25,11 @@ asset_web, job_web, sensor_web, partition = ckan_grab_pipeline_factory(CKAN)
 
 
 @dlt.resource(
-    name=CKAN.model_name,
+    name=CKAN.translator.model_name,
     write_disposition='replace',
 )
 def _resource(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     sftp_grab: SFTPResource,
     remote_path: str,
     batch_size: int = 100_000,
@@ -42,14 +44,14 @@ def _resource(
                     batch,
                     context=context,
                     record_offset=idx * batch_size,
-                    file_source=CKAN.www_url_from_remote_path(remote_path),
+                    file_source=CKAN.translator.www_url_from_remote_path(remote_path),
                     publisher=CKAN.publisher,
                 )
 
 
 @dlt.source
 def _source(
-    context: AssetExecutionContext,
+    context: dg.AssetExecutionContext,
     sftp_grab: SFTPResource,
     remote_path: str,
 ) -> list[DltResource]:

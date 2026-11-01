@@ -43,6 +43,7 @@ from odapi.resources.url.sdmx import SdmxConfig
 from odapi.resources.url.sdmx import StatsSwissResource
 from odapi.utils.log_perf_counter import LogTime
 
+# TODO: maybe use OdapiTranslator to build model_name etc.
 CONFIG = SdmxConfig(
     name='whg_gebkat',
     agency_id='CH1.GWS',

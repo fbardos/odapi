@@ -1,30 +1,11 @@
-import lzma
-from collections.abc import Iterator
-from collections.abc import Sequence
-from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Any
 
 import dagster as dg
 import dlt
-import paramiko
-import polars as pl
-import pyarrow as pa
-from dagster import DefaultSensorStatus
 from dagster import DynamicPartitionsDefinition
-from dagster import RunRequest
-from dagster import SensorEvaluationContext
-from dagster import SensorResult
-from dagster import SkipReason
-from dagster_dlt import DagsterDltResource
-from dagster_dlt import DagsterDltTranslator
-from dagster_dlt import dlt_assets
-from dagster_dlt.dlt_event_iterator import DltEventType
-from dlt.extract.resource import DltResource
-from dlt.extract.source import DltSource
-from dlt.sources.helpers.transform import add_row_hash_to_table
 
-from odapi.ops.ckan_grab_from_web import ckan_grab_pipeline_factory
+from odapi.ops.hooks import ntfy_on_failure
+from odapi.ops.hooks import ntfy_on_success
 from odapi.resources.ckan.ckan import CkanResource
 from odapi.resources.ssh.sftp import SFTPResource
 
@@ -34,13 +15,13 @@ def ckan_ingest_factory(
 ) -> tuple:
 
     dlt_pipeline = dlt.pipeline(
-        pipeline_name=ckan.model_name,
+        pipeline_name=ckan.translator.model_name,
         destination='clickhouse',
         # no destination for Clickhouse, because no schema exists
     )
 
     @dg.asset(
-        name=f'dlt_{ckan.model_name}',
+        name=f'dlt_{ckan.translator.model_name}',
         partitions_def=partition,
         kinds={'dlt', 'clickhouse'},
     )
@@ -48,7 +29,7 @@ def ckan_ingest_factory(
         context: dg.AssetExecutionContext,
         sftp_grab: SFTPResource,
     ) -> dg.MaterializeResult:
-        remote_path = '/'.join([ckan.dir, context.partition_key])
+        remote_path = '/'.join([ckan.translator.dir, context.partition_key])
 
         source = dlt_source(
             context=context,
@@ -59,15 +40,16 @@ def ckan_ingest_factory(
         return dg.MaterializeResult(metadata={'dlt_load_info': str(load_info)})
 
     job = dg.define_asset_job(
-        name=ckan.model_name,
+        name=ckan.translator.model_name,
         selection=dg.AssetSelection.assets(
             _asset,
         ).downstream(),
+        hooks={ntfy_on_success, ntfy_on_failure},
     )
 
     @dg.sensor(
         job=job,
-        name=ckan.sensor_name_sftp,
+        name=ckan.translator.sensor_name_sftp,
         required_resource_keys={'sftp_grab'},
         # Default should be STOPPED, because, when merging assets
         # from multiple Jobs in PROD, the runs will fail, until
@@ -83,7 +65,7 @@ def ckan_ingest_factory(
 
         with sftp.connection() as conn:
             try:
-                files = conn.list_files(ckan.dir)
+                files = conn.list_files(ckan.translator.dir)
             except FileNotFoundError:
                 return dg.SkipReason('No files found on target. Skip.')
 

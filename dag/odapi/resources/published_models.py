@@ -10,6 +10,7 @@ from typing import Optional
 
 import yaml
 
+from odapi.ops.odapi_translator import OdapiTranslator
 from odapi.resources.ckan.ckan import CkanResource
 
 
@@ -95,7 +96,7 @@ class PublishedModels:
                             f'must be set for sources of type OpenDataSwiss.'
                         )
                     yield CkanResource(
-                        model_name=source.model_name(model),
+                        translator=OdapiTranslator(model_name=source.model_name(model)),
                         ckan_resource_id=source.ckan_resource_id,
                         delimiter=source.load.delimiter,
                     )
