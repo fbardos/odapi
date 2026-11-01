@@ -64,7 +64,7 @@ RUN uv venv .venv && \
     uv sync --frozen --all-groups --no-install-project --no-build-isolation-package gpg
 RUN uv pip install --no-deps .
 ENV PATH="${DAGSTER_HOME}/.venv/bin:${PATH}"
-RUN RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/dag/odapi/assets/dbt_assets.py
+RUN dagster-dbt project prepare-and-package --file ${DAGSTER_HOME}/dag/odapi/assets/dbt_assets.py
 
 # Load DBT deps
 RUN dbt deps --project-dir /opt/dbt
