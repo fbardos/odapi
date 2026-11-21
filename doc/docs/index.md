@@ -9,6 +9,7 @@ Analysts.
 | API Endpoint      | [https://odapi.bardos.dev](https://odapi.bardos.dev/tables)          |
 | API Documentation | [https://odapi.bardos.dev](https://odapi.bardos.dev)                 |
 | Source Code       | [https://github.com/fbardos/odapi](https://github.com/fbardos/odapi) |
+| Downloaded Files  | [https://files.bardos.dev/odapi/](https://files.bardos.dev/odapi/)   |
 
 ![ODAPI Architecture](images/odapi_architecture.png)
 
