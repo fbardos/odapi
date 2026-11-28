@@ -215,6 +215,21 @@ sources:
           dagster:
             asset_key:
               - dlt_ogd_usage_bl
+      - name: env_tree_winti
+        meta:
+          dagster:
+            asset_key:
+              - dlt_env_tree_winti
+      - name: env_tree_zueri
+        meta:
+          dagster:
+            asset_key:
+              - dlt_env_tree_zueri
+      - name: env_tree_zg
+        meta:
+          dagster:
+            asset_key:
+              - dlt_env_tree_zg
       - name: bfs_gemeinde_g1
         meta:
           dagster:

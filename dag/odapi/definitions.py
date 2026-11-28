@@ -9,6 +9,8 @@ from odapi.resources.clickhouse.clickhouse import ClickHouseResource
 from odapi.resources.crypto.fernet import FernetCipher
 from odapi.resources.duckdb.duckdb import DuckDBResource
 from odapi.resources.extract.extract_handler import ExtractHandler
+from odapi.resources.geo.ogc import OGCResource
+from odapi.resources.geo.wfs import WFSResource
 from odapi.resources.minio.minio import Minio
 from odapi.resources.postgres.postgres import PostgresResource
 from odapi.resources.postgres.postgres import XcomPostgresResource
@@ -78,6 +80,10 @@ defs = load_definitions_from_package_module(
         'geoadmin': GeoAdminResource(),
         'geo_swissboundaries_till_2016': SwissboundariesTill2015(),
         'geo_swissboundaries': Swissboundaries(),
+        'ogc_winti': OGCResource(
+            base_url='https://stadtplan.winterthur.ch/ogc/features'
+        ),
+        'wfs': WFSResource(),
         'geo_quartier': QuartierBoundaries(),
         'healthcheck': HealthCheckResource(),
         'pushover': PushoverResource(

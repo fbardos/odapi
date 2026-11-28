@@ -9,9 +9,9 @@ from typing import Literal
 class OdapiTranslator:
     model_name: str
     file_type: Literal['csv', 'parquet'] = 'csv'
+    dir_name: str = 'opendata_swiss'
 
     _WWW_PREFIX: str = 'https://files.bardos.dev/odapi'
-    _DIR_NAME: str = 'opendata_swiss'
     _DEFAULT_TIMESTAMP_FORMAT: str = '%Y-%m-%dT%H-%M-%SZ'
     _DEFAULT_TIMESTAMP_REGEX: str = r'\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z'
 
@@ -45,7 +45,7 @@ class OdapiTranslator:
 
     @property
     def dir(self) -> str:
-        return '/'.join([self._DIR_NAME, self.model_name])
+        return '/'.join([self.dir_name, self.model_name])
 
     def path(self, timestamp: dt.datetime, file_ending: str) -> str:
         return '/'.join([self.dir, self.filename(timestamp, file_ending)])
