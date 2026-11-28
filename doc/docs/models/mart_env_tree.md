@@ -9,6 +9,10 @@ curl -Gs 'https://odapi.bardos.dev/marts/mart_env_tree' \
   --data-urlencode 'limit=5'
 ```
 
+## Downstream Usage
+
+- [Showcase Dashboard on HEX](https://app.hex.tech/01a0dfa8-c690-726b-8d22-c15fc6b38eba/app/martenvtree-034wY8ju5746RTXVIEiG8N/latest)
+
 ## Table Information
 
 | Topic       | Value  |
