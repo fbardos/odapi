@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: stgn_env_tree_zg
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - id
